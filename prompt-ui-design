@@ -1,2 +1,0 @@
-"Act as an expert frontend engineer. Based on this SPEC.md, generate a single-file, highly interactive React component using Tailwind CSS and Lucide Icons that acts as our Phase 1 prototype artifact. 
-Include comprehensive mock data for songs, ledger items, and events so I can test all navigation and modals."
