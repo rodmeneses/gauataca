@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type {
   AppProps, BandEvent, CalTab, CustodyDialog, Device, FormState, GenreId, Lang, LocalComment, MobileTab, Modal,
-  RatingKey, Role, ShareSheet, Song, Toast, Transaction, View,
+  RatingKey, Role, RsvpStatus, ShareSheet, Song, Toast, Transaction, View,
 } from '../types';
 
 /**
@@ -41,6 +41,8 @@ export interface State {
   extraEvents: BandEvent[];
   /** gear id → member id (custody transfers made in this session). */
   custodyOverrides: Record<string, string>;
+  /** event id → member id → RSVP set in this session (null = answer withdrawn, back to pending). */
+  rsvpOverrides: Record<string, Record<string, RsvpStatus | null>>;
   form: FormState;
   mobileTab: MobileTab;
   sheet: ShareSheet | null;
@@ -90,6 +92,7 @@ export function initialState(props: AppProps): State {
     extraSongs: [],
     extraEvents: [],
     custodyOverrides: {},
+    rsvpOverrides: {},
     form: {},
     mobileTab: 'agenda',
     sheet: null,

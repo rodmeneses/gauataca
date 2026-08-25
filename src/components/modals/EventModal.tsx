@@ -2,9 +2,9 @@
  * Event detail modal (design lines 929–1111): header, 4 stat tiles, setlist,
  * media gallery, retrospective (ratings, well/improve, poll, my ratings) and footer.
  */
-import { ChartColumn, EyeOff, ExternalLink, Image, Instagram, Star } from 'lucide-react';
-import { useBandSync } from '@/store';
-import { Badge, Button, CloseButton, Modal } from '@/components/ui';
+import { ChartColumn, Check, EyeOff, ExternalLink, Image, Instagram, Star } from 'lucide-react';
+import { RSVP_COLOR, RSVP_ORDER, RSVP_PENDING_COLOR, rsvpLabel, useBandSync } from '@/store';
+import { Avatar, Badge, Button, CloseButton, Modal } from '@/components/ui';
 import type { RatingKey } from '@/types';
 
 const RATING_KEYS: RatingKey[] = ['sound', 'perf', 'log', 'energy'];
@@ -16,10 +16,16 @@ const textareaCls =
   'w-full py-[11px] px-[13px] rounded-[10px] border border-[#1e293b] bg-[#020617] text-[#e2e8f0] font-sans font-normal text-[13px] leading-[normal] outline-none resize-y';
 
 export function EventModal() {
-  const { t, ev, fb, state, closeModal, openShare, pickPoll, setRating, toggleAnon, setFbWell, setFbImprove, submitFb } = useBandSync();
+  const { t, ev, fb, state, closeModal, openShare, pickPoll, setRating, toggleAnon, setFbWell, setFbImprove, submitFb, setRsvp } = useBandSync();
   if (!ev) return null;
 
   const ratingLabel: Record<RatingKey, string> = { sound: t.sound, perf: t.perf, log: t.logistics, energy: t.energy };
+  const rsvpGroups = [
+    { key: 'going', label: t.going, color: RSVP_COLOR.going, people: ev.going },
+    { key: 'maybe', label: t.maybe, color: RSVP_COLOR.maybe, people: ev.maybe },
+    { key: 'no', label: t.notGoing, color: RSVP_COLOR.no, people: ev.notGoing },
+    { key: 'pending', label: t.pendingL, color: RSVP_PENDING_COLOR, people: ev.pending },
+  ];
 
   return (
     <Modal onClose={closeModal} maxWidth={840} align="top">
@@ -58,9 +64,66 @@ export function EventModal() {
         </div>
         <div className={tile}>
           <div className={tileLabel}>{t.attendees}</div>
-          <div className="font-mono font-semibold text-[16px] leading-[normal] text-[#e2e8f0] mt-[7px]">{ev.attend} / 5</div>
+          <div className="font-mono font-semibold text-[16px] leading-[normal] text-[#e2e8f0] mt-[7px]">{ev.attend} / {ev.total}</div>
         </div>
       </div>
+
+      {/* ---- attendance / RSVP (code-first addition, see docs/design.md §5.4) */}
+      {ev.hasAttendance && (
+        <div className="py-5 px-6 border-b border-[#172033]">
+          <div className="flex items-baseline gap-[11px] mb-[13px]">
+            <h3 className="m-0 font-display font-semibold text-[13px] leading-[normal] tracking-[.02em] text-[#cbd5e1]">{t.rsvp}</h3>
+            <span className="font-mono font-medium text-[11.5px] leading-[normal] text-[#64748b] whitespace-nowrap">
+              {ev.goingCount} {t.confirmedL} · {ev.pendingCount} {t.pending}
+            </span>
+          </div>
+
+          {ev.canRsvp && (
+            <div className="flex items-center gap-[10px] flex-wrap mb-4">
+              <span className="font-sans font-medium text-[12.5px] leading-[normal] text-[#94a3b8] mr-1">{t.rsvpHint}</span>
+              {RSVP_ORDER.map((s) => {
+                const active = ev.rsvp === s;
+                const color = RSVP_COLOR[s];
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setRsvp(ev.id, s)}
+                    aria-pressed={active}
+                    className="flex items-center gap-[7px] py-[9px] px-[14px] rounded-[10px] border font-sans font-semibold text-[13px] leading-[normal] cursor-pointer transition-colors"
+                    style={{
+                      borderColor: active ? color + '66' : '#1e293b',
+                      background: active ? color + '1a' : '#0b1220',
+                      color: active ? color : '#94a3b8',
+                    }}
+                  >
+                    {active && <Check size={14} strokeWidth={2.4} />}
+                    {rsvpLabel(s, t)}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="grid grid-cols-[repeat(4,minmax(0,1fr))] gap-3">
+            {rsvpGroups.map((g) => (
+              <div key={g.key} className={tile}>
+                <div className={tileLabel} style={{ color: g.color }}>
+                  {g.label} · {g.people.length}
+                </div>
+                <div className="flex gap-[6px] flex-wrap mt-[9px] min-h-[26px]">
+                  {g.people.length === 0 && <span className="font-mono text-[11.5px] leading-[26px] text-[#334155]">—</span>}
+                  {g.people.map((p) => (
+                    <span key={p.id} title={p.name} aria-label={p.name}>
+                      <Avatar initial={p.initial} size={26} radius={8} tone={g.key === 'pending' ? 'muted' : 'violet'} style={{ background: g.key === 'pending' ? '#1e293b' : g.color + '24', color: g.key === 'pending' ? '#64748b' : g.color }} />
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ---- setlist */}
       {ev.hasSetlist && (

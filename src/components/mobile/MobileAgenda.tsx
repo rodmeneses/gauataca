@@ -24,6 +24,14 @@ export function MobileAgenda() {
                 {e.stateLabel}
               </span>
             )}
+            {e.canRsvp && e.rsvpLabel && (
+              <span
+                className="font-display font-semibold text-[9px] tracking-[.09em] uppercase whitespace-nowrap py-[3px] px-[7px] rounded-[5px]"
+                style={{ color: e.rsvpColor, background: e.rsvpBg }}
+              >
+                ✓ {e.rsvpLabel}
+              </span>
+            )}
             <span className="ml-auto font-mono font-semibold text-[10.5px] text-[#a78bfa]">{e.rel}</span>
           </div>
           <h3 className="m-0 font-display font-semibold text-[17px] leading-[1.3] text-[#f1f5f9]">{e.title}</h3>

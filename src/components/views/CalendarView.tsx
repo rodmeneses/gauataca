@@ -54,6 +54,7 @@ export function CalendarView() {
                     <Badge color={e.typeColor}>{e.typeLabel}</Badge>
                     {e.showState && <Badge color={e.stateColor}>{e.stateLabel}</Badge>}
                     <Badge color="#64748b">{e.rel}</Badge>
+                    {e.canRsvp && e.rsvpLabel && <Badge color={e.rsvpColor}>✓ {e.rsvpLabel}</Badge>}
                   </div>
                 </div>
               </div>

@@ -59,6 +59,10 @@ export const HANDOFF_NOTES: { h: Localized; items: Localized[] }[] = [
     { es: 'Músico: lectura global de calendario y fondo; escritura en su perfil, feedback, media links, threads y comentarios.', en: 'Member: global read on calendar and ledger; write on own profile, feedback, media links, threads and comments.' },
     { es: 'La transparencia del fondo es intencional: todos los miembros leen todos los movimientos y comprobantes.', en: 'Ledger transparency is intentional: every member reads every movement and proof link.' },
   ] },
+  { h: { es: 'Delta — asistencia (RSVP)', en: 'Delta — attendance (RSVP)' }, items: [
+    { es: 'Añadido en código, no está en el archivo de Claude Design: cada músico marca Voy / Quizás / No voy en eventos futuros no cancelados (modal del evento); las tarjetas del calendario y de la agenda móvil muestran su respuesta.', en: 'Added in code, not in the Claude Design file: each member marks Going / Maybe / Not going on upcoming, non-cancelled events (event modal); calendar and mobile agenda cards show their answer.' },
+    { es: 'Tabla: event_attendance(event_id, profile_id, status, updated_at) con unique(event_id, profile_id). RLS: cada músico inserta/actualiza su propia fila; todos leen.', en: 'Table: event_attendance(event_id, profile_id, status, updated_at) with unique(event_id, profile_id). RLS: each member inserts/updates their own row; everyone reads.' },
+    { es: '"Confirmados" nunca se guarda: count(status = \'going\'); "por responder" = miembros sin fila.', en: '"Confirmed" is never stored: count(status = \'going\'); "pending" = members without a row.' } ] },
   { h: { es: 'Simulado en este prototipo', en: 'Mocked in this prototype' }, items: [
     { es: 'Los enlaces de Drive / iCloud / Docs son ficticios y no resuelven. Reemplazar por URLs reales.', en: 'Drive / iCloud / Docs links are fictional and do not resolve. Replace with real URLs.' },
     { es: 'navigator.share y el deep link instagram://camera se intentan de verdad; en escritorio caen a un aviso.', en: 'navigator.share and the instagram://camera deep link are genuinely attempted; on desktop they fall back to a toast.' },

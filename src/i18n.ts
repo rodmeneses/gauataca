@@ -73,6 +73,11 @@ const es = {
   titleL: 'Título', hourL: 'Hora', venueL: 'Venue', notesL: 'Notas', genreL: 'Género',
   proofHint: 'Captura del Zelle o factura de la tienda, en Google Drive o iCloud.',
   reference: 'Referencia', streaming: 'Streaming',
+  // attendance (RSVP) — added in code, not in the Claude Design file
+  rsvp: 'Asistencia', rsvpHint: '¿Vas a este evento?',
+  going: 'Voy', maybe: 'Quizás', notGoing: 'No voy',
+  pending: 'por responder', pendingL: 'Sin responder', confirmedL: 'confirmados',
+  rsvpSaved: 'Asistencia guardada',
 };
 
 const en: typeof es = {
@@ -147,6 +152,10 @@ const en: typeof es = {
   titleL: 'Title', hourL: 'Time', venueL: 'Venue', notesL: 'Notes', genreL: 'Genre',
   proofHint: 'Zelle screenshot or shop invoice, on Google Drive or iCloud.',
   reference: 'Reference', streaming: 'Streaming',
+  rsvp: 'Attendance', rsvpHint: 'Are you going?',
+  going: 'Going', maybe: 'Maybe', notGoing: 'Not going',
+  pending: 'pending', pendingL: 'No answer', confirmedL: 'confirmed',
+  rsvpSaved: 'Attendance saved',
 };
 
 export type Dict = typeof es;

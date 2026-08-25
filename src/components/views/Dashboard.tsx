@@ -34,6 +34,11 @@ export function Dashboard() {
           <Eyebrow>{t.nextEvent}</Eyebrow>
           <div className="font-display font-semibold text-[16px] leading-[1.25] text-ink mt-[11px]">{nextEvent ? nextEvent.title : '—'}</div>
           <div className="text-[11.5px] text-violet-light mt-[8px]">{nextEvent ? <>{nextEvent.rel} · {nextEvent.dateStr}</> : null}</div>
+          {nextEvent?.hasAttendance && (
+            <div className="text-[11.5px] text-ink-muted mt-[6px] whitespace-nowrap">
+              <span className="text-emerald">{nextEvent.goingCount}</span> {t.confirmedL} · {nextEvent.pendingCount} {t.pending}
+            </div>
+          )}
         </div>
         <div className="card p-[17px_18px]">
           <Eyebrow>{t.songsTotal}</Eyebrow>

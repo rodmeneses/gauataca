@@ -100,15 +100,16 @@ Sidebar footer: pool balance card (→ ledger) and the signed-in member.
 ## 4. Views
 
 ### 4.1 Panel (dashboard)
-Four stat cards — pool balance with ↑income/↓expenses, next active event with relative date, songs in repertoire,
+Four stat cards — pool balance with ↑income/↓expenses, next active event with relative date and
+`N confirmados · M por responder`, songs in repertoire,
 songs **not rehearsed** (amber card). Below: the next 3 non-cancelled events (with an inline Instagram button on gigs),
 the top 5 stale songs (amber/rose dots by staleness), and the 4 most recent ledger movements with proof links.
 
 ### 4.2 Calendario
 `Próximos` / `Historial` tabs. Events sort ascending in upcoming, descending in history — history is simply
 `date < today`, nothing is "archived". Cards: colored top rule per type, date tile, badges, venue, date · time,
-"Movido del …" line when rescheduled, setlist chip (`count · runtime`), fee/cost chip, **Ver detalles**, and
-**Instagram** for gigs. Admins get **+ Nuevo evento**; members see an "Solo administradores" lock.
+"Movido del …" line when rescheduled, a **✓ Voy / Quizás / No voy** chip once you have answered (§5.4),
+setlist chip (`count · runtime`), fee/cost chip, **Ver detalles**, and **Instagram** for gigs. Admins get **+ Nuevo evento**; members see an "Solo administradores" lock.
 
 ### 4.3 Repertorio
 Search box (title, genre, exact key), genre chips, **⚠ Solo sin ensayar** filter, `shown / total` counter.
@@ -139,7 +140,7 @@ and the Phase 2 **handoff notes** (stack, suggested tables, derived logic, RLS p
 
 | Overlay | Trigger | Content |
 | --- | --- | --- |
-| **Event detail** | any event card | header badges + note; date/venue/fee/attendees tiles; setlist (gig) or songs rehearsed (practice) with runtime; media gallery links (past events); **Retrospectiva** for past events with feedback |
+| **Event detail** | any event card | header badges + note; date / venue / fee / **Confirmados N / 5** tiles (derived from RSVPs); **Asistencia** section on upcoming events (§5.4); setlist (gig) or songs rehearsed (practice) with runtime; media gallery links (past events); **Retrospectiva** for past events with feedback |
 | **Retrospective** (inside event detail) | past gig with feedback | aggregated 1–5 ratings (sound, performance, logistics, energy) as bars; "¿Qué salió bien?" / "¿Qué mejoramos?" quotes (named or Anónimo); admin poll with live percentages and one-tap vote; your own star ratings, two text fields, **anonymous toggle**, submit |
 | **Nuevo evento / Nueva canción / Registrar movimiento** | admin buttons, ⌘K, convert-thread | small centered forms; the movement form highlights the **proof link** field |
 | **Thread** | idea title / comment count | body, comments, composer, convert (admin) |
@@ -165,10 +166,21 @@ The role toggle is a prototype affordance — Phase 2 replaces it with Supabase 
 Every string, date format (`vie 12 sep 2026` / `Fri Sep 12 2026`), relative label, caption and mock note exists in
 Spanish (default) and English. Song titles, venues and names are not translated.
 
+### 5.4 Attendance / RSVP (added code-first — not in the Claude Design file)
+Upcoming, non-cancelled events track who is coming. In the event detail modal, under the stat tiles, an
+**Asistencia** section shows `N confirmados · M por responder`, the question *¿Vas a este evento?* with three
+one-tap answers — **Voy** (emerald), **Quizás** (amber), **No voy** (rose) — and four tiles listing everyone by
+initials (hover for the name): Voy · Quizás · No voy · Sin responder (muted). Tapping your current answer again
+withdraws it (back to *Sin responder*). Every change toasts *Asistencia guardada*.
+Both roles can answer. Past events and cancelled events show no control and keep their historical headcount.
+The same answer appears as a `✓ Voy` chip on the calendar card and the mobile Agenda card, and the dashboard's
+*Próximo evento* card shows the confirmed / pending counts. "Confirmados" is never stored — it is the count of
+*going* answers; pending = band members without an answer.
+
 ## 6. Mobile preview
 
 The desktop header's phone icon swaps the layout for a 392 × 812 phone frame (status bar, brand header with balance
-pill, scrollable body, 4-tab bar): **Agenda** (upcoming events with a full-width gradient Instagram button on gigs),
+pill, scrollable body, 4-tab bar): **Agenda** (upcoming events with your RSVP chip and a full-width gradient Instagram button on gigs),
 **Repertorio** (search + song cards with four 48 px link boxes), **Fondo** (balance hero + movement cards with
 "Ver comprobante"), **Perfil** (you + the roster). This is a preview of the Phase 2 responsive layout, rendered inside
 the desktop page rather than via media queries.
@@ -179,7 +191,8 @@ the desktop page rather than via media queries.
 Member      id, name, short, initial, role, title{es,en}, email, joined, instruments[{n{es,en}, lv}], vocals[]
 Song        id, title, genre, key, bpm, dur "m:ss", last (ISO | null)
 BandEvent   id, type gig|studio|garage, state active|cancelled|rescheduled, date, time, title{}, venue,
-            money (>0 fee, <0 cost), setlist[songId], attend, note{}, flyer?, prevDate?, media[]?, feedback?
+            money (>0 fee, <0 cost), setlist[songId], attend, note{}, flyer?, prevDate?, media[]?, feedback?,
+            attendance?{memberId: going|maybe|no}   (upcoming events; absent member = pending)
 Feedback    sound, perf, log, energy (avg 1–5), responses, well[], improve[], poll{q, options[{label, v}]}
 Transaction id, kind in|out, amt, date, by (memberId), desc{}, proof url|null, proofKind, event?, gear?
 Gear        id, name{}, cost, date, holder (memberId), tx?, cond good|attention, note{}
@@ -187,7 +200,8 @@ Thread      id, by, date, votes, title{}, body{}, comments[{by, text{}}]
 ```
 
 **Derived, never stored:** pool balance, upcoming vs history, each song's "last rehearsed" (latest past event whose
-setlist contains it), stale flag (`today − last > staleDays`, default 30; rose beyond 90), setlist runtime.
+setlist contains it), stale flag (`today − last > staleDays`, default 30; rose beyond 90), setlist runtime,
+confirmed headcount (count of *going* RSVPs) and pending count.
 
 ## 8. Prototype knobs
 

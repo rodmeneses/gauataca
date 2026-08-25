@@ -9,7 +9,7 @@ import {
 } from '../data';
 import { d, days, money, money0 } from '../lib/format';
 import type {
-  AppProps, BandEvent, CustodyDialog, FormState, GenreId, Lang, Member, MobileTab, Modal, RatingKey, ShareSheet, Song, Toast, Transaction, View,
+  AppProps, BandEvent, CustodyDialog, FormState, GenreId, Lang, Member, MobileTab, Modal, RatingKey, RsvpStatus, ShareSheet, Song, Toast, Transaction, View,
 } from '../types';
 import { useStore, type State } from './store';
 import {
@@ -165,6 +165,8 @@ export interface BandSync {
   openCustody: (gearId: string) => void;
   closeCustody: () => void;
   transferCustody: (memberId: string) => void;
+  /** Set the signed-in member's RSVP; choosing the current answer again withdraws it (back to pending). */
+  setRsvp: (eventId: string, status: RsvpStatus) => void;
   voteThread: (id: string) => void;
   setCommentDraft: (s: string) => void;
   sendComment: () => void;
@@ -197,9 +199,9 @@ export function useBandSync(): BandSync {
     const t = T[lang];
     const isAdmin = st.role === 'admin';
     const staleDays = props.staleDays || 30;
-    const ctx: Ctx = { lang, t, staleDays };
-    const Lx = (v: { es: string; en: string } | string | null | undefined) => L(lang, v);
     const me = memberById(isAdmin ? 'm1' : 'm2');
+    const ctx: Ctx = { lang, t, staleDays, meId: me.id, rsvpOverrides: st.rsvpOverrides };
+    const Lx = (v: { es: string; en: string } | string | null | undefined) => L(lang, v);
 
     /* ---- raw collections (session additions first, like the design) */
     const allSongs: Song[] = [...st.extraSongs, ...SONGS];
@@ -400,6 +402,12 @@ export function useBandSync(): BandSync {
         if (!c) return;
         set((s) => ({ custody: null, custodyOverrides: { ...s.custodyOverrides, [c.id]: memberId } }));
         toast(t.custodyTo + memberById(memberId).short);
+      },
+      setRsvp: (eventId, status) => {
+        const current = events.find((e) => e.id === eventId)?.rsvp ?? null;
+        const next: RsvpStatus | null = current === status ? null : status;
+        set((s) => ({ rsvpOverrides: { ...s.rsvpOverrides, [eventId]: { ...(s.rsvpOverrides[eventId] ?? {}), [me.id]: next } } }));
+        toast(t.rsvpSaved);
       },
       voteThread: (id) => set((s) => ({ votes: { ...s.votes, [id]: s.votes[id] ? 0 : 1 } })),
       setCommentDraft: (v) => set({ commentDraft: v }),

@@ -1,7 +1,8 @@
 # Iterating on the UI with Claude Design + Claude Code
 
-How to add or change a feature without re-porting the whole prototype. The first case is **RSVP / attendance
-confirmation** (see `HANDOFF.md` §3), used as the worked example below.
+How to add or change a feature without re-porting the whole prototype. **RSVP / attendance** is the worked example
+below; it was in fact implemented **code-first** in PR #1 (`docs/design.md` §5.4), so the prompts here stay as
+templates — swap in the next feature (e.g. the setlist builder or "new idea" from `HANDOFF.md` §3).
 
 ## 1. Pick the path
 

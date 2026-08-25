@@ -65,6 +65,8 @@ The design is a `.dc.html` template (`{{ bindings }}`, `<sc-if>`, `<sc-for>`, `s
    (px, colors incl. alpha tints, fonts, copy, conditionals, hover states, actions, list sources, role gating, grid
    templates, z-index/animation, React correctness) and fixed deviations in place. 20 review passes, all files typecheck clean.
 4. **Integration:** `tsc -b` + `vite build`, then a manual browser pass (below).
+5. **First code-first increment:** attendance / RSVP (`docs/design.md` §5.4) — types + mock `attendance` maps,
+   `rsvpOverrides` state, `eventVm` fields, `setRsvp` action, and four touched components; verified the same way.
 
 ## 4. Verification
 
@@ -89,6 +91,7 @@ Intentional, small, and listed so nobody "fixes" them back by accident:
 | Genre `<select>` options are localized via `GENRES` instead of hard-coded Spanish | consistency with the ES/EN switch |
 | `font:` shorthand in the design resets line-height to `normal`; the port inherits `1.5` on some small labels | sub-pixel to ~2 px; invisible in side-by-side screenshots. Add `leading-[normal]` where it matters |
 | `CloseButton` has a hover state everywhere (design: only on the event modal) | shared primitive |
+| **Attendance / RSVP exists in code but not in `design/BandSync.dc.html`** (event modal section, card chips, dashboard counts, derived "Confirmados") | added code-first after the port (see `docs/iterating.md`); built from the documented vocabulary — tiles, badges, poll-style option buttons, avatars |
 
 Everything the design mocks is still mocked: placeholder Drive/iCloud/Docs/YouTube/Spotify links,
 `navigator.share` with a desktop toast fallback, in-memory forms/votes/comments/ratings, no auth.

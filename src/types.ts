@@ -48,6 +48,8 @@ export interface Song {
 
 export type EventType = 'gig' | 'studio' | 'garage';
 export type EventState = 'active' | 'cancelled' | 'rescheduled';
+/** A member's answer to "are you going?" — absent = pending. */
+export type RsvpStatus = 'going' | 'maybe' | 'no';
 
 export interface FeedbackEntry {
   by: string | null;
@@ -76,7 +78,10 @@ export interface BandEvent {
   venue: string;
   money: number; // >0 fee, <0 cost, 0 none
   setlist: string[]; // song ids (gig setlist or songs rehearsed)
+  /** Historical headcount; ignored when `attendance` is present (then derived = count of 'going'). */
   attend: number;
+  /** member id → RSVP. Present on upcoming events; members without an entry are pending. */
+  attendance?: Record<string, RsvpStatus>;
   note: Localized;
   flyer?: string;
   prevDate?: string;

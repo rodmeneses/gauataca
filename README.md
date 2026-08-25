@@ -25,17 +25,19 @@ Everything is in memory: what you create, vote or rate stays until you reload, t
 
 Things to try:
 
-1. **Panel** — stat cards, next events, songs not rehearsed, latest ledger movements.
-2. **Calendario → Historial → "Cierre del Festival de Verano" → Ver detalles** — setlist, gallery links and the
+1. **Panel** — stat cards (incl. confirmed / pending for the next event), next events, songs not rehearsed, latest ledger movements.
+2. **Calendario → Ver detalles** on an upcoming event → **Asistencia**: answer *Voy / Quizás / No voy* — the roster,
+   "Confirmados", the card chip and the dashboard counts update (tap your answer again to withdraw it).
+3. **Calendario → Historial → "Cierre del Festival de Verano" → Ver detalles** — setlist, gallery links and the
    *Retrospectiva*: vote in the poll, rate with stars, write feedback, toggle anonymous, submit (toasts + response count).
-3. **Preparar para Instagram** on any gig (card, modal, or mobile) — caption preview, *Copiar leyenda* (clipboard),
+4. **Preparar para Instagram** on any gig (card, modal, or mobile) — caption preview, *Copiar leyenda* (clipboard),
    *Abrir el flyer*, *Compartir* (`navigator.share`; a toast on desktop).
-4. **Repertorio** — search, genre chips, *⚠ Solo sin ensayar*, click a row to expand resources + rehearsal log; **+ Nueva canción**.
-5. **Fondo y equipos** — ledger with proof links, **Registrar movimiento**, gear cards → **Transferir custodia**.
-6. **Ideas** — upvote, open a thread, comment, **Convertir en evento** (pre-fills the event form).
-7. **Top bar** — **ES/EN**, **Admin ↔ Músico** (write controls disappear for members), **desktop ↔ phone** preview
+5. **Repertorio** — search, genre chips, *⚠ Solo sin ensayar*, click a row to expand resources + rehearsal log; **+ Nueva canción**.
+6. **Fondo y equipos** — ledger with proof links, **Registrar movimiento**, gear cards → **Transferir custodia**.
+7. **Ideas** — upvote, open a thread, comment, **Convertir en evento** (pre-fills the event form).
+8. **Top bar** — **ES/EN**, **Admin ↔ Músico** (write controls disappear for members; RSVP is answered as Caro), **desktop ↔ phone** preview
    (Agenda / Repertorio / Fondo / Perfil tabs), **⌘K** command palette, the **book icon** opens the Phase 2 handoff notes.
-8. **Sistema de diseño** — live tokens, type scale, component samples, handoff notes.
+9. **Sistema de diseño** — live tokens, type scale, component samples, handoff notes.
 
 Other commands:
 
@@ -108,5 +110,5 @@ src/
 
 - Drive / iCloud / Docs / YouTube / Spotify links are placeholders.
 - `navigator.share` and the `instagram://camera` deep link are attempted for real on mobile; on desktop they fall back to a toast.
-- New event / song / movement forms, votes, comments, poll picks, ratings and custody transfers update local state only.
-- No auth, no RSVP/attendance yet (see [HANDOFF.md](./HANDOFF.md) §3).
+- New event / song / movement forms, votes, comments, poll picks, ratings, RSVP answers and custody transfers update local state only.
+- No auth (Phase 2); other spec gaps are listed in [HANDOFF.md](./HANDOFF.md) §3.

@@ -34,7 +34,8 @@ Everything below is exercised and works in the browser; see `docs/implementation
 - Navigation: Panel · Calendario (próximos/historial) · Repertorio · Fondo y equipos · Ideas · Músicos · Sistema de diseño.
 - Create: new event, new song, new ledger movement (admin). They insert into local state and show in lists/counters.
 - Interact: upvote ideas, comment on a thread, convert an idea into a pre-filled event form, vote in an event poll,
-  rate a past event (4 × 1–5 stars) and submit a retrospective (with anonymous toggle), transfer gear custody.
+  rate a past event (4 × 1–5 stars) and submit a retrospective (with anonymous toggle), transfer gear custody,
+  **RSVP** to upcoming events (Voy / Quizás / No voy; roster + derived "Confirmados"; chips on cards; dashboard counts).
 - Instagram flow: caption generation (ES/EN) → clipboard → open flyer link → `navigator.share` (toast fallback on desktop).
 - Role toggle Admin ↔ Músico (write controls disappear for members), ES/EN, desktop ↔ phone-frame preview, ⌘K palette, tour.
 
@@ -46,9 +47,12 @@ Where the writes live: **`src/store/useBandSync.ts` is the only place that mutat
 Answering "is X already there?" honestly. None of these exist as UI today; the ES/EN strings for some of them
 (`t.edit`, `t.addMedia`, `t.newThread`) are already in `src/i18n.ts` but unused.
 
+> Closed in this PR (code-first, see `docs/design.md` §5.4): **RSVP / attendance confirmation** — members answer
+> Voy / Quizás / No voy on upcoming events, "Confirmados" is derived, cards show the answer. Backend still needs
+> the `event_attendance` table in §4.1. The design snapshot in `design/` does not include it (`docs/implementation.md` §5).
+
 | SPEC | Missing | Notes |
 | --- | --- | --- |
-| §4 events | **RSVP / confirm attendance ("reserve a spot")** | The "Confirmados N / 5" tile in the event modal is a static number from mock data. There is no button for a member to confirm/decline. Needs `event_attendance(event_id, profile_id, status)` |
 | §4 events | Edit / cancel / reschedule an existing event | Only *create* exists. States `cancelled` / `rescheduled` (+ `prevDate`) are rendered but only set in mock data |
 | §4 setlists | **Setlist builder** for gigs; tagging songs rehearsed at a practice | Setlists are displayed (order, key, runtime) but there is no editor. "Last rehearsed" is derived from `setlist` of past events, so this editor is what makes the rehearsal analytics real |
 | §4 media | "Add gallery link" on past events | Galleries render (`event.media[]`) but members cannot submit a link |
@@ -60,8 +64,8 @@ Answering "is X already there?" honestly. None of these exist as UI today; the E
 | §2 profiles | Edit own profile (instruments, proficiency, vocals) | Profile modal is read-only |
 | §2 auth | Email/password + Google/Apple sign-in, multi-role profiles | Role is a prototype toggle; "me" is Rodrigo (admin) or Caro (member) |
 
-Recommended order: auth → persistence of what already exists → RSVP + setlist builder + new thread (highest user value
-for the band) → the remaining editors.
+Recommended order: auth → persistence of what already exists (including RSVP answers) → setlist builder + new thread
+(highest user value for the band) → the remaining editors.
 
 ## 4. Phase 2 plan (proposed)
 
@@ -91,7 +95,7 @@ for the band) → the remaining editors.
 - Add `@supabase/supabase-js`, a client in `src/lib/supabase.ts`, `.env` with `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` (gitignore already covers `*.local`).
 - Replace the arrays in `src/data/` with queries; keep `src/store/vm.ts` untouched (pure functions over the same shapes).
 - In `src/store/store.tsx`, the session-only fields `extraEvents / extraTx / extraSongs / extraComments / votes /
-  pollPick / myRatings / fbSent / custodyOverrides` become mutations + refetch (or optimistic updates). Everything else
+  pollPick / myRatings / fbSent / custodyOverrides / rsvpOverrides` become mutations + refetch (or optimistic updates). Everything else
   in `State` is genuine UI state and stays.
 - Replace the role toggle with the authenticated profile's role; `isAdmin` gating is already centralized in `useBandSync`.
   Keep the toggle behind a dev flag if useful for demos.

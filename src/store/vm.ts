@@ -4,16 +4,20 @@
  * produced, minus the closures (actions live in useBandSync).
  */
 import type { Dict } from '../i18n';
-import { GENRES, memberById } from '../data';
+import { GENRES, MEMBERS, memberById } from '../data';
 import { d, days, durationSeconds, fmt, money, money0, monthShort, rel, slug } from '../lib/format';
 import type {
-  BandEvent, EventFeedback, Gear, GenreId, Lang, LocalComment, Localized, Member, Proficiency, RatingKey, Song, Thread, Transaction,
+  BandEvent, EventFeedback, Gear, GenreId, Lang, LocalComment, Localized, Member, Proficiency, RatingKey, RsvpStatus, Song, Thread, Transaction,
 } from '../types';
 
 export interface Ctx {
   lang: Lang;
   t: Dict;
   staleDays: number;
+  /** Signed-in member (admin → m1, member → m2 in the prototype). */
+  meId: string;
+  /** Session RSVP changes layered over the mock `attendance` maps. */
+  rsvpOverrides: Record<string, Record<string, RsvpStatus | null>>;
 }
 
 export const L = (lang: Lang, v: Localized | string | null | undefined): string =>
@@ -24,6 +28,9 @@ export const STATE_COLOR = { active: '#34d399', cancelled: '#f43f5e', reschedule
 export const TYPE_COLOR = { gig: '#a78bfa', studio: '#38bdf8', garage: '#94a3b8' } as const;
 export const LEVEL_COLOR: Record<Proficiency, string> = { expert: '#34d399', inter: '#38bdf8', beg: '#64748b' };
 export const LEVEL_PCT: Record<Proficiency, string> = { expert: '100%', inter: '62%', beg: '30%' };
+export const RSVP_COLOR: Record<RsvpStatus, string> = { going: '#34d399', maybe: '#fbbf24', no: '#f43f5e' };
+export const RSVP_PENDING_COLOR = '#64748b';
+export const RSVP_ORDER: RsvpStatus[] = ['going', 'maybe', 'no'];
 /** Hex + 1c = ~11% alpha tint used for badge backgrounds. */
 export const tint = (hex: string) => hex + '1c';
 
@@ -109,6 +116,16 @@ export interface SetlistRow {
   genreColor: string;
 }
 
+export interface RsvpPerson {
+  id: string;
+  initial: string;
+  name: string;
+}
+
+export function rsvpLabel(s: RsvpStatus, t: Dict): string {
+  return s === 'going' ? t.going : s === 'maybe' ? t.maybe : t.notGoing;
+}
+
 export interface EventVm {
   id: string;
   type: BandEvent['type'];
@@ -137,7 +154,25 @@ export interface EventVm {
   moneyStr: string | null;
   moneyLabel: string;
   moneyColor: string;
+  /** Confirmed headcount — count of 'going' when the event tracks attendance, else the historical number. */
   attend: string;
+  /** Band size, for "N / total". */
+  total: string;
+  /** true when the event tracks RSVPs (upcoming events in the mock). */
+  hasAttendance: boolean;
+  /** true when the signed-in member may answer (tracked, upcoming, not cancelled). */
+  canRsvp: boolean;
+  /** Signed-in member's answer, null = pending. */
+  rsvp: RsvpStatus | null;
+  rsvpLabel: string | null;
+  rsvpColor: string;
+  rsvpBg: string;
+  going: RsvpPerson[];
+  maybe: RsvpPerson[];
+  notGoing: RsvpPerson[];
+  pending: RsvpPerson[];
+  goingCount: number;
+  pendingCount: number;
   setlist: SetlistRow[];
   setlistCount: string;
   /** "32 min" */
@@ -166,6 +201,19 @@ export function eventVm(e: BandEvent, allSongs: Song[], ctx: Ctx): EventVm {
   const sec = setlist.reduce((a, s) => a + durationSeconds(s.dur), 0);
   const stateColor = STATE_COLOR[e.state];
   const typeColor = TYPE_COLOR[e.type];
+
+  /* ---- attendance: mock map layered with this session's answers */
+  const hasAttendance = !!e.attendance;
+  const over = ctx.rsvpOverrides[e.id] ?? {};
+  const statusOf = (id: string): RsvpStatus | null => (id in over ? over[id] : (e.attendance?.[id] ?? null));
+  const groups: Record<RsvpStatus | 'pending', RsvpPerson[]> = { going: [], maybe: [], no: [], pending: [] };
+  if (hasAttendance) {
+    for (const m of MEMBERS) groups[statusOf(m.id) ?? 'pending'].push({ id: m.id, initial: m.initial, name: m.short });
+  }
+  const myRsvp = hasAttendance ? statusOf(ctx.meId) : null;
+  const canRsvp = hasAttendance && !past && e.state !== 'cancelled';
+  const rsvpColor = myRsvp ? RSVP_COLOR[myRsvp] : RSVP_PENDING_COLOR;
+
   return {
     id: e.id,
     type: e.type,
@@ -190,7 +238,20 @@ export function eventVm(e: BandEvent, allSongs: Song[], ctx: Ctx): EventVm {
     moneyStr: e.money ? money0(e.money) : null,
     moneyLabel: e.money > 0 ? t.fee : t.costLabel,
     moneyColor: e.money > 0 ? '#34d399' : '#fbbf24',
-    attend: String(e.attend || 0),
+    attend: String(hasAttendance ? groups.going.length : e.attend || 0),
+    total: String(MEMBERS.length),
+    hasAttendance,
+    canRsvp,
+    rsvp: myRsvp,
+    rsvpLabel: myRsvp ? rsvpLabel(myRsvp, t) : null,
+    rsvpColor,
+    rsvpBg: tint(rsvpColor),
+    going: groups.going,
+    maybe: groups.maybe,
+    notGoing: groups.no,
+    pending: groups.pending,
+    goingCount: groups.going.length,
+    pendingCount: groups.pending.length,
     setlist,
     setlistCount: String(setlist.length),
     runtime: Math.floor(sec / 60) + ' min',
