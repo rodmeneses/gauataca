@@ -11,6 +11,7 @@ The UI is a faithful port of the Claude Design prototype `BandSync.dc.html`
 
 | Doc | What it covers |
 | --- | --- |
+| [HANDOFF.md](./HANDOFF.md) | **Start here if you are continuing the work:** what exists, what is mocked, gaps vs. the spec (RSVP, setlist builder, editing…), and the Phase 2 (Supabase) plan |
 | [docs/design.md](./docs/design.md) | The UI itself: design language (tokens, type, spacing), information architecture, every view and overlay, the Instagram and retrospective flows, roles, bilingual behaviour, mobile preview, data model, prototype knobs |
 | [docs/implementation.md](./docs/implementation.md) | How the port is built: stack, folder layout, design→code conventions, how it was produced and verified, known deviations, and the path to Phase 2 |
 | [SPEC.MD](./SPEC.MD) | Product specification |
