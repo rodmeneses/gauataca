@@ -1,0 +1,54 @@
+/**
+ * Onboarding tour overlay (design lines 1492–1514): full-screen scrim with a
+ * centered violet card stepping through TOUR_STEPS. Skip / Next / Got it.
+ */
+import { Sparkle } from 'lucide-react';
+import { useBandSync } from '@/store';
+
+export function TourOverlay() {
+  const { t, tour, tourNext, tourEnd } = useBandSync();
+  if (!tour.on) return null;
+
+  return (
+    <div className="fixed inset-0 z-[99] bg-[#020617e6] backdrop-blur-[10px] flex items-center justify-center p-[32px] animate-fade [animation-duration:.22s]">
+      <div className="w-full max-w-[470px] bg-[linear-gradient(160deg,#101a2e,#0b1220)] border border-[#7c3aed40] rounded-[20px] p-[28px] animate-rise [animation-duration:.3s]">
+        <div className="flex items-center gap-[12px] mb-[18px]">
+          <span className="w-[36px] h-[36px] rounded-[11px] bg-[linear-gradient(145deg,#8b5cf6,#6d28d9)] grid place-items-center flex-none">
+            <Sparkle size={18} strokeWidth={2} color="#f5f3ff" />
+          </span>
+          <span className="font-mono font-semibold text-[11px] leading-[normal] text-violet-light ml-auto whitespace-nowrap">
+            {tour.num} / {tour.total}
+          </span>
+        </div>
+        <h2 className="m-0 font-display font-semibold text-[21px] leading-[1.3] text-ink-bright tracking-[-.01em]">{tour.title}</h2>
+        <p className="mt-[12px] mb-0 font-sans text-[14px] leading-[1.7] text-ink-meta">{tour.body}</p>
+        <div className="flex gap-[10px] mt-[24px]">
+          <button
+            type="button"
+            onClick={tourEnd}
+            className="p-[11px_16px] rounded-[11px] border border-line bg-transparent text-ink-muted font-sans font-semibold text-[13px] leading-[normal] cursor-pointer"
+          >
+            {t.tourSkip}
+          </button>
+          {tour.isLast ? (
+            <button
+              type="button"
+              onClick={tourEnd}
+              className="flex-1 p-[11px_16px] rounded-[11px] border border-[#34d39955] bg-[#34d39918] text-emerald-light font-sans font-semibold text-[13px] leading-[normal] cursor-pointer"
+            >
+              {t.tourDone}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={tourNext}
+              className="flex-1 p-[11px_16px] rounded-[11px] border border-[#7c3aed66] bg-[#7c3aed24] text-violet-lighter font-sans font-semibold text-[13px] leading-[normal] cursor-pointer"
+            >
+              {t.tourNext} →
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
