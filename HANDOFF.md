@@ -22,7 +22,8 @@ what is deliberately fake, what the spec asks for that the UI still lacks, and a
 | [`docs/implementation.md`](./docs/implementation.md) | code layout, design→code conventions, how it was verified, known deviations, Phase 2 seams |
 | In-app **Notas de entrega** (view *Sistema de diseño*, or ⌘K → "Notas de entrega") | the suggested tables, derived-vs-stored rules and RLS policies, written by the designer |
 | `src/data/system.ts` → `HANDOFF_NOTES` | same notes as data, so you can grep them |
-| Design source | Claude Design project `d7a06c72-dd08-48b8-a34d-cc51a3ff6930`, file `BandSync.dc.html` (readable through the DesignSync MCP `get_file`). Ground truth for any UI change |
+| Design source | Claude Design project `d7a06c72-dd08-48b8-a34d-cc51a3ff6930`, file `BandSync.dc.html` — snapshot committed in [`design/`](./design/README.md). Ground truth for any UI change |
+| [`docs/iterating.md`](./docs/iterating.md) | how to add features as **deltas** (design-first vs code-first), with ready prompts — RSVP is the worked example |
 
 Run it: `npm install && npm run dev` → http://localhost:5173/?tour=0 (Node ≥ 20; `.nvmrc` pins 24).
 

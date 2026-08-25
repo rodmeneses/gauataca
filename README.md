@@ -5,7 +5,47 @@ dark-mode React app over realistic mock data covering the repertoire, calendar +
 inventory, brainstorm threads, member profiles, post-event retrospectives and the semi-automated Instagram share flow.
 
 The UI is a faithful port of the Claude Design prototype `BandSync.dc.html`
-([design project](https://claude.ai/design/p/d7a06c72-dd08-48b8-a34d-cc51a3ff6930?file=BandSync.dc.html)).
+([design project](https://claude.ai/design/p/d7a06c72-dd08-48b8-a34d-cc51a3ff6930?file=BandSync.dc.html);
+snapshot in [`design/`](./design/README.md)).
+
+## Quick start (play with the mock locally)
+
+Prerequisites: **Node.js 20 or newer** and npm. With nvm: `nvm use` (an `.nvmrc` pins 24). Internet is needed once for
+`npm install` and, while running, for the Google Fonts.
+
+```sh
+git clone https://github.com/rodmeneses/gauataca.git
+cd gauataca
+npm install
+npm run dev
+```
+
+Open **http://localhost:5173/** — the welcome tour explains the controls; **http://localhost:5173/?tour=0** skips it.
+Everything is in memory: what you create, vote or rate stays until you reload, then the mock data resets.
+
+Things to try:
+
+1. **Panel** — stat cards, next events, songs not rehearsed, latest ledger movements.
+2. **Calendario → Historial → "Cierre del Festival de Verano" → Ver detalles** — setlist, gallery links and the
+   *Retrospectiva*: vote in the poll, rate with stars, write feedback, toggle anonymous, submit (toasts + response count).
+3. **Preparar para Instagram** on any gig (card, modal, or mobile) — caption preview, *Copiar leyenda* (clipboard),
+   *Abrir el flyer*, *Compartir* (`navigator.share`; a toast on desktop).
+4. **Repertorio** — search, genre chips, *⚠ Solo sin ensayar*, click a row to expand resources + rehearsal log; **+ Nueva canción**.
+5. **Fondo y equipos** — ledger with proof links, **Registrar movimiento**, gear cards → **Transferir custodia**.
+6. **Ideas** — upvote, open a thread, comment, **Convertir en evento** (pre-fills the event form).
+7. **Top bar** — **ES/EN**, **Admin ↔ Músico** (write controls disappear for members), **desktop ↔ phone** preview
+   (Agenda / Repertorio / Fondo / Perfil tabs), **⌘K** command palette, the **book icon** opens the Phase 2 handoff notes.
+8. **Sistema de diseño** — live tokens, type scale, component samples, handoff notes.
+
+Other commands:
+
+```sh
+npm run build      # strict typecheck + production build → dist/
+npm run preview    # serve the production build on http://localhost:4173
+```
+
+Troubleshooting: `node: command not found` → install Node 20+ (or `nvm install 24 && nvm use`). Port 5173 busy → `npm run dev -- --port 5174`.
+To compare with the original design side by side: `python3 -m http.server 5177 --directory design` → http://localhost:5177/BandSync.dc.html.
 
 ## Documentation
 
@@ -14,19 +54,10 @@ The UI is a faithful port of the Claude Design prototype `BandSync.dc.html`
 | [HANDOFF.md](./HANDOFF.md) | **Start here if you are continuing the work:** what exists, what is mocked, gaps vs. the spec (RSVP, setlist builder, editing…), and the Phase 2 (Supabase) plan |
 | [docs/design.md](./docs/design.md) | The UI itself: design language (tokens, type, spacing), information architecture, every view and overlay, the Instagram and retrospective flows, roles, bilingual behaviour, mobile preview, data model, prototype knobs |
 | [docs/implementation.md](./docs/implementation.md) | How the port is built: stack, folder layout, design→code conventions, how it was produced and verified, known deviations, and the path to Phase 2 |
+| [docs/iterating.md](./docs/iterating.md) | How to add features incrementally with Claude Design + Claude Code (delta workflow and ready-to-paste prompts; RSVP as the worked example) |
+| [design/README.md](./design/README.md) | The committed design source (`BandSync.dc.html` + runtime), how to view and diff it |
 | [SPEC.MD](./SPEC.MD) | Product specification |
 | [prompt-ui-design.md](./prompt-ui-design.md) | The prompt that produced the design prototype |
-
-## Run
-
-```sh
-npm install
-npm run dev        # http://localhost:5173
-npm run build      # typecheck + production build → dist/
-npm run preview
-```
-
-Node 20+ (an `.nvmrc` pins 24).
 
 ## Stack
 
@@ -50,11 +81,11 @@ The design's "tweaks" are exposed as URL query params:
 
 Example: `http://localhost:5173/?lang=en&role=member&view=ledger&tour=0`
 
-In-app: ES/EN switch, Admin ↔ Músico role toggle, desktop ↔ mobile preview, ⌘K command palette, `Esc` closes overlays.
-
 ## Layout
 
 ```
+design/                 committed Claude Design source (BandSync.dc.html + support.js)
+docs/                   design reference, implementation notes, iteration workflow
 src/
   App.tsx                 reads the knobs, mounts the store
   types.ts                domain types (mirror the suggested Phase 2 tables)
@@ -78,4 +109,4 @@ src/
 - Drive / iCloud / Docs / YouTube / Spotify links are placeholders.
 - `navigator.share` and the `instagram://camera` deep link are attempted for real on mobile; on desktop they fall back to a toast.
 - New event / song / movement forms, votes, comments, poll picks, ratings and custody transfers update local state only.
-- No auth (Phase 2).
+- No auth, no RSVP/attendance yet (see [HANDOFF.md](./HANDOFF.md) §3).
