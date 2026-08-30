@@ -1,10 +1,12 @@
-import { ArrowLeftRight, BookOpen, Monitor, Search, ShieldCheck, Smartphone } from 'lucide-react';
+import { ArrowLeftRight, BookOpen, LogIn, LogOut, Monitor, Search, ShieldCheck, Smartphone } from 'lucide-react';
+import { useAuth } from '../../lib/auth';
 import { useBandSync } from '../../store';
 import { Pill, Segment, cx } from '../ui';
 
 /** Sticky desktop header: view title, palette trigger, ES/EN, role toggle, device switch, handoff (design lines 102–137). */
 export function TopBar() {
-  const { t, lang, isAdmin, isDesktop, isMobile, roleLabel, viewTitle, viewSub, openPalette, setLang, toggleRole, setDevice, toggleHandoff } = useBandSync();
+  const { t, lang, isAdmin, isDesktop, isMobile, roleLabel, viewTitle, viewSub, openPalette, setLang, setDevice, toggleHandoff, openSignIn } = useBandSync();
+  const { user, profile, signOut } = useAuth();
 
   return (
     <header className="sticky top-0 z-30 bg-[#020617f2] backdrop-blur-[12px] border-b border-line-soft p-[14px_28px] flex items-center gap-[14px] flex-wrap">
@@ -28,18 +30,29 @@ export function TopBar() {
         <Pill active={lang === 'en'} className="leading-normal" onClick={() => setLang('en')}>EN</Pill>
       </Segment>
 
-      <button
-        type="button"
-        onClick={toggleRole}
-        className={cx(
-          'flex items-center gap-2 p-[8px_12px] rounded-[10px] border font-sans font-semibold text-[12.5px] leading-normal cursor-pointer whitespace-nowrap',
-          isAdmin ? 'border-[#34d39955] bg-[#34d39914] text-emerald-light' : 'border-[#33415580] bg-raised text-ink-meta',
-        )}
-      >
-        <ShieldCheck size={15} strokeWidth={1.9} className="flex-none" />
-        <span>{roleLabel}</span>
-        <ArrowLeftRight size={13} strokeWidth={2} className="opacity-55" />
-      </button>
+      {user ? (
+        <button
+          type="button"
+          onClick={signOut}
+          className={cx(
+            'flex items-center gap-2 p-[8px_12px] rounded-[10px] border font-sans font-semibold text-[12.5px] leading-normal cursor-pointer whitespace-nowrap',
+            isAdmin ? 'border-[#34d39955] bg-[#34d39914] text-emerald-light' : 'border-[#33415580] bg-raised text-ink-meta',
+          )}
+        >
+          <ShieldCheck size={15} strokeWidth={1.9} className="flex-none" />
+          <span>{profile?.name ?? user.email}</span>
+          <LogOut size={13} strokeWidth={2} className="opacity-55" />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={openSignIn}
+          className="flex items-center gap-2 p-[8px_12px] rounded-[10px] border border-[#7c3aed4d] bg-[#7c3aed1a] text-violet-light font-sans font-semibold text-[12.5px] leading-normal cursor-pointer whitespace-nowrap"
+        >
+          <LogIn size={15} strokeWidth={1.9} className="flex-none" />
+          <span>{t.signIn}</span>
+        </button>
+      )}
 
       <Segment>
         <button

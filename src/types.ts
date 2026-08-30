@@ -153,7 +153,8 @@ export type Modal =
   | { kind: 'member'; id: string }
   | { kind: 'newEvent' }
   | { kind: 'newSong' }
-  | { kind: 'newTx' };
+  | { kind: 'newTx' }
+  | { kind: 'signin' };
 
 export interface ShareSheet {
   title: string;
@@ -186,6 +187,15 @@ export interface FormState {
   dur?: string;
   genre?: GenreId;
   chart?: string;
+}
+
+/** Supabase profile (extends auth.users). */
+export interface Profile {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'member';
+  joined_at: string;
 }
 
 /** Prototype knobs (the "tweaks" of the design). */

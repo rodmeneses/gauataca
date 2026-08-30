@@ -78,6 +78,10 @@ const es = {
   going: 'Voy', maybe: 'Quizás', notGoing: 'No voy',
   pending: 'por responder', pendingL: 'Sin responder', confirmedL: 'confirmados',
   rsvpSaved: 'Asistencia guardada',
+  // auth
+  signIn: 'Iniciar sesión', signUp: 'Crear cuenta', signOut: 'Cerrar sesión',
+  email: 'Correo', password: 'Contraseña', name: 'Nombre',
+  or: 'o', noAccount: '¿No tienes cuenta?', haveAccount: '¿Ya tienes cuenta?',
 };
 
 const en: typeof es = {
@@ -156,6 +160,10 @@ const en: typeof es = {
   going: 'Going', maybe: 'Maybe', notGoing: 'Not going',
   pending: 'pending', pendingL: 'No answer', confirmedL: 'confirmed',
   rsvpSaved: 'Attendance saved',
+  // auth
+  signIn: 'Sign in', signUp: 'Sign up', signOut: 'Sign out',
+  email: 'Email', password: 'Password', name: 'Name',
+  or: 'or', noAccount: "Don't have an account?", haveAccount: 'Already have an account?',
 };
 
 export type Dict = typeof es;

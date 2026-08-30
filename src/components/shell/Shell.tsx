@@ -5,6 +5,7 @@ import { EventModal } from '../modals/EventModal';
 import { NewEventModal, NewSongModal, NewTxModal } from '../modals/FormModals';
 import { ThreadModal } from '../modals/ThreadModal';
 import { MemberModal } from '../modals/MemberModal';
+import { SignInModal } from '../modals/SignInModal';
 import { ShareSheet } from '../modals/ShareSheet';
 import { CustodyDialog } from '../modals/CustodyDialog';
 import { CommandPalette } from '../modals/CommandPalette';
@@ -26,6 +27,7 @@ export function Shell() {
       {modal?.kind === 'newSong' && <NewSongModal />}
       {modal?.kind === 'thread' && bs.th && <ThreadModal />}
       {modal?.kind === 'member' && bs.mb && <MemberModal />}
+      {modal?.kind === 'signin' && <SignInModal />}
 
       {bs.sheet && <ShareSheet />}
       {bs.custody && <CustodyDialog />}

@@ -12,6 +12,7 @@ import type {
   AppProps, BandEvent, CustodyDialog, FormState, GenreId, Lang, Member, MobileTab, Modal, RatingKey, RsvpStatus, ShareSheet, Song, Toast, Transaction, View,
 } from '../types';
 import { useStore, type State } from './store';
+import { useAuth } from '../lib/auth';
 import {
   L, eventVm, feedbackVm, gearVm, igCaption, memberVm, songVm, threadVm, txVm,
   type Ctx, type EventVm, type FeedbackVm, type GearVm, type MemberVm, type SongVm, type ThreadVm, type TxVm,
@@ -155,6 +156,7 @@ export interface BandSync {
   openNewEvent: () => void;
   openNewSong: () => void;
   openNewTx: () => void;
+  openSignIn: () => void;
   closeModal: () => void;
   /** Instagram flow: builds caption and opens the bottom sheet. */
   openShare: (eventId: string) => void;
@@ -166,7 +168,7 @@ export interface BandSync {
   closeCustody: () => void;
   transferCustody: (memberId: string) => void;
   /** Set the signed-in member's RSVP; choosing the current answer again withdraws it (back to pending). */
-  setRsvp: (eventId: string, status: RsvpStatus) => void;
+  setRsvp: (eventId: string, status: RsvpStatus) => Promise<void>;
   voteThread: (id: string) => void;
   setCommentDraft: (s: string) => void;
   sendComment: () => void;
@@ -193,11 +195,12 @@ export interface BandSync {
 
 export function useBandSync(): BandSync {
   const { state: st, props, set, toast } = useStore();
+  const { user, profile } = useAuth();
 
   return useMemo<BandSync>(() => {
     const lang = st.lang;
     const t = T[lang];
-    const isAdmin = st.role === 'admin';
+    const isAdmin = profile?.role === 'admin' || (!user && st.role === 'admin');
     const staleDays = props.staleDays || 30;
     const me = memberById(isAdmin ? 'm1' : 'm2');
     const ctx: Ctx = { lang, t, staleDays, meId: me.id, rsvpOverrides: st.rsvpOverrides };
@@ -285,6 +288,7 @@ export function useBandSync(): BandSync {
       { group: t.actions, label: t.handoff, sub: '', run: () => set({ palette: false, handoff: true }) },
       { group: t.actions, label: t.switchLang, sub: '', run: () => set((s) => ({ lang: s.lang === 'es' ? 'en' : 'es', palette: false })) },
       { group: t.actions, label: t.roleHint, sub: '', run: () => set((s) => ({ role: s.role === 'admin' ? 'member' : 'admin', palette: false })) },
+  { group: t.actions, label: user ? t.signOut : t.signIn, sub: '', run: () => { set({ palette: false }); if (!user) set({ modal: { kind: 'signin' } }); } },
       ...songs.slice(0, 40).map((s) => ({
         group: t.repertoire,
         label: s.title,
@@ -371,6 +375,7 @@ export function useBandSync(): BandSync {
       openNewEvent: () => set({ modal: { kind: 'newEvent' }, form: {} }),
       openNewSong: () => set({ modal: { kind: 'newSong' }, form: {} }),
       openNewTx: () => set({ modal: { kind: 'newTx' }, form: {} }),
+      openSignIn: () => set({ modal: { kind: 'signin' } }),
       closeModal: () => set({ modal: null }),
       openShare,
       closeSheet: () => set({ sheet: null }),
@@ -403,11 +408,43 @@ export function useBandSync(): BandSync {
         set((s) => ({ custody: null, custodyOverrides: { ...s.custodyOverrides, [c.id]: memberId } }));
         toast(t.custodyTo + memberById(memberId).short);
       },
-      setRsvp: (eventId, status) => {
+      setRsvp: async (eventId, status) => {
         const current = events.find((e) => e.id === eventId)?.rsvp ?? null;
         const next: RsvpStatus | null = current === status ? null : status;
-        set((s) => ({ rsvpOverrides: { ...s.rsvpOverrides, [eventId]: { ...(s.rsvpOverrides[eventId] ?? {}), [me.id]: next } } }));
+        const uid = user?.id ?? me.id;
+    
+        // Optimistic update
+        set((s) => ({ rsvpOverrides: { ...s.rsvpOverrides, [eventId]: { ...(s.rsvpOverrides[eventId] ?? {}), [uid]: next } } }));
         toast(t.rsvpSaved);
+
+        // Persist to Supabase
+        try {
+          if (!user) return;
+
+          if (next === null) {
+            // Withdraw RSVP
+            await supabase
+              .from('event_attendance')
+              .delete()
+              .eq('event_id', eventId)
+              .eq('profile_id', user.id);
+          } else {
+            // Upsert RSVP
+            await supabase
+              .from('event_attendance')
+              .upsert({
+                event_id: eventId,
+                profile_id: user.id,
+                status: next,
+                updated_at: new Date().toISOString(),
+              });
+          }
+        } catch (err) {
+          console.error('Failed to persist RSVP:', err);
+          // Rollback on error
+          set((s) => ({ rsvpOverrides: { ...s.rsvpOverrides, [eventId]: { ...(s.rsvpOverrides[eventId] ?? {}), [uid]: current } } }));
+          toast('Failed to save RSVP', 'violet');
+        }
       },
       voteThread: (id) => set((s) => ({ votes: { ...s.votes, [id]: s.votes[id] ? 0 : 1 } })),
       setCommentDraft: (v) => set({ commentDraft: v }),
