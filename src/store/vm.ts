@@ -16,6 +16,8 @@ export interface Ctx {
   staleDays: number;
   /** Signed-in member (admin → m1, member → m2 in the prototype). */
   meId: string;
+  /** true when the signed-in user is an admin (drives write affordances). */
+  isAdmin: boolean;
   /** All members, for resolving ids to names/initials. */
   members: Member[];
   /** All events, for resolving a transaction's linked event id. */
@@ -166,10 +168,14 @@ export interface EventVm {
   dayNum: string;
   /** "sep" / "Sep" */
   monStr: string;
-  /** "$600" or null when money is 0. */
-  moneyStr: string | null;
-  moneyLabel: string;
-  moneyColor: string;
+  /** "$600" or null when there is no expected income. */
+  feeStr: string | null;
+  /** "$50" or null when there is no expected cost. */
+  costStr: string | null;
+  /** true once the event's income/expense have been confirmed into the ledger. */
+  settled: boolean;
+  /** true when the signed-in admin may settle this event. */
+  canSettle: boolean;
   /** Confirmed headcount — count of 'going' when the event tracks attendance, else the historical number. */
   attend: string;
   /** Band size, for "N / total". */
@@ -251,9 +257,10 @@ export function eventVm(e: BandEvent, allSongs: Song[], ctx: Ctx): EventVm {
     past,
     dayNum: String(d(e.date).getDate()).padStart(2, '0'),
     monStr: monthShort(e.date, lang),
-    moneyStr: e.money ? money0(e.money) : null,
-    moneyLabel: e.money > 0 ? t.fee : t.costLabel,
-    moneyColor: e.money > 0 ? '#34d399' : '#fbbf24',
+    feeStr: e.fee ? money0(e.fee) : null,
+    costStr: e.cost ? money0(e.cost) : null,
+    settled: e.settled,
+    canSettle: ctx.isAdmin && !e.settled && (e.fee > 0 || e.cost > 0),
     attend: String(hasAttendance ? groups.going.length : e.attend || 0),
     total: String(ctx.members.length),
     hasAttendance,

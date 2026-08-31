@@ -9,7 +9,7 @@ import {
 } from '../data';
 import { d, days, money, money0, sameMonth } from '../lib/format';
 import type {
-  AppProps, BandEvent, CustodyDialog, FormState, GenreId, Lang, Member, MobileTab, Modal, Profile, ProofKind, RatingKey, RsvpStatus, ShareSheet, Song, Toast, Transaction, TxCategory, TxDate, TxFilter, View,
+  AppProps, BandEvent, CustodyDialog, FormState, GenreId, Lang, Member, MobileTab, Modal, Profile, ProofKind, RatingKey, RsvpStatus, SettleDialog, ShareSheet, Song, Toast, Transaction, TxCategory, TxDate, TxFilter, View,
 } from '../types';
 import { useStore, type State } from './store';
 import { useAuth } from '../lib/auth';
@@ -57,7 +57,8 @@ export interface FormVm {
   date: string;
   time: string;
   hours: string;
-  money: string;
+  fee: string;
+  cost: string;
   note: string;
   type: NonNullable<FormState['type']>;
   desc: string;
@@ -156,6 +157,7 @@ export interface BandSync {
   sheet: ShareSheet | null;
   custody: CustodyDialog | null;
   custodyTargets: Member[];
+  settle: SettleDialog | null;
   form: FormVm;
   paletteResults: PaletteItem[];
   tour: TourVm;
@@ -196,6 +198,9 @@ export interface BandSync {
   openCustody: (gearId: string) => void;
   closeCustody: () => void;
   transferCustody: (memberId: string) => Promise<void>;
+  openSettle: (eventId: string) => void;
+  closeSettle: () => void;
+  settleEvent: (eventId: string, input: { happened: boolean; fee: number; cost: number }) => Promise<void>;
   /** Set the signed-in member's RSVP; choosing the current answer again withdraws it (back to pending). */
   setRsvp: (eventId: string, status: RsvpStatus) => Promise<void>;
   /** Replace an event's setlist (ordered song ids). */
@@ -247,7 +252,7 @@ export function useBandSync(): BandSync {
     myThreadVotes, myPollPicks, loading, error, monthlyCuotaCents,
     createEvent, createSong, createTransaction, setRsvp: persistRsvp, voteThread: persistVote,
     addComment: persistComment, submitFeedback: persistFeedback, pickPoll: persistPoll, transferCustody: persistCustody,
-    setEventSetlist: persistSetlist, updateCuota: persistCuota,
+    setEventSetlist: persistSetlist, updateCuota: persistCuota, settleEvent: persistSettle,
   } = useData();
   const isMobileViewport = useMediaQuery('(max-width: 768px)');
 
@@ -259,7 +264,7 @@ export function useBandSync(): BandSync {
     const isDesktop = !isMobile;
     const staleDays = props.staleDays || 30;
     const me = user && profile ? profileToMember(profile) : memberById(dbMembers, isAdmin ? 'm1' : 'm2');
-    const ctx: Ctx = { lang, t, staleDays, meId: me.id, members: dbMembers, events: dbEvents, gear: dbGear };
+    const ctx: Ctx = { lang, t, staleDays, meId: me.id, isAdmin, members: dbMembers, events: dbEvents, gear: dbGear };
     const Lx = (v: { es: string; en: string } | string | null | undefined) => L(lang, v);
 
     /* ---- raw collections (from the data layer) */
@@ -397,7 +402,7 @@ export function useBandSync(): BandSync {
     /* ---- forms */
     const f = st.form;
     const form: FormVm = {
-      title: f.title || '', venue: f.venue || '', date: f.date || '', time: f.time || '', hours: f.hours || '', money: f.money || '', note: f.note || '',
+      title: f.title || '', venue: f.venue || '', date: f.date || '', time: f.time || '', hours: f.hours || '', fee: f.fee || '', cost: f.cost || '', note: f.note || '',
       type: f.type || 'gig', desc: f.desc || '', amt: f.amt || '', proof: f.proof || '', proofKind: f.proofKind || 'receipt', kind: f.kind || 'in',
       event: f.event || '', gear: f.gear || '', category: f.category || 'fee', contributor: f.contributor || '',
       key: f.key || '', bpm: f.bpm || '', dur: f.dur || '', genre: f.genre || 'joropo', chart: f.chart || '',
@@ -426,7 +431,7 @@ export function useBandSync(): BandSync {
       statStale: String(staleSongs.length), staleHint: t.staleHint.replace('%d', String(staleDays)),
 
       modal, ev, fb, th, mb,
-      sheet: st.sheet, custody: st.custody, custodyTargets: dbMembers, form, paletteResults, tour,
+      sheet: st.sheet, custody: st.custody, custodyTargets: dbMembers, settle: st.settle, form, paletteResults, tour,
       toasts: st.toasts.map((x) => ({
         ...x,
         color: x.tone === 'violet' ? '#a78bfa' : '#6ee7b7',
@@ -498,6 +503,17 @@ export function useBandSync(): BandSync {
         await persistCustody(c.id, memberId);
         toast(t.custodyTo + memberById(dbMembers, memberId).short);
       },
+      openSettle: (eventId) => {
+        const e = allEvents.find((x) => x.id === eventId);
+        if (!e) return;
+        set({ settle: { id: e.id, title: Lx(e.title), fee: e.fee, cost: e.cost } });
+      },
+      closeSettle: () => set({ settle: null }),
+      settleEvent: async (eventId, input) => {
+        set({ settle: null });
+        await persistSettle(eventId, input);
+        toast(t.eventSettled);
+      },
       setRsvp: async (eventId, status) => {
         const current = events.find((e) => e.id === eventId)?.rsvp ?? null;
         const next: RsvpStatus | null = current === status ? null : status;
@@ -545,7 +561,7 @@ export function useBandSync(): BandSync {
         set({ modal: null, form: {} });
         const id = await createEvent({
           title: f.title || 'Evento nuevo', venue: f.venue || 'Bay Area, CA', date: dte, time: f.time || '19:00', hours: +(f.hours || 0),
-          money: +(f.money || 0), note: f.note || '', type: f.type || 'gig',
+          fee: +(f.fee || 0), cost: +(f.cost || 0), note: f.note || '', type: f.type || 'gig',
         });
         if (id && songIds.length) await persistSetlist(id, songIds);
         toast(t.eventCreated);
@@ -575,5 +591,5 @@ export function useBandSync(): BandSync {
       closeHandoff: () => set({ handoff: false }),
       toast,
     };
-  }, [st, props, set, toast, user, profile, signOut, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, myThreadVotes, myPollPicks, loading, error, isMobileViewport, createEvent, createSong, createTransaction, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, monthlyCuotaCents, persistCuota]);
+  }, [st, props, set, toast, user, profile, signOut, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, myThreadVotes, myPollPicks, loading, error, isMobileViewport, createEvent, createSong, createTransaction, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, monthlyCuotaCents, persistCuota, persistSettle]);
 }

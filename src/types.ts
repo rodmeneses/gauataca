@@ -77,7 +77,10 @@ export interface BandEvent {
   hours?: number; // duration in hours (e.g. 2.5)
   title: Localized;
   venue: string;
-  money: number; // >0 fee, <0 cost, 0 none
+  fee: number; // expected income (cachet), >= 0
+  cost: number; // expected expense (e.g. studio rental), >= 0
+  /** true once the event's income/expense have been confirmed into the ledger. */
+  settled: boolean;
   setlist: string[]; // song ids (gig setlist or songs rehearsed)
   /** Historical headcount; ignored when `attendance` is present (then derived = count of 'going'). */
   attend: number;
@@ -179,6 +182,13 @@ export interface CustodyDialog {
   holder: string;
 }
 
+export interface SettleDialog {
+  id: string;
+  title: string;
+  fee: number;
+  cost: number;
+}
+
 export type RatingKey = 'sound' | 'perf' | 'log' | 'energy';
 
 export interface FormState {
@@ -187,7 +197,8 @@ export interface FormState {
   date?: string;
   time?: string;
   hours?: string;
-  money?: string;
+  fee?: string;
+  cost?: string;
   note?: string;
   type?: EventType;
   desc?: string;

@@ -11,6 +11,7 @@ import { MemberModal } from '../modals/MemberModal';
 import { SignInModal } from '../modals/SignInModal';
 import { ShareSheet } from '../modals/ShareSheet';
 import { CustodyDialog } from '../modals/CustodyDialog';
+import { SettleDialog } from '../modals/SettleDialog';
 import { CommandPalette } from '../modals/CommandPalette';
 import { HandoffPanel } from '../modals/HandoffPanel';
 import { TourOverlay } from '../modals/TourOverlay';
@@ -64,6 +65,7 @@ export function Shell() {
 
       {bs.sheet && <ShareSheet />}
       {bs.custody && <CustodyDialog />}
+      {bs.settle && <SettleDialog />}
       {bs.state.palette && <CommandPalette />}
       {bs.state.handoff && <HandoffPanel />}
       {bs.tour.on && <TourOverlay />}

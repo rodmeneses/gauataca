@@ -4,21 +4,21 @@ export const EVENTS: BandEvent[] = [
   {
     id: 'e3', type: 'garage', state: 'active', date: '2026-08-27', time: '16:00', hours: 3,
     title: { es: 'Ensayo en el garaje de Diego', en: "Practice at Diego's garage" },
-    venue: 'Hayward, CA', money: 0, setlist: ['s14', 's15', 's16'], attend: 5,
+    venue: 'Hayward, CA', fee: 0, cost: 0, settled: false, setlist: ['s14', 's15', 's16'], attend: 5,
     attendance: { m1: 'going', m2: 'going', m3: 'going', m4: 'maybe' },
     note: { es: 'Arrancamos la temporada de gaitas temprano este año.', en: 'Starting gaita season early this year.' },
   },
   {
     id: 'e2', type: 'studio', state: 'active', date: '2026-09-02', time: '19:00', hours: 2,
     title: { es: 'Ensayo de estudio — Sonido Sur', en: 'Studio rehearsal — Sonido Sur' },
-    venue: 'San Leandro, CA', money: -50, setlist: ['s1', 's9', 's2', 's22'], attend: 4,
+    venue: 'San Leandro, CA', fee: 0, cost: 50, settled: false, setlist: ['s1', 's9', 's2', 's22'], attend: 4,
     attendance: { m1: 'going', m2: 'going', m3: 'going', m4: 'no', m5: 'going' },
     note: { es: 'Repaso del set del Festival Latino. Traer cables propios.', en: 'Run the Festival Latino set. Bring your own cables.' },
   },
   {
     id: 'e1', type: 'gig', state: 'active', date: '2026-09-12', time: '18:30', hours: 2,
     title: { es: 'Festival Latino de Fruitvale', en: 'Fruitvale Latino Festival' },
-    venue: 'Fruitvale Plaza, Oakland, CA', money: 600, attend: 5,
+    venue: 'Fruitvale Plaza, Oakland, CA', fee: 600, cost: 0, settled: false, attend: 5,
     attendance: { m1: 'going', m2: 'going', m3: 'going', m4: 'going', m5: 'maybe' },
     setlist: ['s1', 's9', 's2', 's22', 's13', 's3', 's10', 's6'],
     flyer: 'https://drive.google.com/file/d/dtv-flyer-fruitvale/view',
@@ -27,20 +27,20 @@ export const EVENTS: BandEvent[] = [
   {
     id: 'e5', type: 'gig', state: 'cancelled', date: '2026-09-19', time: '19:30',
     title: { es: 'Mercado Nocturno de San José', en: 'San José Night Market' },
-    venue: 'San José, CA', money: 0, setlist: [], attend: 0,
+    venue: 'San José, CA', fee: 0, cost: 0, settled: false, setlist: [], attend: 0,
     note: { es: 'Cancelado: el permiso de vendedores no salió a tiempo.', en: 'Cancelled: vendor permit did not clear in time.' },
   },
   {
     id: 'e4', type: 'gig', state: 'rescheduled', date: '2026-10-04', time: '15:00', hours: 3,
     title: { es: 'Boda Rivas — ceremonia y cóctel', en: 'Rivas wedding — ceremony & cocktail' },
-    venue: 'Palo Alto, CA', money: 850, setlist: ['s10', 's12', 's11', 's9'], attend: 4, prevDate: '2026-09-27',
+    venue: 'Palo Alto, CA', fee: 850, cost: 0, settled: false, setlist: ['s10', 's12', 's11', 's9'], attend: 4, prevDate: '2026-09-27',
     attendance: { m1: 'going', m2: 'going', m3: 'going', m4: 'no', m5: 'going' },
     note: { es: 'Movido una semana por la familia. Set acústico, sin percusión fuerte.', en: 'Moved a week at the family’s request. Acoustic set, light percussion.' },
   },
   {
     id: 'e6', type: 'gig', state: 'active', date: '2026-12-16', time: '19:00', hours: 2,
     title: { es: 'Misa de Aguinaldo — St. Elizabeth', en: 'Misa de Aguinaldo — St. Elizabeth' },
-    venue: 'Oakland, CA', money: 300, setlist: ['s14', 's15', 's16', 's17', 's18'], attend: 5,
+    venue: 'Oakland, CA', fee: 300, cost: 0, settled: false, setlist: ['s14', 's15', 's16', 's17', 's18'], attend: 5,
     attendance: { m1: 'going', m2: 'going', m3: 'maybe', m4: 'going' },
     note: { es: 'Programa completo de gaitas. Revisar el furruco antes.', en: 'Full gaita program. Service the furruco first.' },
   },
@@ -49,7 +49,7 @@ export const EVENTS: BandEvent[] = [
   {
     id: 'h1', type: 'gig', state: 'active', date: '2026-08-15', time: '17:00', hours: 3,
     title: { es: 'Cierre del Festival de Verano', en: 'Summer Festival closing set' },
-    venue: 'Civic Center Park, Berkeley, CA', money: 450, attend: 5,
+    venue: 'Civic Center Park, Berkeley, CA', fee: 450, cost: 0, settled: true, attend: 5,
     setlist: ['s1', 's9', 's2', 's8', 's10'],
     media: [
       { label: { es: 'Álbum compartido de iCloud — fotos', en: 'iCloud shared album — photos' }, url: 'https://www.icloud.com/sharedalbum/dtv-berkeley-2026' },
@@ -79,26 +79,26 @@ export const EVENTS: BandEvent[] = [
   {
     id: 'h2', type: 'garage', state: 'active', date: '2026-08-08', time: '16:00', hours: 4,
     title: { es: 'Ensayo en el garaje de Diego', en: "Practice at Diego's garage" },
-    venue: 'Hayward, CA', money: 0, setlist: ['s4', 's6', 's10', 's13', 's22'], attend: 4,
+    venue: 'Hayward, CA', fee: 0, cost: 0, settled: false, setlist: ['s4', 's6', 's10', 's13', 's22'], attend: 4,
     note: { es: 'Cuatro horas. Cerramos los arreglos de calipso.', en: 'Four hours. Locked the calipso arrangements.' },
   },
   {
     id: 'h3', type: 'studio', state: 'active', date: '2026-07-26', time: '19:00', hours: 2,
     title: { es: 'Ensayo de estudio — Sonido Sur', en: 'Studio rehearsal — Sonido Sur' },
-    venue: 'San Leandro, CA', money: -50, setlist: ['s11', 's23'], attend: 3,
+    venue: 'San Leandro, CA', fee: 0, cost: 50, settled: true, setlist: ['s11', 's23'], attend: 3,
     note: { es: 'Solo tres pudieron ir. Grabamos referencia de “Sabana”.', en: 'Only three could make it. Tracked a “Sabana” reference.' },
   },
   {
     id: 'h4', type: 'gig', state: 'active', date: '2026-07-18', time: '12:00', hours: 4,
     title: { es: 'Ashby Flea Market', en: 'Ashby Flea Market' },
-    venue: 'Berkeley, CA', money: 86, setlist: ['s3', 's21'], attend: 4,
+    venue: 'Berkeley, CA', fee: 86, cost: 0, settled: true, setlist: ['s3', 's21'], attend: 4,
     media: [{ label: { es: 'Fotos del puesto — Drive', en: 'Booth photos — Drive' }, url: 'https://drive.google.com/drive/folders/dtv-ashby' }],
     note: { es: 'Solo propinas: $86. Buen calentamiento de calle.', en: 'Tips only: $86. Good street warm-up.' },
   },
   {
     id: 'h5', type: 'garage', state: 'active', date: '2026-06-24', time: '16:00', hours: 3,
     title: { es: 'Ensayo en el garaje de Diego', en: "Practice at Diego's garage" },
-    venue: 'Hayward, CA', money: 0, setlist: ['s19', 's20'], attend: 5,
+    venue: 'Hayward, CA', fee: 0, cost: 0, settled: false, setlist: ['s19', 's20'], attend: 5,
     note: { es: 'Sesión dedicada a tambores de Barlovento con Sofía.', en: 'Barlovento drum session led by Sofía.' },
   },
 ];

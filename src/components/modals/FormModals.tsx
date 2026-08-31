@@ -81,12 +81,15 @@ export function NewEventModal() {
             <Input mono type="number" min="0.5" step="0.5" value={form.hours} onChange={(e) => setForm('hours', e.target.value)} placeholder="2.5" />
           </Field>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-[1.4fr_1fr_1fr] gap-3">
           <Field label={t.venueL}>
             <Input value={form.venue} onChange={(e) => setForm('venue', e.target.value)} placeholder="Oakland, CA" />
           </Field>
           <Field label={`${t.fee} (USD)`}>
-            <Input mono value={form.money} onChange={(e) => setForm('money', e.target.value)} placeholder="600" />
+            <Input mono value={form.fee} onChange={(e) => setForm('fee', e.target.value)} placeholder="600" />
+          </Field>
+          <Field label={`${t.costLabel} (USD)`}>
+            <Input mono value={form.cost} onChange={(e) => setForm('cost', e.target.value)} placeholder="50" />
           </Field>
         </div>
         <Field label={t.notesL}>

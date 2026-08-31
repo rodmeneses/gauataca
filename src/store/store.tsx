@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type {
   AppProps, CalTab, CustodyDialog, Device, FormState, GenreId, Lang, MobileTab, Modal,
-  RatingKey, Role, ShareSheet, Toast, TxDate, TxFilter, View,
+  RatingKey, Role, SettleDialog, ShareSheet, Toast, TxDate, TxFilter, View,
 } from '../types';
 
 /**
@@ -37,6 +37,7 @@ export interface State {
   mobileTab: MobileTab;
   sheet: ShareSheet | null;
   custody: CustodyDialog | null;
+  settle: SettleDialog | null;
 }
 
 export type Updater = Partial<State> | ((s: State) => Partial<State>);
@@ -79,6 +80,7 @@ export function initialState(props: AppProps): State {
     mobileTab: 'agenda',
     sheet: null,
     custody: null,
+    settle: null,
   };
 }
 
@@ -107,7 +109,7 @@ export function BandSyncProvider({ props, children }: { props: AppProps; childre
         setState((s) => ({ ...s, palette: !s.palette, pq: '' }));
       }
       if (e.key === 'Escape') {
-        setState((s) => ({ ...s, palette: false, modal: null, handoff: false, sheet: null, custody: null }));
+        setState((s) => ({ ...s, palette: false, modal: null, handoff: false, sheet: null, custody: null, settle: null }));
       }
     };
     window.addEventListener('keydown', onKey);

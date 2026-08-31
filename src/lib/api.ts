@@ -147,7 +147,9 @@ function mapEvents(
       hours: e.duration_hours != null ? Number(e.duration_hours) : undefined,
       title: { es: e.title_es, en: e.title_en },
       venue: e.venue,
-      money: (e.fee_cents ?? 0) / 100,
+      fee: (e.fee_cents ?? 0) / 100,
+      cost: (e.cost_cents ?? 0) / 100,
+      settled: !!e.settled,
       setlist: (songsByEvent.get(e.id) ?? [])
         .sort((a, b) => a.position - b.position)
         .map((s) => s.song_id),
@@ -278,7 +280,7 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
 
 /* -------------------------------------------------------------- mutations */
 export async function createEvent(
-  input: { title: string; venue: string; date: string; time: string; hours: number; money: number; note: string; type: EventType },
+  input: { title: string; venue: string; date: string; time: string; hours: number; fee: number; cost: number; note: string; type: EventType },
   _userId: string,
 ): Promise<string> {
   const startsAt = `${input.date}T${input.time || '19:00'}:00Z`;
@@ -290,7 +292,8 @@ export async function createEvent(
     starts_at: startsAt,
     duration_hours: input.hours || null,
     venue: input.venue,
-    fee_cents: Math.round(input.money * 100),
+    fee_cents: Math.round(input.fee * 100),
+    cost_cents: Math.round(input.cost * 100),
     attend: 0,
     title_es: input.title,
     title_en: input.title,
@@ -339,6 +342,48 @@ export async function createTransaction(
 
 export async function updateCuota(cents: number, _userId: string): Promise<void> {
   await supabase.from('settings').upsert({ key: 'monthly_cuota_cents', value: String(cents) });
+}
+
+export async function settleEvent(
+  eventId: string,
+  input: { happened: boolean; fee: number; cost: number },
+  userId: string,
+): Promise<void> {
+  const { data: ev } = await supabase.from('events').select('starts_at, title_es, title_en').eq('id', eventId).single();
+  const date = (ev?.starts_at ?? '').slice(0, 10);
+  const titleEs = ev?.title_es ?? '';
+  const titleEn = ev?.title_en ?? '';
+
+  if (input.happened && input.fee > 0) {
+    await supabase.from('transactions').insert({
+      id: newId('y'),
+      kind: 'in',
+      amount_cents: Math.round(input.fee * 100),
+      occurred_on: date,
+      description_es: 'Cachet — ' + titleEs,
+      description_en: 'Fee — ' + titleEn,
+      proof_url: null,
+      proof_kind: 'zelle',
+      event_id: eventId,
+      category: 'fee',
+      created_by: userId,
+    });
+  }
+  if (input.cost > 0) {
+    await supabase.from('transactions').insert({
+      id: newId('y'),
+      kind: 'out',
+      amount_cents: Math.round(input.cost * 100),
+      occurred_on: date,
+      description_es: 'Costo — ' + titleEs,
+      description_en: 'Cost — ' + titleEn,
+      proof_url: null,
+      proof_kind: 'receipt',
+      event_id: eventId,
+      created_by: userId,
+    });
+  }
+  await supabase.from('events').update({ settled: true }).eq('id', eventId);
 }
 
 export async function setRsvp(eventId: string, status: RsvpStatus | null, userId: string): Promise<void> {

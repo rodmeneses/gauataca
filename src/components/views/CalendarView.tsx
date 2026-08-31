@@ -85,9 +85,14 @@ export function CalendarView() {
                     <span className="whitespace-nowrap">{e.setlistCount} · {e.runtime}</span>
                   </span>
                 )}
-                {e.moneyStr && (
-                  <span className="font-mono font-semibold text-[11px] bg-raised border border-line-soft py-[6px] px-[9px] rounded-[8px]" style={{ color: e.moneyColor }}>
-                    {e.moneyLabel} {e.moneyStr}
+                {e.feeStr && (
+                  <span className="font-mono font-semibold text-[11px] bg-raised border border-line-soft py-[6px] px-[9px] rounded-[8px]" style={{ color: '#34d399' }}>
+                    {t.fee} {e.feeStr}
+                  </span>
+                )}
+                {e.costStr && (
+                  <span className="font-mono font-semibold text-[11px] bg-raised border border-line-soft py-[6px] px-[9px] rounded-[8px]" style={{ color: '#f87171' }}>
+                    {t.costLabel} {e.costStr}
                   </span>
                 )}
               </div>

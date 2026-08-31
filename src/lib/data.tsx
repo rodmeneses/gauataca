@@ -8,13 +8,14 @@ import { useAuth } from './auth';
 import {
   addComment as apiAddComment, createEvent as apiCreateEvent, createSong as apiCreateSong,
   createTransaction as apiCreateTransaction, fetchAll, pickPoll as apiPickPoll,
-  setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, submitFeedback as apiSubmitFeedback,
-  transferCustody as apiTransferCustody, updateCuota as apiUpdateCuota, voteThread as apiVoteThread, type DataSnapshot,
+  setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, settleEvent as apiSettleEvent,
+  submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateCuota as apiUpdateCuota,
+  voteThread as apiVoteThread, type DataSnapshot,
 } from './api';
 import { EVENTS, GEAR, MEMBERS, SONGS, THREADS, TRANSACTIONS } from '../data';
 import type { EventType, GenreId, ProofKind, RsvpStatus, TxCategory, TxKind } from '../types';
 
-export interface CreateEventInput { title: string; venue: string; date: string; time: string; hours: number; money: number; note: string; type: EventType; }
+export interface CreateEventInput { title: string; venue: string; date: string; time: string; hours: number; fee: number; cost: number; note: string; type: EventType; }
 export interface CreateSongInput { title: string; genre: GenreId; key: string; bpm: number; dur: string; }
 export interface CreateTxInput { kind: TxKind; amt: number; date: string; desc: string; proof: string | null; proofKind: ProofKind; event?: string; gear?: string; category?: TxCategory; contributor?: string; }
 export interface FeedbackInput { sound: number; perf: number; log: number; energy: number; well: string; improve: string; anon: boolean; }
@@ -35,6 +36,7 @@ interface DataValue extends DataSnapshot {
   transferCustody: (gearId: string, toMemberId: string) => Promise<void>;
   setEventSetlist: (eventId: string, songIds: string[]) => Promise<void>;
   updateCuota: (cents: number) => Promise<void>;
+  settleEvent: (eventId: string, input: { happened: boolean; fee: number; cost: number }) => Promise<void>;
 }
 
 const DataContext = createContext<DataValue | null>(null);
@@ -123,6 +125,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       transferCustody: (gearId, toMemberId) => run(() => apiTransferCustody(gearId, toMemberId, uid)),
       setEventSetlist: (eventId, songIds) => run(() => apiSetEventSetlist(eventId, songIds, uid)),
       updateCuota: (cents) => run(() => apiUpdateCuota(cents, uid)),
+      settleEvent: (eventId, input) => run(() => apiSettleEvent(eventId, input, uid)),
     };
   }, [snap, loading, error, reload, user?.id]);
 

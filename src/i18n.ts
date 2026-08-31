@@ -58,6 +58,8 @@ const es = {
   agenda: 'Agenda', profile: 'Perfil', fund: 'Fondo',
   noResults: 'Sin resultados', run: 'Ejecutar', navigate: 'Ir a', actions: 'Acciones',
   attendees: 'Confirmados', fee: 'Cachet', costLabel: 'Costo', movedFrom: 'Movido del',
+  money: 'Dinero', settle: 'Confirmar', settleTitle: 'Confirmar evento', settled: 'Liquidado',
+  happened: '¿Ocurrió?', happenedYes: 'Sí, ocurrió', happenedNo: 'No ocurrió', eventSettled: 'Evento confirmado',
   // extra strings that were hard-coded in the design
   anonymous: 'Anónimo',
   switchLang: 'Cambiar a inglés',
@@ -153,6 +155,8 @@ const en: typeof es = {
   agenda: 'Agenda', profile: 'Profile', fund: 'Fund',
   noResults: 'No results', run: 'Run', navigate: 'Go to', actions: 'Actions',
   attendees: 'Confirmed', fee: 'Fee', costLabel: 'Cost', movedFrom: 'Moved from',
+  money: 'Money', settle: 'Settle', settleTitle: 'Settle event', settled: 'Settled',
+  happened: 'Did it happen?', happenedYes: 'Yes, it happened', happenedNo: "It didn't happen", eventSettled: 'Event settled',
   anonymous: 'Anonymous',
   switchLang: 'Switch to Spanish',
   ideaLoaded: 'Idea loaded into the event creator',

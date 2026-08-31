@@ -17,7 +17,7 @@ const textareaCls =
   'w-full py-[11px] px-[13px] rounded-[10px] border border-[#1e293b] bg-[#020617] text-[#e2e8f0] font-sans font-normal text-[13px] leading-[normal] outline-none resize-y';
 
 export function EventModal() {
-  const { t, ev, fb, state, songs, isAdmin, closeModal, openShare, pickPoll, setRating, toggleAnon, setFbWell, setFbImprove, submitFb, setRsvp, setEventSetlist } = useBandSync();
+  const { t, ev, fb, state, songs, isAdmin, closeModal, openShare, openSettle, pickPoll, setRating, toggleAnon, setFbWell, setFbImprove, submitFb, setRsvp, setEventSetlist } = useBandSync();
   if (!ev) return null;
 
   const ratingLabel: Record<RatingKey, string> = { sound: t.sound, perf: t.perf, log: t.logistics, energy: t.energy };
@@ -40,6 +40,9 @@ export function EventModal() {
             {ev.showState && (
               <Badge lg color={ev.stateColor} style={{ background: ev.stateBg }}>{ev.stateLabel}</Badge>
             )}
+            {ev.settled && (
+              <Badge lg color="#34d399" style={{ background: '#34d3991c' }}>{t.settled}</Badge>
+            )}
             <Badge lg color="#64748b">{ev.rel}</Badge>
           </div>
           <h2 className="m-0 font-display font-semibold text-[23px] leading-[1.25] text-[#f8fafc] tracking-[-.015em]">{ev.title}</h2>
@@ -60,8 +63,11 @@ export function EventModal() {
           <div className="font-sans font-semibold text-[13px] leading-[1.4] text-[#e2e8f0] mt-[7px]">{ev.venue}</div>
         </div>
         <div className={tile}>
-          <div className={tileLabel}>{ev.moneyLabel}</div>
-          <div className="font-mono font-semibold text-[16px] leading-[normal] mt-[7px]" style={{ color: ev.moneyColor }}>{ev.moneyStr}</div>
+          <div className={tileLabel}>{t.money}</div>
+          <div className="font-mono font-semibold text-[13px] leading-[normal] mt-[7px]" style={{ color: '#34d399' }}>{ev.feeStr ?? '—'}</div>
+          <div className="font-mono font-medium text-[11.5px] leading-[normal] text-[#64748b] mt-1">{t.fee}</div>
+          <div className="font-mono font-semibold text-[13px] leading-[normal] mt-[7px]" style={{ color: '#f87171' }}>{ev.costStr ?? '—'}</div>
+          <div className="font-mono font-medium text-[11.5px] leading-[normal] text-[#64748b] mt-1">{t.costLabel}</div>
         </div>
         <div className={tile}>
           <div className={tileLabel}>{t.attendees}</div>
@@ -297,6 +303,11 @@ export function EventModal() {
 
       {/* ---- footer */}
       <div className="py-[18px] px-6 flex gap-[10px] justify-end">
+        {ev.canSettle && (
+          <Button variant="primary" onClick={() => openSettle(ev.id)} className="py-[11px] px-4 rounded-[11px]">
+            {t.settle}
+          </Button>
+        )}
         {ev.isGig && (
           <Button variant="brand" onClick={() => openShare(ev.id)} className="py-[11px] px-4 rounded-[11px]">
             <Instagram size={15} strokeWidth={1.9} />
