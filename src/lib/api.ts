@@ -344,6 +344,16 @@ export async function updateCuota(cents: number, _userId: string): Promise<void>
   await supabase.from('settings').upsert({ key: 'monthly_cuota_cents', value: String(cents) });
 }
 
+/** Upload a receipt/invoice image to the public `receipts` bucket; returns its public URL. */
+export async function uploadProof(file: File): Promise<string> {
+  const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
+  const path = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const { error } = await supabase.storage.from('receipts').upload(path, file, { cacheControl: '3600', upsert: false });
+  if (error) throw error;
+  const { data } = supabase.storage.from('receipts').getPublicUrl(path);
+  return data.publicUrl;
+}
+
 export async function settleEvent(
   eventId: string,
   input: { happened: boolean; fee: number; cost: number },

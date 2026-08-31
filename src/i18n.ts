@@ -95,6 +95,8 @@ const es = {
   signIn: 'Iniciar sesión', signUp: 'Crear cuenta', signOut: 'Cerrar sesión',
   email: 'Correo', password: 'Contraseña', name: 'Nombre',
   or: 'o', noAccount: '¿No tienes cuenta?', haveAccount: '¿Ya tienes cuenta?',
+  // receipt / invoice upload
+  upload: 'Subir imagen', uploading: 'Subiendo…', uploadFailed: 'No se pudo subir el archivo',
 };
 
 const en: typeof es = {
@@ -190,6 +192,8 @@ const en: typeof es = {
   signIn: 'Sign in', signUp: 'Sign up', signOut: 'Sign out',
   email: 'Email', password: 'Password', name: 'Name',
   or: 'or', noAccount: "Don't have an account?", haveAccount: 'Already have an account?',
+  // receipt / invoice upload
+  upload: 'Upload image', uploading: 'Uploading…', uploadFailed: 'Could not upload the file',
 };
 
 export type Dict = typeof es;

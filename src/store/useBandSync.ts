@@ -201,6 +201,8 @@ export interface BandSync {
   openSettle: (eventId: string) => void;
   closeSettle: () => void;
   settleEvent: (eventId: string, input: { happened: boolean; fee: number; cost: number }) => Promise<void>;
+  /** Upload a receipt/invoice file; resolves to its public URL, or null on failure. */
+  uploadProof: (file: File) => Promise<string | null>;
   /** Set the signed-in member's RSVP; choosing the current answer again withdraws it (back to pending). */
   setRsvp: (eventId: string, status: RsvpStatus) => Promise<void>;
   /** Replace an event's setlist (ordered song ids). */
@@ -252,7 +254,7 @@ export function useBandSync(): BandSync {
     myThreadVotes, myPollPicks, loading, error, monthlyCuotaCents,
     createEvent, createSong, createTransaction, setRsvp: persistRsvp, voteThread: persistVote,
     addComment: persistComment, submitFeedback: persistFeedback, pickPoll: persistPoll, transferCustody: persistCustody,
-    setEventSetlist: persistSetlist, updateCuota: persistCuota, settleEvent: persistSettle,
+    setEventSetlist: persistSetlist, updateCuota: persistCuota, settleEvent: persistSettle, uploadProof: persistUpload,
   } = useData();
   const isMobileViewport = useMediaQuery('(max-width: 768px)');
 
@@ -434,9 +436,9 @@ export function useBandSync(): BandSync {
       sheet: st.sheet, custody: st.custody, custodyTargets: dbMembers, settle: st.settle, form, paletteResults, tour,
       toasts: st.toasts.map((x) => ({
         ...x,
-        color: x.tone === 'violet' ? '#a78bfa' : '#6ee7b7',
-        border: x.tone === 'violet' ? '#7c3aed66' : '#34d39966',
-        bg: x.tone === 'violet' ? '#7c3aed1f' : '#34d3991f',
+        color: x.tone === 'violet' ? '#a78bfa' : x.tone === 'err' ? '#fda4af' : '#6ee7b7',
+        border: x.tone === 'violet' ? '#7c3aed66' : x.tone === 'err' ? '#f43f5e66' : '#34d39966',
+        bg: x.tone === 'violet' ? '#7c3aed1f' : x.tone === 'err' ? '#f43f5e1f' : '#34d3991f',
       })),
       tokens: COLOR_TOKENS.map((k) => ({ name: k.name, hex: k.hex, tw: k.tw, use: Lx(k.use) })),
       typeScale: TYPE_SCALE,
@@ -555,6 +557,15 @@ export function useBandSync(): BandSync {
         toast(t.fbSubmitted);
       },
       setForm: (k, v) => set((s) => ({ form: { ...s.form, [k]: v } })),
+      uploadProof: async (file) => {
+        try {
+          const url = await persistUpload(file);
+          return url ?? null;
+        } catch {
+          toast(t.uploadFailed, 'err');
+          return null;
+        }
+      },
       saveEvent: async () => {
         const dte = f.date || '2026-11-07';
         const songIds = f.setlist || [];
@@ -591,5 +602,5 @@ export function useBandSync(): BandSync {
       closeHandoff: () => set({ handoff: false }),
       toast,
     };
-  }, [st, props, set, toast, user, profile, signOut, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, myThreadVotes, myPollPicks, loading, error, isMobileViewport, createEvent, createSong, createTransaction, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, monthlyCuotaCents, persistCuota, persistSettle]);
+  }, [st, props, set, toast, user, profile, signOut, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, myThreadVotes, myPollPicks, loading, error, isMobileViewport, createEvent, createSong, createTransaction, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, monthlyCuotaCents, persistCuota, persistSettle, persistUpload]);
 }

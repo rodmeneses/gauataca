@@ -3,11 +3,12 @@
  * Three centered modals (design lines 1113–1265). Shell mounts each one only
  * while `modal.kind` matches, so they render unconditionally here.
  */
-import { useMemo, useState, type ReactNode } from 'react';
-import { ExternalLink, Plus, Search, X } from 'lucide-react';
+import { useMemo, useRef, useState, type ReactNode } from 'react';
+import { ExternalLink, Plus, Search, Upload, X } from 'lucide-react';
 import { useBandSync } from '@/store';
 import { Button, DatePicker, Field, Input, Modal, Select, Textarea } from '@/components/ui';
 import { GENRES, GENRE_IDS } from '@/data';
+import { isDemo } from '@/lib/data';
 import type { EventType, GenreId, ProofKind, TxCategory, TxKind } from '@/types';
 
 /* ------------------------------------------------------------ shared frame */
@@ -151,7 +152,29 @@ export function NewEventModal() {
 
 /* ---------------------------------------------------------- new movement */
 export function NewTxModal() {
-  const { t, lang, form, setForm, closeModal, saveTx, events, gear, members } = useBandSync();
+  const { t, lang, form, setForm, closeModal, saveTx, events, gear, members, uploadProof, toast } = useBandSync();
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const onPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast(t.uploadFailed, 'err');
+      return;
+    }
+    setUploading(true);
+    const url = await uploadProof(file);
+    setUploading(false);
+    if (url) {
+      setForm('proof', url);
+      setForm('proofKind', file.type.startsWith('image/') ? 'photo' : 'invoice');
+    }
+  };
+
+  const isImage = /\.(png|jpe?g|webp|gif|heic)(\?|$)/i.test(form.proof);
+
   return (
     <Modal onClose={closeModal} maxWidth={520}>
       <FormHeader title={t.newTx} onClose={closeModal} />
@@ -232,13 +255,30 @@ export function NewTxModal() {
           }
           labelClassName="flex items-center gap-2 text-emerald-light"
         >
-          <Input
-            mono
-            value={form.proof}
-            onChange={(e) => setForm('proof', e.target.value)}
-            placeholder="https://drive.google.com/file/d/…"
-            className="text-[13px] border-[#34d39933] focus:border-[#34d39933]"
-          />
+          <div className="flex gap-2">
+            <Input
+              mono
+              value={form.proof}
+              onChange={(e) => setForm('proof', e.target.value)}
+              placeholder="https://drive.google.com/file/d/…"
+              className="text-[13px] border-[#34d39933] focus:border-[#34d39933] flex-1"
+            />
+            {!isDemo && (
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading}
+                className="flex-none inline-flex items-center gap-[6px] py-[9px] px-[12px] rounded-[10px] border border-[#34d39944] bg-[#34d3990f] text-[#6ee7b7] font-sans font-semibold text-[12.5px] leading-[normal] cursor-pointer hover:bg-[#34d39922] disabled:opacity-50 disabled:cursor-wait"
+              >
+                <Upload size={14} strokeWidth={2} />
+                {uploading ? t.uploading : t.upload}
+              </button>
+            )}
+          </div>
+          <input ref={fileRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={onPick} />
+          {isImage && (
+            <img src={form.proof} alt="" className="mt-2 max-h-[120px] rounded-[8px] border border-[#1e293b]" />
+          )}
           <span className="block text-[11.5px] text-ink-dim mt-2 leading-[1.5]">{t.proofHint}</span>
         </Field>
       </FormBody>

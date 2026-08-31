@@ -154,7 +154,7 @@ export interface LocalComment {
   text: string;
 }
 
-export type ToastTone = 'ok' | 'violet';
+export type ToastTone = 'ok' | 'violet' | 'err';
 export interface Toast {
   id: string;
   msg: string;

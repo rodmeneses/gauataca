@@ -10,7 +10,7 @@ import {
   createTransaction as apiCreateTransaction, fetchAll, pickPoll as apiPickPoll,
   setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, settleEvent as apiSettleEvent,
   submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateCuota as apiUpdateCuota,
-  voteThread as apiVoteThread, type DataSnapshot,
+  uploadProof as apiUploadProof, voteThread as apiVoteThread, type DataSnapshot,
 } from './api';
 import { EVENTS, GEAR, MEMBERS, SONGS, THREADS, TRANSACTIONS } from '../data';
 import type { EventType, GenreId, ProofKind, RsvpStatus, TxCategory, TxKind } from '../types';
@@ -37,6 +37,8 @@ interface DataValue extends DataSnapshot {
   setEventSetlist: (eventId: string, songIds: string[]) => Promise<void>;
   updateCuota: (cents: number) => Promise<void>;
   settleEvent: (eventId: string, input: { happened: boolean; fee: number; cost: number }) => Promise<void>;
+  /** Upload a receipt/invoice file; resolves to its public URL (undefined in demo mode). */
+  uploadProof: (file: File) => Promise<string | undefined>;
 }
 
 const DataContext = createContext<DataValue | null>(null);
@@ -126,6 +128,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setEventSetlist: (eventId, songIds) => run(() => apiSetEventSetlist(eventId, songIds, uid)),
       updateCuota: (cents) => run(() => apiUpdateCuota(cents, uid)),
       settleEvent: (eventId, input) => run(() => apiSettleEvent(eventId, input, uid)),
+      uploadProof: async (file) => {
+        if (isDemo) return undefined;
+        return apiUploadProof(file);
+      },
     };
   }, [snap, loading, error, reload, user?.id]);
 
