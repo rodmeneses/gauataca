@@ -1,28 +1,7 @@
--- BandSync — Phase 2 schema (Supabase / Postgres)
--- Paste this whole file into the Supabase SQL editor, then run supabase/seed.sql.
--- Recreates the tables with bilingual (_es/_en) columns and RLS. Idempotent.
-
--- ---------------------------------------------------------------------------
--- Drop existing tables (reverse dependency order)
--- ---------------------------------------------------------------------------
-drop table if exists thread_comments cascade;
-drop table if exists thread_votes cascade;
-drop table if exists threads cascade;
-drop table if exists gear_custody_log cascade;
-drop table if exists transactions cascade;
-drop table if exists gear cascade;
-drop table if exists poll_votes cascade;
-drop table if exists poll_options cascade;
-drop table if exists polls cascade;
-drop table if exists feedback cascade;
-drop table if exists event_attendance cascade;
-drop table if exists event_media cascade;
-drop table if exists event_songs cascade;
-drop table if exists events cascade;
-drop table if exists songs cascade;
-drop table if exists profile_vocals cascade;
-drop table if exists profile_instruments cascade;
-drop table if exists profiles cascade;
+-- BandSync — baseline schema (Supabase / Postgres)
+-- Flyway V1. Creates the tables with bilingual (_es/_en) columns, the is_admin()
+-- helper, and RLS policies. Additive only — no drops (Flyway migrations are
+-- versioned and applied once).
 
 -- ---------------------------------------------------------------------------
 -- Tables

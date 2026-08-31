@@ -68,6 +68,33 @@ To compare with the original design side by side: `python3 -m http.server 5177 -
 - `lucide-react` icons
 - No backend: everything is in-memory (Phase 2 target is Supabase — see the *Handoff notes* inside the app, `Sistema de diseño` view or ⌘K → "Notas de entrega")
 
+## Database migrations (Flyway)
+
+Schema changes are versioned SQL files under [`db/migrations/`](./db/migrations/) and applied with
+[Flyway](https://flywaydb.org) — no more pasting SQL into the Supabase editor by hand.
+
+- `V<n>__description.sql` — versioned migration, applied once in order (e.g. `V1__baseline.sql`).
+- `R__description.sql` — repeatable migration, re-applied whenever its checksum changes (the seed).
+
+**Setup (once):**
+
+```sh
+brew install flyway
+export FLYWAY_URL='jdbc:postgresql://db.<ref>.supabase.co:5432/postgres'   # from Supabase → Settings → Database → Connection string
+export FLYWAY_USER='postgres'
+export FLYWAY_PASSWORD='<database password>'
+```
+
+**Run:**
+
+```sh
+flyway info      # see pending/applied migrations
+flyway migrate   # apply them
+```
+
+The first `migrate` against the existing database auto-baselines at V1 (it won't re-create the schema);
+a fresh database runs V1 then the seed. To add a change, create `db/migrations/V2__…sql` and run `flyway migrate`.
+
 ## Prototype knobs
 
 The design's "tweaks" are exposed as URL query params:

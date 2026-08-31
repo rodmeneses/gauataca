@@ -1,0 +1,9 @@
+# Flyway config for BandSync.
+# Connection comes from the FLYWAY_URL / FLYWAY_USER / FLYWAY_PASSWORD env vars
+# (Flyway reads FLYWAY_* natively). Set them from Supabase → Settings → Database
+# → Connection string, then run `flyway migrate` from the repo root.
+
+[environments.default]
+locations = ["filesystem:db/migrations"]
+baselineOnMigrate = true
+baselineVersion = 1

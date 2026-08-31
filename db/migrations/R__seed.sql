@@ -1,7 +1,6 @@
--- BandSync — Phase 2 seed data
--- Paste after supabase/schema.sql. Idempotent (on conflict do nothing).
--- Mirrors src/data/*.ts. Demo members use fixed UUIDs; money is in cents;
--- localized fields are _es/_en pairs; timestamps are UTC.
+-- BandSync — seed data (Flyway repeatable migration)
+-- Idempotent (on conflict do nothing). Mirrors src/data/*.ts. Demo members use
+-- fixed UUIDs; money is in cents; localized fields are _es/_en pairs; timestamps are UTC.
 
 -- ---------------------------------------------------------------------------
 -- Profiles (5 demo members + the existing real user)
