@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type {
   AppProps, CalTab, CustodyDialog, Device, FormState, GenreId, Lang, MobileTab, Modal,
-  RatingKey, Role, ShareSheet, Toast, View,
+  RatingKey, Role, ShareSheet, Toast, TxDate, TxFilter, View,
 } from '../types';
 
 /**
@@ -32,6 +32,8 @@ export interface State {
   fbImprove: string;
   commentDraft: string;
   form: FormState;
+  txFilter: TxFilter;
+  txDate: TxDate;
   mobileTab: MobileTab;
   sheet: ShareSheet | null;
   custody: CustodyDialog | null;
@@ -72,6 +74,8 @@ export function initialState(props: AppProps): State {
     fbImprove: '',
     commentDraft: '',
     form: {},
+    txFilter: 'all',
+    txDate: 'all',
     mobileTab: 'agenda',
     sheet: null,
     custody: null,

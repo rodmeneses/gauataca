@@ -9,14 +9,14 @@ import {
   addComment as apiAddComment, createEvent as apiCreateEvent, createSong as apiCreateSong,
   createTransaction as apiCreateTransaction, fetchAll, pickPoll as apiPickPoll,
   setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, submitFeedback as apiSubmitFeedback,
-  transferCustody as apiTransferCustody, voteThread as apiVoteThread, type DataSnapshot,
+  transferCustody as apiTransferCustody, updateCuota as apiUpdateCuota, voteThread as apiVoteThread, type DataSnapshot,
 } from './api';
 import { EVENTS, GEAR, MEMBERS, SONGS, THREADS, TRANSACTIONS } from '../data';
-import type { EventType, GenreId, RsvpStatus, TxKind } from '../types';
+import type { EventType, GenreId, ProofKind, RsvpStatus, TxCategory, TxKind } from '../types';
 
 export interface CreateEventInput { title: string; venue: string; date: string; time: string; hours: number; money: number; note: string; type: EventType; }
 export interface CreateSongInput { title: string; genre: GenreId; key: string; bpm: number; dur: string; }
-export interface CreateTxInput { kind: TxKind; amt: number; date: string; desc: string; proof: string | null; }
+export interface CreateTxInput { kind: TxKind; amt: number; date: string; desc: string; proof: string | null; proofKind: ProofKind; event?: string; gear?: string; category?: TxCategory; contributor?: string; }
 export interface FeedbackInput { sound: number; perf: number; log: number; energy: number; well: string; improve: string; anon: boolean; }
 
 interface DataValue extends DataSnapshot {
@@ -34,6 +34,7 @@ interface DataValue extends DataSnapshot {
   pickPoll: (eventId: string, optionIndex: number) => Promise<void>;
   transferCustody: (gearId: string, toMemberId: string) => Promise<void>;
   setEventSetlist: (eventId: string, songIds: string[]) => Promise<void>;
+  updateCuota: (cents: number) => Promise<void>;
 }
 
 const DataContext = createContext<DataValue | null>(null);
@@ -49,6 +50,7 @@ const DEMO: DataSnapshot = {
   members: MEMBERS,
   myThreadVotes: [],
   myPollPicks: {},
+  monthlyCuotaCents: 2000,
 };
 
 const EMPTY: DataSnapshot = {
@@ -60,6 +62,7 @@ const EMPTY: DataSnapshot = {
   members: [],
   myThreadVotes: [],
   myPollPicks: {},
+  monthlyCuotaCents: 2000,
 };
 
 export function DataProvider({ children }: { children: ReactNode }) {
@@ -119,6 +122,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       pickPoll: (eventId, optionIndex) => run(() => apiPickPoll(eventId, optionIndex, uid)),
       transferCustody: (gearId, toMemberId) => run(() => apiTransferCustody(gearId, toMemberId, uid)),
       setEventSetlist: (eventId, songIds) => run(() => apiSetEventSetlist(eventId, songIds, uid)),
+      updateCuota: (cents) => run(() => apiUpdateCuota(cents, uid)),
     };
   }, [snap, loading, error, reload, user?.id]);
 

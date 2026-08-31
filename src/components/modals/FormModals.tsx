@@ -8,7 +8,7 @@ import { ExternalLink, Plus, Search, X } from 'lucide-react';
 import { useBandSync } from '@/store';
 import { Button, DatePicker, Field, Input, Modal, Select, Textarea } from '@/components/ui';
 import { GENRES, GENRE_IDS } from '@/data';
-import type { EventType, GenreId, TxKind } from '@/types';
+import type { EventType, GenreId, ProofKind, TxCategory, TxKind } from '@/types';
 
 /* ------------------------------------------------------------ shared frame */
 function FormHeader({ title, onClose }: { title: string; onClose: () => void }) {
@@ -148,7 +148,7 @@ export function NewEventModal() {
 
 /* ---------------------------------------------------------- new movement */
 export function NewTxModal() {
-  const { t, lang, form, setForm, closeModal, saveTx } = useBandSync();
+  const { t, lang, form, setForm, closeModal, saveTx, events, gear, members } = useBandSync();
   return (
     <Modal onClose={closeModal} maxWidth={520}>
       <FormHeader title={t.newTx} onClose={closeModal} />
@@ -164,12 +164,62 @@ export function NewTxModal() {
             <Input mono value={form.amt} onChange={(e) => setForm('amt', e.target.value)} placeholder="450.00" />
           </Field>
         </div>
+        {form.kind === 'in' && (
+          <div className="grid grid-cols-2 gap-3">
+            <Field label={t.category}>
+              <Select value={form.category} onChange={(e) => setForm('category', e.target.value as TxCategory)}>
+                <option value="fee">{t.fee}</option>
+                <option value="tip">{t.tip}</option>
+                <option value="donation">{t.donation}</option>
+                <option value="contribution">{t.contribution}</option>
+              </Select>
+            </Field>
+            {form.category === 'contribution' && (
+              <Field label={t.contributor}>
+                <Select value={form.contributor} onChange={(e) => setForm('contributor', e.target.value)}>
+                  <option value="">{t.noLink}</option>
+                  {members.map((m) => (
+                    <option key={m.id} value={m.id}>{m.name}</option>
+                  ))}
+                </Select>
+              </Field>
+            )}
+          </div>
+        )}
+        <div className="grid grid-cols-2 gap-3">
+          <Field label={t.proofKind}>
+            <Select value={form.proofKind} onChange={(e) => setForm('proofKind', e.target.value as ProofKind)}>
+              <option value="zelle">{t.zelle}</option>
+              <option value="invoice">{t.invoice}</option>
+              <option value="photo">{t.photo}</option>
+              <option value="receipt">{t.receipt}</option>
+            </Select>
+          </Field>
+          <Field label={t.date}>
+            <DatePicker value={form.date} onChange={(v) => setForm('date', v)} lang={lang} placeholder={t.pickDate} />
+          </Field>
+        </div>
         <Field label={t.desc}>
           <Input value={form.desc} onChange={(e) => setForm('desc', e.target.value)} placeholder="Cachet — Festival Latino de Fruitvale" />
         </Field>
-        <Field label={t.date}>
-          <DatePicker value={form.date} onChange={(v) => setForm('date', v)} lang={lang} placeholder={t.pickDate} />
-        </Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label={t.linkEvent}>
+            <Select value={form.event} onChange={(e) => setForm('event', e.target.value)}>
+              <option value="">{t.noLink}</option>
+              {events.map((e) => (
+                <option key={e.id} value={e.id}>{e.title}</option>
+              ))}
+            </Select>
+          </Field>
+          <Field label={t.linkGear}>
+            <Select value={form.gear} onChange={(e) => setForm('gear', e.target.value)}>
+              <option value="">{t.noLink}</option>
+              {gear.map((g) => (
+                <option key={g.id} value={g.id}>{g.name}</option>
+              ))}
+            </Select>
+          </Field>
+        </div>
         <Field
           label={
             <>

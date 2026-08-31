@@ -92,18 +92,28 @@ export interface BandEvent {
 
 export type TxKind = 'in' | 'out';
 export type ProofKind = 'zelle' | 'invoice' | 'photo' | 'receipt';
+/** Income category (null for expenses). */
+export type TxCategory = 'fee' | 'tip' | 'donation' | 'contribution';
+/** Ledger filter: all movements, income only, or expenses only. */
+export type TxFilter = 'all' | 'in' | 'out';
+/** Ledger date window: all time, or the last N days. */
+export type TxDate = 'all' | '30' | '90' | '365';
 
 export interface Transaction {
   id: string;
   kind: TxKind;
   amt: number;
   date: string;
-  by: string; // member id
+  by: string; // member id (who logged it)
   desc: Localized;
   proof: string | null;
   proofKind: ProofKind;
   event?: string;
   gear?: string;
+  /** Income category (fee/tip/donation/contribution); undefined for expenses. */
+  category?: TxCategory;
+  /** Member id who contributed (contribution movements only). */
+  contributor?: string;
 }
 
 export type GearCondition = 'good' | 'attention';
@@ -183,7 +193,15 @@ export interface FormState {
   desc?: string;
   amt?: string;
   proof?: string;
+  proofKind?: ProofKind;
   kind?: TxKind;
+  /** Income category (fee/tip/donation/contribution). */
+  category?: TxCategory;
+  /** Member id who contributed (contribution movements only). */
+  contributor?: string;
+  /** Event / gear ids a new movement is linked to (optional). */
+  event?: string;
+  gear?: string;
   key?: string;
   bpm?: string;
   dur?: string;

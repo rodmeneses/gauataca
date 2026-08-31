@@ -2,14 +2,24 @@
  * Ledger & gear view — pool balance cards, the transactions table and the
  * equipment inventory grid (design lines 454–551).
  */
+import { useState } from 'react';
 import { ArrowLeftRight, ExternalLink, Package, Plus } from 'lucide-react';
-import { Badge, Button } from '@/components/ui';
+import { Badge, Button, Select } from '@/components/ui';
 import { useBandSync } from '@/store';
+import type { TxDate, TxFilter } from '@/types';
 
 const TX_GRID = 'min-w-[800px] grid grid-cols-[120px_1fr_130px_150px_120px] gap-3';
 
 export function Ledger() {
-  const { t, isAdmin, balanceStr, incomeStr, expenseStr, txCount, tx, gear, gearValue, openNewTx, openCustody } = useBandSync();
+  const { t, isAdmin, balanceStr, incomeStr, expenseStr, txCount, tx, txFilter, txDate, setTxFilter, setTxDate, gear, gearValue, openNewTx, openCustody, contributions, cuotaCents, setCuota } = useBandSync();
+  const [cuotaDraft, setCuotaDraft] = useState(() => String(cuotaCents / 100));
+  const paidCount = contributions.filter((c) => c.paid).length;
+
+  const saveCuota = () => {
+    const v = parseFloat(cuotaDraft);
+    if (!Number.isFinite(v) || v <= 0) return;
+    void setCuota(Math.round(v * 100));
+  };
 
   return (
     <div className="flex flex-col gap-5 animate-fade">
@@ -46,6 +56,28 @@ export function Ledger() {
             </Button>
           )}
         </div>
+        <div className="flex items-center gap-3 mb-[13px]">
+          <div className="flex items-center gap-[3px] bg-raised border border-line rounded-[10px] p-[3px]">
+            {(['all', 'in', 'out'] as TxFilter[]).map((k) => (
+              <button
+                key={k}
+                type="button"
+                onClick={() => setTxFilter(k)}
+                className={`py-[6px] px-[12px] rounded-[8px] font-sans font-semibold text-[12px] leading-[normal] cursor-pointer transition-colors ${
+                  txFilter === k ? 'bg-surface text-ink-bright border border-line' : 'text-ink-meta border border-transparent hover:text-ink-body'
+                }`}
+              >
+                {k === 'all' ? t.allMovements : k === 'in' ? t.income : t.expense}
+              </button>
+            ))}
+          </div>
+          <Select value={txDate} onChange={(e) => setTxDate(e.target.value as TxDate)} className="w-auto py-[6px] px-[10px] text-[12px]">
+            <option value="all">{t.allTime}</option>
+            <option value="30">{t.last30}</option>
+            <option value="90">{t.last90}</option>
+            <option value="365">{t.last12m}</option>
+          </Select>
+        </div>
         <div className="bg-surface border border-line rounded-[14px] overflow-x-auto">
           <div className={`${TX_GRID} py-3 px-[18px] bg-raised border-b border-line font-display font-semibold text-[10px] tracking-[.12em] uppercase text-ink-dim`}>
             <span>{t.date}</span>
@@ -61,7 +93,19 @@ export function Ledger() {
                 <span className="w-[22px] h-[22px] rounded-[7px] grid place-items-center flex-none font-mono font-semibold text-[12px]" style={{ background: x.bg, color: x.color }}>
                   {x.arrow}
                 </span>
-                <span className="font-sans font-medium text-[13.5px] text-ink-base">{x.desc}</span>
+                <span className="min-w-0">
+                  <span className="block font-sans font-medium text-[13.5px] text-ink-base">{x.desc}</span>
+                  {(x.eventLabel || x.gearLabel) && (
+                    <span className="flex items-center gap-[6px] mt-[3px]">
+                      {x.eventLabel && (
+                        <span className="inline-flex items-center font-sans font-semibold text-[10.5px] leading-[normal] text-[#a78bfa] bg-[#7c3aed1f] border border-[#7c3aed33] py-[2px] px-[7px] rounded-md">{x.eventLabel}</span>
+                      )}
+                      {x.gearLabel && (
+                        <span className="inline-flex items-center font-sans font-semibold text-[10.5px] leading-[normal] text-[#38bdf8] bg-[#0ea5e91f] border border-[#0ea5e933] py-[2px] px-[7px] rounded-md">{x.gearLabel}</span>
+                      )}
+                    </span>
+                  )}
+                </span>
               </span>
               <span className="flex items-center gap-2">
                 <span className="w-[22px] h-[22px] rounded-[7px] bg-line grid place-items-center font-display font-semibold text-[9.5px] text-ink-meta flex-none">{x.byInitial}</span>
@@ -82,6 +126,51 @@ export function Ledger() {
               </span>
               <span className="font-mono font-semibold text-[14.5px] text-right" style={{ color: x.color }}>{x.amountStr}</span>
             </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------ contributions */}
+      <section>
+        <div className="flex items-center gap-3 mb-[13px]">
+          <h2 className="m-0 font-display font-semibold text-[15px] leading-none text-ink">{t.contributions}</h2>
+          <span className="text-[12px] text-ink-muted whitespace-nowrap">— {t.paidCount.replace('%d', String(paidCount)).replace('%d', String(contributions.length))}</span>
+          {isAdmin && (
+            <div className="ml-auto flex items-center gap-[8px]">
+              <span className="text-[12px] text-ink-muted whitespace-nowrap">{t.cuota}</span>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={cuotaDraft}
+                onChange={(e) => setCuotaDraft(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && saveCuota()}
+                className="w-[72px] font-mono font-semibold text-[13px] text-ink-body bg-raised border border-line rounded-[8px] py-[6px] px-[9px] outline-none focus:border-[#34d39955]"
+              />
+              <Button variant="primary" className="py-[7px] px-[12px]" onClick={saveCuota}>
+                {t.save}
+              </Button>
+            </div>
+          )}
+        </div>
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-[14px]">
+          {contributions.map((c) => (
+            <article key={c.memberId} className="bg-surface border border-line rounded-[14px] p-[16px] flex items-center gap-[13px]">
+              <span className="w-9 h-9 rounded-[10px] bg-raised border border-line-soft grid place-items-center font-display font-semibold text-[12px] text-ink-meta flex-none">{c.initial}</span>
+              <div className="min-w-0 flex-1">
+                <div className="font-sans font-semibold text-[13.5px] text-ink">{c.name}</div>
+                <div className="font-mono font-medium text-[11.5px] text-ink-meta mt-[3px]">
+                  {t.thisMonth} {c.monthStr} · {t.totalL} {c.totalStr}
+                </div>
+              </div>
+              {c.paid ? (
+                <Badge lg color="#34d399" className="tracking-[.08em] flex-none" style={{ background: '#34d3991c' }}>
+                  {t.upToDate}
+                </Badge>
+              ) : (
+                <span className="font-sans font-semibold text-[12px] text-[#fbbf24] flex-none">{c.shortfallStr}</span>
+              )}
+            </article>
           ))}
         </div>
       </section>

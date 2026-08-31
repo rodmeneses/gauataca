@@ -18,6 +18,10 @@ export interface Ctx {
   meId: string;
   /** All members, for resolving ids to names/initials. */
   members: Member[];
+  /** All events, for resolving a transaction's linked event id. */
+  events: BandEvent[];
+  /** All gear, for resolving a transaction's linked gear id. */
+  gear: Gear[];
 }
 
 /** Resolve a member id to a Member (falls back to the first member). */
@@ -296,12 +300,20 @@ export interface TxVm {
   hasProof: boolean;
   /** "Zelle" | "Invoice" | "Photo" | "Receipt" */
   proofKind: string;
+  /** Localized title of the linked event, or null. */
+  eventLabel: string | null;
+  /** Localized name of the linked gear, or null. */
+  gearLabel: string | null;
+  /** Localized income category (fee/tip/donation/contribution), or null. */
+  categoryLabel: string | null;
 }
 
 export function txVm(x: Transaction, ctx: Ctx): TxVm {
   const { lang, t } = ctx;
   const inc = x.kind === 'in';
   const by = memberById(ctx.members, x.by);
+  const ev = x.event ? ctx.events.find((e) => e.id === x.event) : undefined;
+  const g = x.gear ? ctx.gear.find((g) => g.id === x.gear) : undefined;
   return {
     id: x.id,
     dateStr: fmt(x.date, lang, true),
@@ -316,7 +328,40 @@ export function txVm(x: Transaction, ctx: Ctx): TxVm {
     byInitial: by.initial,
     proof: x.proof || null,
     hasProof: !!x.proof,
-    proofKind: x.proofKind === 'zelle' ? 'Zelle' : x.proofKind === 'invoice' ? 'Invoice' : x.proofKind === 'photo' ? 'Photo' : 'Receipt',
+    proofKind: x.proofKind === 'zelle' ? t.zelle : x.proofKind === 'invoice' ? t.invoice : x.proofKind === 'photo' ? t.photo : t.receipt,
+    eventLabel: ev ? L(lang, ev.title) : null,
+    gearLabel: g ? L(lang, g.name) : null,
+    categoryLabel: x.category === 'fee' ? t.fee : x.category === 'tip' ? t.tip : x.category === 'donation' ? t.donation : x.category === 'contribution' ? t.contribution : null,
+  };
+}
+
+/* ------------------------------------------------------------ contributions */
+export interface ContributionVm {
+  memberId: string;
+  name: string;
+  initial: string;
+  /** All-time contributions, formatted. */
+  totalStr: string;
+  /** This month's contributions, formatted. */
+  monthStr: string;
+  /** true when this month's contributions meet the cuota. */
+  paid: boolean;
+  /** "Debe $X" when pending, else ''. */
+  shortfallStr: string;
+}
+
+export function contributionVm(member: Member, totalCents: number, monthCents: number, cuotaCents: number, ctx: Ctx): ContributionVm {
+  const { t } = ctx;
+  const paid = monthCents >= cuotaCents;
+  const shortfall = Math.max(0, cuotaCents - monthCents);
+  return {
+    memberId: member.id,
+    name: member.short,
+    initial: member.initial,
+    totalStr: money(totalCents / 100),
+    monthStr: money(monthCents / 100),
+    paid,
+    shortfallStr: paid ? '' : t.owes.replace('%s', money(shortfall / 100)),
   };
 }
 

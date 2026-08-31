@@ -5,7 +5,7 @@
  */
 import { supabase } from './supabase';
 import type {
-  BandEvent, EventFeedback, EventType, Gear, GenreId, Member, RsvpStatus, Song, Thread, Transaction, TxKind,
+  BandEvent, EventFeedback, EventType, Gear, GenreId, Member, ProofKind, RsvpStatus, Song, Thread, Transaction, TxCategory, TxKind,
 } from '../types';
 
 type Row = Record<string, any>;
@@ -21,6 +21,8 @@ export interface DataSnapshot {
   myThreadVotes: string[];
   /** event id → poll option index the current user picked. */
   myPollPicks: Record<string, number>;
+  /** Monthly cuota in cents (from the settings table). */
+  monthlyCuotaCents: number;
 }
 
 const groupBy = (rows: Row[], key: string): Map<string, Row[]> => {
@@ -173,6 +175,8 @@ function mapTransactions(rows: Row[]): Transaction[] {
     proofKind: t.proof_kind,
     event: t.event_id ?? undefined,
     gear: t.gear_id ?? undefined,
+    category: t.category ?? undefined,
+    contributor: t.contributor_id ?? undefined,
   }));
 }
 
@@ -212,7 +216,7 @@ function mapThreads(threads: Row[], votes: Row[], comments: Row[]): Thread[] {
 export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
   const [
     profiles, instruments, vocals, songs, events, eventSongs, eventMedia, attendance,
-    feedback, polls, pollOptions, pollVotes, gear, transactions, threads, threadVotes, threadComments,
+    feedback, polls, pollOptions, pollVotes, gear, transactions, threads, threadVotes, threadComments, settings,
   ] = await Promise.all([
     supabase.from('profiles').select('*'),
     supabase.from('profile_instruments').select('*'),
@@ -231,10 +235,13 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
     supabase.from('threads').select('*'),
     supabase.from('thread_votes').select('*'),
     supabase.from('thread_comments').select('*'),
+    supabase.from('settings').select('*'),
   ]);
 
   const members = mapMembers(profiles.data ?? [], instruments.data ?? [], vocals.data ?? []);
   const tx = mapTransactions(transactions.data ?? []);
+  const cuotaRow = (settings.data ?? []).find((s) => s.key === 'monthly_cuota_cents');
+  const monthlyCuotaCents = cuotaRow ? Number(cuotaRow.value) : 2000;
 
   const myThreadVotes = userId
     ? (threadVotes.data ?? []).filter((v) => v.profile_id === userId).map((v) => v.thread_id)
@@ -265,6 +272,7 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
     members,
     myThreadVotes,
     myPollPicks,
+    monthlyCuotaCents,
   };
 }
 
@@ -309,7 +317,7 @@ export async function createSong(
 }
 
 export async function createTransaction(
-  input: { kind: TxKind; amt: number; date: string; desc: string; proof: string | null },
+  input: { kind: TxKind; amt: number; date: string; desc: string; proof: string | null; proofKind: ProofKind; event?: string; gear?: string; category?: TxCategory; contributor?: string },
   userId: string,
 ): Promise<void> {
   await supabase.from('transactions').insert({
@@ -320,9 +328,17 @@ export async function createTransaction(
     description_es: input.desc,
     description_en: input.desc,
     proof_url: input.proof,
-    proof_kind: 'receipt',
+    proof_kind: input.proofKind,
+    event_id: input.event ?? null,
+    gear_id: input.gear ?? null,
+    category: input.category ?? null,
+    contributor_id: input.contributor ?? null,
     created_by: userId,
   });
+}
+
+export async function updateCuota(cents: number, _userId: string): Promise<void> {
+  await supabase.from('settings').upsert({ key: 'monthly_cuota_cents', value: String(cents) });
 }
 
 export async function setRsvp(eventId: string, status: RsvpStatus | null, userId: string): Promise<void> {

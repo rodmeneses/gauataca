@@ -13,6 +13,12 @@ export function days(iso: string): number {
   return Math.round((d(iso).getTime() - TODAY.getTime()) / 86400000);
 }
 
+/** true when `iso` falls in the current calendar month. */
+export function sameMonth(iso: string): boolean {
+  const dt = d(iso);
+  return dt.getFullYear() === TODAY.getFullYear() && dt.getMonth() === TODAY.getMonth();
+}
+
 const DOW: Record<Lang, string[]> = {
   es: ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'],
   en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],

@@ -217,22 +217,25 @@ insert into gear (id, name_es, name_en, cost_cents, purchased_on, custodian_id, 
 on conflict (id) do nothing;
 
 -- ---------------------------------------------------------------------------
--- Transactions (13)
+-- Transactions (16)
 -- ---------------------------------------------------------------------------
-insert into transactions (id, kind, amount_cents, occurred_on, description_es, description_en, proof_url, proof_kind, created_by, event_id, gear_id) values
-  ('t1', 'in', 45000, '2026-08-16', 'Cachet — Cierre del Festival de Verano', 'Fee — Summer Festival closing set', 'https://drive.google.com/file/d/dtv-zelle-berkeley/view', 'zelle', '33333333-3333-3333-3333-333333333333', 'h1', null),
-  ('t2', 'out', 4730, '2026-08-16', 'Gasolina — van a Berkeley', 'Gas — van to Berkeley', 'https://drive.google.com/file/d/dtv-gas-0816/view', 'receipt', '11111111-1111-1111-1111-111111111111', 'h1', null),
-  ('t3', 'in', 12000, '2026-08-10', 'Donación Zelle — familia Pérez', 'Zelle donation — Pérez family', 'https://drive.google.com/file/d/dtv-donation-perez/view', 'zelle', '33333333-3333-3333-3333-333333333333', null, null),
-  ('t4', 'out', 5000, '2026-07-26', 'Renta de estudio — Sonido Sur', 'Studio rental — Sonido Sur', 'https://drive.google.com/file/d/dtv-studio-0726/view', 'invoice', '33333333-3333-3333-3333-333333333333', 'h3', null),
-  ('t6', 'in', 8600, '2026-07-18', 'Propinas — Ashby Flea Market', 'Tips — Ashby Flea Market', 'https://drive.google.com/file/d/dtv-tips-ashby/view', 'photo', '22222222-2222-2222-2222-222222222222', 'h4', null),
-  ('t5', 'out', 30500, '2026-07-12', 'Mezcladora Behringer Xenyx Q1202USB', 'Behringer Xenyx Q1202USB mixer', 'https://drive.google.com/file/d/dtv-mixer-invoice/view', 'invoice', '33333333-3333-3333-3333-333333333333', null, 'g1'),
-  ('t7', 'out', 6800, '2026-06-30', 'Cuerdas de arpa llanera (juego completo)', 'Llanera harp strings (full set)', 'https://drive.google.com/file/d/dtv-strings/view', 'invoice', '11111111-1111-1111-1111-111111111111', null, null),
-  ('t8', 'in', 30000, '2026-06-14', 'Cachet — Quinceañero familia Mendoza', 'Fee — Mendoza quinceañera', 'https://drive.google.com/file/d/dtv-zelle-mendoza/view', 'zelle', '33333333-3333-3333-3333-333333333333', null, null),
-  ('t9', 'out', 14000, '2026-05-28', 'Camisetas del grupo (5 unidades)', 'Band shirts (5 units)', 'https://drive.google.com/file/d/dtv-shirts/view', 'invoice', '55555555-5555-5555-5555-555555555555', null, null),
-  ('t10', 'out', 8500, '2026-05-10', 'Par de maracas de capacho', 'Pair of capacho maracas', 'https://drive.google.com/file/d/dtv-maracas/view', 'invoice', '44444444-4444-4444-4444-444444444444', null, 'g2'),
-  ('t11', 'in', 25000, '2026-04-26', 'Cachet — Feria Cultural de Richmond', 'Fee — Richmond Cultural Fair', 'https://drive.google.com/file/d/dtv-zelle-richmond/view', 'zelle', '33333333-3333-3333-3333-333333333333', null, null),
-  ('t12', 'out', 19800, '2026-04-12', 'Micrófonos Shure SM58 (x2)', 'Shure SM58 microphones (x2)', 'https://drive.google.com/file/d/dtv-mics/view', 'invoice', '11111111-1111-1111-1111-111111111111', null, 'g3'),
-  ('t0', 'in', 80000, '2026-03-01', 'Saldo inicial — aportes de fundación (5 × $160)', 'Opening balance — founding contributions (5 × $160)', 'https://drive.google.com/file/d/dtv-seed/view', 'zelle', '33333333-3333-3333-3333-333333333333', null, null)
+insert into transactions (id, kind, amount_cents, occurred_on, description_es, description_en, proof_url, proof_kind, created_by, event_id, gear_id, category, contributor_id) values
+  ('t1', 'in', 45000, '2026-08-16', 'Cachet — Cierre del Festival de Verano', 'Fee — Summer Festival closing set', 'https://drive.google.com/file/d/dtv-zelle-berkeley/view', 'zelle', '33333333-3333-3333-3333-333333333333', 'h1', null, 'fee', null),
+  ('t2', 'out', 4730, '2026-08-16', 'Gasolina — van a Berkeley', 'Gas — van to Berkeley', 'https://drive.google.com/file/d/dtv-gas-0816/view', 'receipt', '11111111-1111-1111-1111-111111111111', 'h1', null, null, null),
+  ('t3', 'in', 12000, '2026-08-10', 'Donación Zelle — familia Pérez', 'Zelle donation — Pérez family', 'https://drive.google.com/file/d/dtv-donation-perez/view', 'zelle', '33333333-3333-3333-3333-333333333333', null, null, 'donation', null),
+  ('t4', 'out', 5000, '2026-07-26', 'Renta de estudio — Sonido Sur', 'Studio rental — Sonido Sur', 'https://drive.google.com/file/d/dtv-studio-0726/view', 'invoice', '33333333-3333-3333-3333-333333333333', 'h3', null, null, null),
+  ('t6', 'in', 8600, '2026-07-18', 'Propinas — Ashby Flea Market', 'Tips — Ashby Flea Market', 'https://drive.google.com/file/d/dtv-tips-ashby/view', 'photo', '22222222-2222-2222-2222-222222222222', 'h4', null, 'tip', null),
+  ('t5', 'out', 30500, '2026-07-12', 'Mezcladora Behringer Xenyx Q1202USB', 'Behringer Xenyx Q1202USB mixer', 'https://drive.google.com/file/d/dtv-mixer-invoice/view', 'invoice', '33333333-3333-3333-3333-333333333333', null, 'g1', null, null),
+  ('t7', 'out', 6800, '2026-06-30', 'Cuerdas de arpa llanera (juego completo)', 'Llanera harp strings (full set)', 'https://drive.google.com/file/d/dtv-strings/view', 'invoice', '11111111-1111-1111-1111-111111111111', null, null, null, null),
+  ('t8', 'in', 30000, '2026-06-14', 'Cachet — Quinceañero familia Mendoza', 'Fee — Mendoza quinceañera', 'https://drive.google.com/file/d/dtv-zelle-mendoza/view', 'zelle', '33333333-3333-3333-3333-333333333333', null, null, 'fee', null),
+  ('t9', 'out', 14000, '2026-05-28', 'Camisetas del grupo (5 unidades)', 'Band shirts (5 units)', 'https://drive.google.com/file/d/dtv-shirts/view', 'invoice', '55555555-5555-5555-5555-555555555555', null, null, null, null),
+  ('t10', 'out', 8500, '2026-05-10', 'Par de maracas de capacho', 'Pair of capacho maracas', 'https://drive.google.com/file/d/dtv-maracas/view', 'invoice', '44444444-4444-4444-4444-444444444444', null, 'g2', null, null),
+  ('t11', 'in', 25000, '2026-04-26', 'Cachet — Feria Cultural de Richmond', 'Fee — Richmond Cultural Fair', 'https://drive.google.com/file/d/dtv-zelle-richmond/view', 'zelle', '33333333-3333-3333-3333-333333333333', null, null, 'fee', null),
+  ('t12', 'out', 19800, '2026-04-12', 'Micrófonos Shure SM58 (x2)', 'Shure SM58 microphones (x2)', 'https://drive.google.com/file/d/dtv-mics/view', 'invoice', '11111111-1111-1111-1111-111111111111', null, 'g3', null, null),
+  ('t0', 'in', 80000, '2026-03-01', 'Saldo inicial — aportes de fundación (5 × $160)', 'Opening balance — founding contributions (5 × $160)', 'https://drive.google.com/file/d/dtv-seed/view', 'zelle', '33333333-3333-3333-3333-333333333333', null, null, 'contribution', null),
+  ('t13', 'in', 2000, '2026-08-20', 'Cuota agosto — Rodrigo', 'August cuota — Rodrigo', null, 'zelle', '33333333-3333-3333-3333-333333333333', null, null, 'contribution', '11111111-1111-1111-1111-111111111111'),
+  ('t14', 'in', 2000, '2026-08-22', 'Cuota agosto — Caro', 'August cuota — Caro', null, 'zelle', '33333333-3333-3333-3333-333333333333', null, null, 'contribution', '22222222-2222-2222-2222-222222222222'),
+  ('t15', 'in', 2000, '2026-08-25', 'Cuota agosto — Sofía', 'August cuota — Sofía', null, 'zelle', '33333333-3333-3333-3333-333333333333', null, null, 'contribution', '44444444-4444-4444-4444-444444444444')
 on conflict (id) do nothing;
 
 -- ---------------------------------------------------------------------------

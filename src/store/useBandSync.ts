@@ -7,17 +7,17 @@ import { T, type Dict } from '../i18n';
 import {
   COLOR_TOKENS, GENRES, GENRE_IDS, HANDOFF_NOTES, TOUR_STEPS, TYPE_SCALE,
 } from '../data';
-import { d, days, money, money0 } from '../lib/format';
+import { d, days, money, money0, sameMonth } from '../lib/format';
 import type {
-  AppProps, BandEvent, CustodyDialog, FormState, GenreId, Lang, Member, MobileTab, Modal, Profile, RatingKey, RsvpStatus, ShareSheet, Song, Toast, Transaction, View,
+  AppProps, BandEvent, CustodyDialog, FormState, GenreId, Lang, Member, MobileTab, Modal, Profile, ProofKind, RatingKey, RsvpStatus, ShareSheet, Song, Toast, Transaction, TxCategory, TxDate, TxFilter, View,
 } from '../types';
 import { useStore, type State } from './store';
 import { useAuth } from '../lib/auth';
 import { useData } from '../lib/data';
 import { useMediaQuery } from '../lib/useMediaQuery';
 import {
-  L, eventVm, feedbackVm, gearVm, igCaption, memberById, memberVm, songVm, threadVm, txVm,
-  type Ctx, type EventVm, type FeedbackVm, type GearVm, type MemberVm, type SongVm, type ThreadVm, type TxVm,
+  L, contributionVm, eventVm, feedbackVm, gearVm, igCaption, memberById, memberVm, songVm, threadVm, txVm,
+  type ContributionVm, type Ctx, type EventVm, type FeedbackVm, type GearVm, type MemberVm, type SongVm, type ThreadVm, type TxVm,
 } from './vm';
 
 export interface GenreChip {
@@ -63,7 +63,12 @@ export interface FormVm {
   desc: string;
   amt: string;
   proof: string;
+  proofKind: ProofKind;
   kind: NonNullable<FormState['kind']>;
+  category: TxCategory;
+  contributor: string;
+  event: string;
+  gear: string;
   key: string;
   bpm: string;
   dur: string;
@@ -119,6 +124,14 @@ export interface BandSync {
   dashUpcoming: EventVm[];
   tx: TxVm[];
   recentTx: TxVm[];
+  txFilter: TxFilter;
+  txDate: TxDate;
+  /** Per-member contribution summary (who's up to date on the cuota). */
+  contributions: ContributionVm[];
+  /** Monthly cuota, formatted ("$20"). */
+  cuotaStr: string;
+  /** Monthly cuota in cents (for the editor). */
+  cuotaCents: number;
   gear: GearVm[];
   gearValue: string;
   threads: ThreadVm[];
@@ -168,6 +181,9 @@ export interface BandSync {
   openNewEvent: () => void;
   openNewSong: () => void;
   openNewTx: () => void;
+  setTxFilter: (f: TxFilter) => void;
+  setTxDate: (d: TxDate) => void;
+  setCuota: (cents: number) => Promise<void>;
   openSignIn: () => void;
   signOut: () => Promise<void>;
   closeModal: () => void;
@@ -228,10 +244,10 @@ export function useBandSync(): BandSync {
   const { user, profile, signOut } = useAuth();
   const {
     songs: dbSongs, events: dbEvents, transactions: dbTx, gear: dbGear, threads: dbThreads, members: dbMembers,
-    myThreadVotes, myPollPicks, loading, error,
+    myThreadVotes, myPollPicks, loading, error, monthlyCuotaCents,
     createEvent, createSong, createTransaction, setRsvp: persistRsvp, voteThread: persistVote,
     addComment: persistComment, submitFeedback: persistFeedback, pickPoll: persistPoll, transferCustody: persistCustody,
-    setEventSetlist: persistSetlist,
+    setEventSetlist: persistSetlist, updateCuota: persistCuota,
   } = useData();
   const isMobileViewport = useMediaQuery('(max-width: 768px)');
 
@@ -243,7 +259,7 @@ export function useBandSync(): BandSync {
     const isDesktop = !isMobile;
     const staleDays = props.staleDays || 30;
     const me = user && profile ? profileToMember(profile) : memberById(dbMembers, isAdmin ? 'm1' : 'm2');
-    const ctx: Ctx = { lang, t, staleDays, meId: me.id, members: dbMembers };
+    const ctx: Ctx = { lang, t, staleDays, meId: me.id, members: dbMembers, events: dbEvents, gear: dbGear };
     const Lx = (v: { es: string; en: string } | string | null | undefined) => L(lang, v);
 
     /* ---- raw collections (from the data layer) */
@@ -280,7 +296,30 @@ export function useBandSync(): BandSync {
     const nextEvent = nextRaw ? evm(nextRaw) : null;
     const dashUpcoming = upcomingRaw.filter((e) => e.state !== 'cancelled').slice(0, 3).map(evm);
 
-    const tx = allTx.map((x) => txVm(x, ctx));
+    const txFiltered = allTx.filter((x) => {
+      if (st.txFilter !== 'all' && x.kind !== st.txFilter) return false;
+      if (st.txDate !== 'all' && days(x.date) < -Number(st.txDate)) return false;
+      return true;
+    });
+    const tx = txFiltered.map((x) => txVm(x, ctx));
+    const recentTx = allTx.slice(0, 4).map((x) => txVm(x, ctx));
+
+    const contribTx = allTx.filter((x) => x.category === 'contribution' && x.contributor);
+    const contribByMember = new Map<string, { total: number; month: number }>();
+    for (const x of contribTx) {
+      const key = x.contributor!;
+      const cur = contribByMember.get(key) ?? { total: 0, month: 0 };
+      cur.total += x.amt * 100;
+      if (sameMonth(x.date)) cur.month += x.amt * 100;
+      contribByMember.set(key, cur);
+    }
+    const contributions = dbMembers
+      .map((m) => {
+        const c = contribByMember.get(m.id) ?? { total: 0, month: 0 };
+        return contributionVm(m, c.total, c.month, monthlyCuotaCents, ctx);
+      })
+      .sort((a, b) => (a.paid === b.paid ? a.name.localeCompare(b.name) : a.paid ? -1 : 1));
+
     const gear = dbGear.map((g) => gearVm(g, g.holder, ctx));
     const threads = dbThreads.map((b) => threadVm(b, myThreadVotes.includes(b.id), ctx));
     const members = dbMembers.map((m) => memberVm(m, ctx));
@@ -359,7 +398,8 @@ export function useBandSync(): BandSync {
     const f = st.form;
     const form: FormVm = {
       title: f.title || '', venue: f.venue || '', date: f.date || '', time: f.time || '', hours: f.hours || '', money: f.money || '', note: f.note || '',
-      type: f.type || 'gig', desc: f.desc || '', amt: f.amt || '', proof: f.proof || '', kind: f.kind || 'in',
+      type: f.type || 'gig', desc: f.desc || '', amt: f.amt || '', proof: f.proof || '', proofKind: f.proofKind || 'receipt', kind: f.kind || 'in',
+      event: f.event || '', gear: f.gear || '', category: f.category || 'fee', contributor: f.contributor || '',
       key: f.key || '', bpm: f.bpm || '', dur: f.dur || '', genre: f.genre || 'joropo', chart: f.chart || '',
       setlist: f.setlist || [],
     };
@@ -375,7 +415,8 @@ export function useBandSync(): BandSync {
 
       songs, filteredSongs, staleSongs, genreChips,
       events, upcoming, history, calList: st.calTab === 'upcoming' ? upcoming : history, nextEvent, dashUpcoming,
-      tx, recentTx: tx.slice(0, 4),
+      tx, recentTx, txFilter: st.txFilter, txDate: st.txDate,
+      contributions, cuotaStr: money(monthlyCuotaCents / 100), cuotaCents: monthlyCuotaCents,
       gear, gearValue: money0(dbGear.reduce((a, b) => a + b.cost, 0)),
       threads, members,
 
@@ -416,6 +457,12 @@ export function useBandSync(): BandSync {
       openNewEvent: () => set({ modal: { kind: 'newEvent' }, form: {} }),
       openNewSong: () => set({ modal: { kind: 'newSong' }, form: {} }),
       openNewTx: () => set({ modal: { kind: 'newTx' }, form: {} }),
+      setTxFilter: (f) => set({ txFilter: f }),
+      setTxDate: (d) => set({ txDate: d }),
+      setCuota: async (cents) => {
+        await persistCuota(cents);
+        toast(t.cuotaSaved);
+      },
       openSignIn: () => set({ modal: { kind: 'signin' } }),
       signOut,
       closeModal: () => set({ modal: null }),
@@ -507,6 +554,8 @@ export function useBandSync(): BandSync {
         set({ modal: null, form: {} });
         await createTransaction({
           kind: f.kind || 'in', amt: +(f.amt || 0), date: f.date || '2026-08-25', desc: f.desc || 'Movimiento', proof: f.proof || null,
+          proofKind: f.proofKind || 'receipt', event: f.event || undefined, gear: f.gear || undefined,
+          category: f.category || undefined, contributor: f.contributor || undefined,
         });
         toast(t.txLogged);
       },
@@ -526,5 +575,5 @@ export function useBandSync(): BandSync {
       closeHandoff: () => set({ handoff: false }),
       toast,
     };
-  }, [st, props, set, toast, user, profile, signOut, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, myThreadVotes, myPollPicks, loading, error, isMobileViewport, createEvent, createSong, createTransaction, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist]);
+  }, [st, props, set, toast, user, profile, signOut, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, myThreadVotes, myPollPicks, loading, error, isMobileViewport, createEvent, createSong, createTransaction, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, monthlyCuotaCents, persistCuota]);
 }
