@@ -58,12 +58,15 @@ export function NewEventModal() {
             <option value="garage">{t.garage}</option>
           </Select>
         </Field>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-[1.5fr_1fr_1fr] gap-3">
           <Field label={t.date}>
-            <Input mono value={form.date} onChange={(e) => setForm('date', e.target.value)} placeholder="2026-11-07" />
+            <Input mono type="date" value={form.date} onChange={(e) => setForm('date', e.target.value)} />
           </Field>
           <Field label={t.hourL}>
-            <Input mono value={form.time} onChange={(e) => setForm('time', e.target.value)} placeholder="19:00" />
+            <Input mono type="time" value={form.time} onChange={(e) => setForm('time', e.target.value)} />
+          </Field>
+          <Field label={t.hoursL}>
+            <Input mono type="number" min="0.5" step="0.5" value={form.hours} onChange={(e) => setForm('hours', e.target.value)} placeholder="2.5" />
           </Field>
         </div>
         <div className="grid grid-cols-[1.4fr_1fr] gap-3">
@@ -111,7 +114,7 @@ export function NewTxModal() {
           <Input value={form.desc} onChange={(e) => setForm('desc', e.target.value)} placeholder="Cachet — Festival Latino de Fruitvale" />
         </Field>
         <Field label={t.date}>
-          <Input mono value={form.date} onChange={(e) => setForm('date', e.target.value)} placeholder="2026-08-25" />
+          <Input mono type="date" value={form.date} onChange={(e) => setForm('date', e.target.value)} />
         </Field>
         <Field
           label={

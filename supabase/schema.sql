@@ -74,6 +74,7 @@ create table events (
   type text not null check (type in ('gig', 'studio', 'garage')),
   state text not null default 'active' check (state in ('active', 'cancelled', 'rescheduled')),
   starts_at timestamptz not null,
+  duration_hours numeric,
   venue text not null,
   fee_cents int not null default 0,
   attend int not null default 0,

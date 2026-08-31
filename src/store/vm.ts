@@ -154,6 +154,8 @@ export interface EventVm {
   note: string;
   dateStr: string;
   timeStr: string;
+  /** "2.5h" or null when no duration is set. */
+  hoursStr: string | null;
   rel: string;
   past: boolean;
   /** "12" zero-padded day of month. */
@@ -240,6 +242,7 @@ export function eventVm(e: BandEvent, allSongs: Song[], ctx: Ctx): EventVm {
     note: L(lang, e.note),
     dateStr: fmt(e.date, lang, true),
     timeStr: e.time,
+    hoursStr: e.hours != null ? String(e.hours) + 'h' : null,
     rel: rel(e.date, lang),
     past,
     dayNum: String(d(e.date).getDate()).padStart(2, '0'),

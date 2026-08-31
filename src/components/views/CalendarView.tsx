@@ -67,7 +67,7 @@ export function CalendarView() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock size={14} strokeWidth={1.9} color="#64748b" className="flex-none" />
-                  <span className="whitespace-nowrap">{e.dateStr} · {e.timeStr}</span>
+                  <span className="whitespace-nowrap">{e.dateStr} · {e.timeStr}{e.hoursStr ? ' · ' + e.hoursStr : ''}</span>
                 </div>
                 {e.movedFrom && (
                   <div className="flex items-center gap-2 text-amber">

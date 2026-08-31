@@ -99,6 +99,7 @@
     line-height: 1.5;
     color: var(--color-ink-base);
     -webkit-font-smoothing: antialiased;
+    color-scheme: dark;
   }
   a {
     color: var(--color-emerald-light);

@@ -55,6 +55,7 @@ export interface FormVm {
   venue: string;
   date: string;
   time: string;
+  hours: string;
   money: string;
   note: string;
   type: NonNullable<FormState['type']>;
@@ -344,7 +345,7 @@ export function useBandSync(): BandSync {
     /* ---- forms */
     const f = st.form;
     const form: FormVm = {
-      title: f.title || '', venue: f.venue || '', date: f.date || '', time: f.time || '', money: f.money || '', note: f.note || '',
+      title: f.title || '', venue: f.venue || '', date: f.date || '', time: f.time || '', hours: f.hours || '', money: f.money || '', note: f.note || '',
       type: f.type || 'gig', desc: f.desc || '', amt: f.amt || '', proof: f.proof || '', kind: f.kind || 'in',
       key: f.key || '', bpm: f.bpm || '', dur: f.dur || '', genre: f.genre || 'joropo', chart: f.chart || '',
     };
@@ -476,7 +477,7 @@ export function useBandSync(): BandSync {
         const dte = f.date || '2026-11-07';
         set({ modal: null, form: {} });
         await createEvent({
-          title: f.title || 'Evento nuevo', venue: f.venue || 'Bay Area, CA', date: dte, time: f.time || '19:00',
+          title: f.title || 'Evento nuevo', venue: f.venue || 'Bay Area, CA', date: dte, time: f.time || '19:00', hours: +(f.hours || 0),
           money: +(f.money || 0), note: f.note || '', type: f.type || 'gig',
         });
         toast(t.eventCreated);

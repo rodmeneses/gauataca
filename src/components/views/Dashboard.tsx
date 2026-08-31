@@ -87,7 +87,7 @@ export function Dashboard() {
                       )}
                     </span>
                   </div>
-                  <div className="text-[12px] text-ink-muted mt-[7px]">{e.timeStr} · {e.venue} · {e.setlistCount} {t.setlist}</div>
+                  <div className="text-[12px] text-ink-muted mt-[7px]">{e.timeStr}{e.hoursStr ? ' · ' + e.hoursStr : ''} · {e.venue} · {e.setlistCount} {t.setlist}</div>
                 </div>
                 {e.isGig && (
                   <button

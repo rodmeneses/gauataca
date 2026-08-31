@@ -142,6 +142,7 @@ function mapEvents(
       state: e.state,
       date: (e.starts_at ?? '').slice(0, 10),
       time: (e.starts_at ?? '').slice(11, 16),
+      hours: e.duration_hours != null ? Number(e.duration_hours) : undefined,
       title: { es: e.title_es, en: e.title_en },
       venue: e.venue,
       money: (e.fee_cents ?? 0) / 100,
@@ -269,7 +270,7 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
 
 /* -------------------------------------------------------------- mutations */
 export async function createEvent(
-  input: { title: string; venue: string; date: string; time: string; money: number; note: string; type: EventType },
+  input: { title: string; venue: string; date: string; time: string; hours: number; money: number; note: string; type: EventType },
   _userId: string,
 ): Promise<void> {
   const startsAt = `${input.date}T${input.time || '19:00'}:00Z`;
@@ -278,6 +279,7 @@ export async function createEvent(
     type: input.type,
     state: 'active',
     starts_at: startsAt,
+    duration_hours: input.hours || null,
     venue: input.venue,
     fee_cents: Math.round(input.money * 100),
     attend: 0,

@@ -14,7 +14,7 @@ import {
 import { EVENTS, GEAR, MEMBERS, SONGS, THREADS, TRANSACTIONS } from '../data';
 import type { EventType, GenreId, RsvpStatus, TxKind } from '../types';
 
-export interface CreateEventInput { title: string; venue: string; date: string; time: string; money: number; note: string; type: EventType; }
+export interface CreateEventInput { title: string; venue: string; date: string; time: string; hours: number; money: number; note: string; type: EventType; }
 export interface CreateSongInput { title: string; genre: GenreId; key: string; bpm: number; dur: string; }
 export interface CreateTxInput { kind: TxKind; amt: number; date: string; desc: string; proof: string | null; }
 export interface FeedbackInput { sound: number; perf: number; log: number; energy: number; well: string; improve: string; anon: boolean; }

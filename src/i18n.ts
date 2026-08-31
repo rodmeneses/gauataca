@@ -70,7 +70,7 @@ const es = {
   genresHint: '5 géneros venezolanos',
   incomeHint: 'Cachets, propinas y donaciones',
   expenseHint: 'Estudio, equipos y transporte',
-  titleL: 'Título', hourL: 'Hora', venueL: 'Venue', notesL: 'Notas', genreL: 'Género',
+  titleL: 'Título', hourL: 'Hora', hoursL: 'Duración (h)', venueL: 'Venue', notesL: 'Notas', genreL: 'Género',
   proofHint: 'Captura del Zelle o factura de la tienda, en Google Drive o iCloud.',
   reference: 'Referencia', streaming: 'Streaming',
   // attendance (RSVP) — added in code, not in the Claude Design file
@@ -153,7 +153,7 @@ const en: typeof es = {
   genresHint: '5 Venezuelan genres',
   incomeHint: 'Fees, tips and donations',
   expenseHint: 'Studio, gear and transport',
-  titleL: 'Title', hourL: 'Time', venueL: 'Venue', notesL: 'Notes', genreL: 'Genre',
+  titleL: 'Title', hourL: 'Time', hoursL: 'Duration (h)', venueL: 'Venue', notesL: 'Notes', genreL: 'Genre',
   proofHint: 'Zelle screenshot or shop invoice, on Google Drive or iCloud.',
   reference: 'Reference', streaming: 'Streaming',
   rsvp: 'Attendance', rsvpHint: 'Are you going?',

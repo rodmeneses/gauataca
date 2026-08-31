@@ -74,6 +74,7 @@ export interface BandEvent {
   state: EventState;
   date: string; // ISO date
   time: string; // "HH:mm"
+  hours?: number; // duration in hours (e.g. 2.5)
   title: Localized;
   venue: string;
   money: number; // >0 fee, <0 cost, 0 none
@@ -175,6 +176,7 @@ export interface FormState {
   venue?: string;
   date?: string;
   time?: string;
+  hours?: string;
   money?: string;
   note?: string;
   type?: EventType;

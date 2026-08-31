@@ -52,7 +52,7 @@ export function EventModal() {
         <div className={tile}>
           <div className={tileLabel}>{t.date}</div>
           <div className="font-sans font-semibold text-[13px] leading-[normal] text-[#e2e8f0] mt-[7px]">{ev.dateStr}</div>
-          <div className="font-mono font-medium text-[11.5px] leading-[normal] text-[#64748b] mt-1">{ev.timeStr}</div>
+          <div className="font-mono font-medium text-[11.5px] leading-[normal] text-[#64748b] mt-1">{ev.timeStr}{ev.hoursStr ? ' · ' + ev.hoursStr : ''}</div>
         </div>
         <div className={tile}>
           <div className={tileLabel}>{t.venueL}</div>

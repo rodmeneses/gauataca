@@ -36,7 +36,7 @@ export function MobileAgenda() {
           </div>
           <h3 className="m-0 font-display font-semibold text-[17px] leading-[1.3] text-[#f1f5f9]">{e.title}</h3>
           <div className="text-[12.5px] text-[#64748b] leading-[1.6]">
-            {e.dateStr} · {e.timeStr}
+            {e.dateStr} · {e.timeStr}{e.hoursStr ? ' · ' + e.hoursStr : ''}
             <br />
             {e.venue}
           </div>
