@@ -3,7 +3,10 @@
 # (Flyway reads FLYWAY_* natively). Set them from Supabase → Settings → Database
 # → Connection string, then run `flyway migrate` from the repo root.
 
-[environments.default]
+[flyway]
 locations = ["filesystem:db/migrations"]
 baselineOnMigrate = true
 baselineVersion = 1
+
+[environments.default]
+# url / user / password are read from the FLYWAY_* env vars.

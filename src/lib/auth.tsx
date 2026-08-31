@@ -63,14 +63,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUpWithEmail = useCallback(async (email: string, password: string, name: string) => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    // Pass the name so the DB trigger (V2__auto_profile_on_signup) can pick it up.
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { name } },
+    });
     if (error) return { error: error.message };
 
-    // Create profile
+    // Fallback profile insert (role 'admin' — everyone is admin by default).
+    // The trigger normally creates this row; the upsert is a no-op then, but it
+    // keeps email sign-up working even before V2 is applied.
     if (data.user) {
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert({ id: data.user.id, name, email, role: 'member' });
+        .upsert({ id: data.user.id, name, email, role: 'admin' }, { onConflict: 'id' });
       if (profileError) return { error: profileError.message };
     }
     return { error: null };
