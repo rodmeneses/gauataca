@@ -48,7 +48,7 @@ export function EventModal() {
       </div>
 
       {/* ---- stat tiles */}
-      <div className="py-5 px-6 grid grid-cols-[repeat(4,minmax(0,1fr))] gap-3 border-b border-[#172033]">
+      <div className="py-5 px-6 grid grid-cols-2 md:grid-cols-4 gap-3 border-b border-[#172033]">
         <div className={tile}>
           <div className={tileLabel}>{t.date}</div>
           <div className="font-sans font-semibold text-[13px] leading-[normal] text-[#e2e8f0] mt-[7px]">{ev.dateStr}</div>
@@ -105,7 +105,7 @@ export function EventModal() {
             </div>
           )}
 
-          <div className="grid grid-cols-[repeat(4,minmax(0,1fr))] gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {rsvpGroups.map((g) => (
               <div key={g.key} className={tile}>
                 <div className={tileLabel} style={{ color: g.color }}>
@@ -177,7 +177,7 @@ export function EventModal() {
           </div>
 
           {/* rating rows */}
-          <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-3 mb-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5">
             {fb.rows.map((r) => (
               <div key={r.key} className="bg-[#0b1220] border border-[#172033] rounded-[11px] p-[13px]">
                 <div className="flex justify-between items-baseline mb-[9px]">
@@ -192,7 +192,7 @@ export function EventModal() {
           </div>
 
           {/* well / improve */}
-          <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-4 mb-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
             <div>
               <div className="font-display font-semibold text-[10.5px] leading-[normal] tracking-[.11em] uppercase text-[#34d399] mb-[10px]">{t.wentWell}</div>
               <div className="flex flex-col gap-2">
@@ -248,7 +248,7 @@ export function EventModal() {
           {/* my ratings */}
           <div className="bg-[#0b1220] border border-[#172033] rounded-[12px] p-4">
             <div className="font-display font-semibold text-[10.5px] leading-[normal] tracking-[.11em] uppercase text-[#64748b] mb-[14px]">{t.ratings}</div>
-            <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-[14px] mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-4">
               {RATING_KEYS.map((k) => (
                 <div key={k}>
                   <div className="font-sans font-medium text-[12px] leading-[normal] text-[#94a3b8] mb-2">{ratingLabel[k]}</div>

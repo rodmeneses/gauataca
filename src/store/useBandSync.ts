@@ -14,6 +14,7 @@ import type {
 import { useStore, type State } from './store';
 import { useAuth } from '../lib/auth';
 import { useData } from '../lib/data';
+import { useMediaQuery } from '../lib/useMediaQuery';
 import {
   L, eventVm, feedbackVm, gearVm, igCaption, memberById, memberVm, songVm, threadVm, txVm,
   type Ctx, type EventVm, type FeedbackVm, type GearVm, type MemberVm, type SongVm, type ThreadVm, type TxVm,
@@ -84,12 +85,16 @@ export interface BandSync {
   roleLabel: string;
   /** The signed-in member for the current role (admin → Rodrigo, member → Caro). */
   me: Member;
+  /** true when a real Supabase user is signed in (false in demo mode). */
+  signedIn: boolean;
   bandName: string;
   view: View;
   viewTitle: string;
   viewSub: string;
   isDesktop: boolean;
   isMobile: boolean;
+  /** true when the viewport is phone-sized (drives the full-screen mobile shell). */
+  isMobileViewport: boolean;
   staleDays: number;
   /** true while the data layer is fetching (live mode). */
   loading: boolean;
@@ -163,6 +168,7 @@ export interface BandSync {
   openNewSong: () => void;
   openNewTx: () => void;
   openSignIn: () => void;
+  signOut: () => Promise<void>;
   closeModal: () => void;
   /** Instagram flow: builds caption and opens the bottom sheet. */
   openShare: (eventId: string) => void;
@@ -216,18 +222,21 @@ function profileToMember(p: Profile): Member {
 
 export function useBandSync(): BandSync {
   const { state: st, props, set, toast } = useStore();
-  const { user, profile } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const {
     songs: dbSongs, events: dbEvents, transactions: dbTx, gear: dbGear, threads: dbThreads, members: dbMembers,
     myThreadVotes, myPollPicks, loading, error,
     createEvent, createSong, createTransaction, setRsvp: persistRsvp, voteThread: persistVote,
     addComment: persistComment, submitFeedback: persistFeedback, pickPoll: persistPoll, transferCustody: persistCustody,
   } = useData();
+  const isMobileViewport = useMediaQuery('(max-width: 768px)');
 
   return useMemo<BandSync>(() => {
     const lang = st.lang;
     const t = T[lang];
     const isAdmin = profile?.role === 'admin' || (!user && st.role === 'admin');
+    const isMobile = isMobileViewport || st.device === 'mobile';
+    const isDesktop = !isMobile;
     const staleDays = props.staleDays || 30;
     const me = user && profile ? profileToMember(profile) : memberById(dbMembers, isAdmin ? 'm1' : 'm2');
     const ctx: Ctx = { lang, t, staleDays, meId: me.id, members: dbMembers };
@@ -354,10 +363,10 @@ export function useBandSync(): BandSync {
 
     return {
       state: st, props, t, lang, L: Lx, isAdmin, isMember: !isAdmin, role: st.role,
-      roleLabel: isAdmin ? t.admin : t.member, me,
+      roleLabel: isAdmin ? t.admin : t.member, me, signedIn: !!user,
       bandName: props.bandName || 'Dulce Tricolor Venezolano',
       view: st.view, viewTitle: t[st.view] || t.dashboard, viewSub: t[viewSubKey] || '',
-      isDesktop: st.device === 'desktop', isMobile: st.device === 'mobile', staleDays, loading, error,
+      isDesktop, isMobile, isMobileViewport, staleDays, loading, error,
 
       songs, filteredSongs, staleSongs, genreChips,
       events, upcoming, history, calList: st.calTab === 'upcoming' ? upcoming : history, nextEvent, dashUpcoming,
@@ -403,6 +412,7 @@ export function useBandSync(): BandSync {
       openNewSong: () => set({ modal: { kind: 'newSong' }, form: {} }),
       openNewTx: () => set({ modal: { kind: 'newTx' }, form: {} }),
       openSignIn: () => set({ modal: { kind: 'signin' } }),
+      signOut,
       closeModal: () => set({ modal: null }),
       openShare,
       closeSheet: () => set({ sheet: null }),
@@ -505,5 +515,5 @@ export function useBandSync(): BandSync {
       closeHandoff: () => set({ handoff: false }),
       toast,
     };
-  }, [st, props, set, toast, user, profile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, myThreadVotes, myPollPicks, loading, error, createEvent, createSong, createTransaction, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody]);
+  }, [st, props, set, toast, user, profile, signOut, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, myThreadVotes, myPollPicks, loading, error, isMobileViewport, createEvent, createSong, createTransaction, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody]);
 }

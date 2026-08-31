@@ -1,9 +1,9 @@
-/** Mobile "Fondo" tab: pool balance hero + every transaction with its proof link. */
-import { ExternalLink } from 'lucide-react';
+/** Mobile "Fondo" tab: pool balance hero + "New movement" (admin) + every transaction with its proof link. */
+import { ExternalLink, Plus } from 'lucide-react';
 import { useBandSync } from '../../store';
 
 export function MobileFund() {
-  const { t, balanceStr, incomeStr, expenseStr, tx } = useBandSync();
+  const { t, isAdmin, balanceStr, incomeStr, expenseStr, tx, openNewTx } = useBandSync();
   return (
     <div className="flex flex-col gap-3">
       <div className="border border-[#34d39933] rounded-[16px] p-[19px]" style={{ background: 'linear-gradient(150deg,#0f172a,#0b1220)' }}>
@@ -14,6 +14,17 @@ export function MobileFund() {
           <span className="text-[#f87171] whitespace-nowrap">↓ {expenseStr}</span>
         </div>
       </div>
+      {isAdmin && (
+        <button
+          type="button"
+          onClick={openNewTx}
+          className="flex items-center justify-center gap-[7px] w-full min-h-[48px] rounded-[13px] border-none text-white font-sans font-semibold text-[13.5px] cursor-pointer"
+          style={{ background: 'linear-gradient(100deg,#8b5cf6,#d946ef)' }}
+        >
+          <Plus size={16} strokeWidth={2.2} />
+          {t.newTx}
+        </button>
+      )}
       {tx.map((x) => (
         <div key={x.id} className="bg-[#0f172a] border border-[#1e293b] rounded-[13px] py-[13px] px-[14px] flex flex-col gap-2.5">
           <div className="flex items-center gap-[11px]">

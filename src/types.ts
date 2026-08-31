@@ -5,7 +5,7 @@ export type Lang = 'es' | 'en';
 export type Role = 'admin' | 'member';
 export type View = 'dashboard' | 'calendar' | 'repertoire' | 'ledger' | 'brainstorm' | 'members' | 'system';
 export type Device = 'desktop' | 'mobile';
-export type MobileTab = 'agenda' | 'repertoire' | 'fund' | 'profile';
+export type MobileTab = 'agenda' | 'repertoire' | 'fund' | 'brainstorm' | 'profile';
 export type CalTab = 'upcoming' | 'history';
 
 /** A string that has a translation per language. */

@@ -58,8 +58,8 @@ export function NewEventModal() {
             <option value="garage">{t.garage}</option>
           </Select>
         </Field>
-        <div className="grid grid-cols-[1.5fr_1fr_1fr] gap-3">
-          <Field label={t.date}>
+        <div className="grid grid-cols-2 md:grid-cols-[1.5fr_1fr_1fr] gap-3">
+          <Field label={t.date} className="col-span-2 md:col-span-1">
             <Input mono type="date" value={form.date} onChange={(e) => setForm('date', e.target.value)} />
           </Field>
           <Field label={t.hourL}>
@@ -69,7 +69,7 @@ export function NewEventModal() {
             <Input mono type="number" min="0.5" step="0.5" value={form.hours} onChange={(e) => setForm('hours', e.target.value)} placeholder="2.5" />
           </Field>
         </div>
-        <div className="grid grid-cols-[1.4fr_1fr] gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-3">
           <Field label={t.venueL}>
             <Input value={form.venue} onChange={(e) => setForm('venue', e.target.value)} placeholder="Oakland, CA" />
           </Field>

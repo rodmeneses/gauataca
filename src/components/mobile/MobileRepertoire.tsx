@@ -1,21 +1,34 @@
-/** Mobile "Repertorio" tab: search + first 14 filtered songs with 4 link boxes each. */
-import { FileText, Mic, Youtube } from 'lucide-react';
+/** Mobile "Repertorio" tab: search + "New song" (admin) + first 14 filtered songs with 4 link boxes each. */
+import { FileText, Mic, Plus, Youtube } from 'lucide-react';
 import { useBandSync } from '../../store';
 import { SpotifyIcon } from '../ui';
 
 const linkBox = 'grid place-items-center min-h-[48px] rounded-[12px] border no-underline';
 
 export function MobileRepertoire() {
-  const { t, state, setQ, filteredSongs } = useBandSync();
+  const { t, isAdmin, state, setQ, filteredSongs, openNewSong } = useBandSync();
   const mobSongs = filteredSongs.slice(0, 14);
   return (
     <div className="flex flex-col gap-[11px]">
-      <input
-        value={state.q}
-        onChange={(e) => setQ(e.target.value)}
-        placeholder={t.search}
-        className="w-full min-h-[48px] py-0 px-[15px] rounded-[13px] border border-[#1e293b] bg-[#0b1220] text-[#e2e8f0] font-sans font-normal text-[15px] outline-none"
-      />
+      <div className="flex items-center gap-2">
+        <input
+          value={state.q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder={t.search}
+          className="flex-1 min-w-0 min-h-[48px] py-0 px-[15px] rounded-[13px] border border-[#1e293b] bg-[#0b1220] text-[#e2e8f0] font-sans font-normal text-[15px] outline-none"
+        />
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={openNewSong}
+            className="flex items-center gap-[6px] min-h-[48px] py-0 px-3 rounded-[13px] border-none text-white font-sans font-semibold text-[12.5px] cursor-pointer flex-none"
+            style={{ background: 'linear-gradient(100deg,#8b5cf6,#d946ef)' }}
+          >
+            <Plus size={15} strokeWidth={2.2} />
+            {t.newSong}
+          </button>
+        )}
+      </div>
       {mobSongs.map((s) => (
         <div key={s.id} className="bg-[#0f172a] border border-[#1e293b] rounded-[14px] py-[13px] px-[14px] flex flex-col gap-[11px]">
           <div className="flex items-start gap-[11px]">

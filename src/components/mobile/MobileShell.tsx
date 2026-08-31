@@ -1,16 +1,17 @@
 /**
- * Phone-preview shell (design lines 753–927): control column (language / role / device),
- * a 392px phone frame with status bar, app header, the active tab's scroll area and the
- * bottom tab bar.
+ * Mobile shell. On a real phone (viewport ≤ 768px) it renders a full-screen app
+ * (header + scroll area + bottom tab bar) with iOS safe-area insets. On desktop
+ * it renders the same app inside a 392px phone-preview frame with dev controls.
  */
 import type { ReactNode } from 'react';
-import { Calendar, Monitor, Music, Receipt, Smartphone, User, WifiHigh } from 'lucide-react';
+import { Calendar, Lightbulb, Monitor, Music, Receipt, Smartphone, User, WifiHigh } from 'lucide-react';
 import { useBandSync } from '../../store';
 import { BrandMark, Pill, Segment } from '../ui';
 import type { MobileTab } from '../../types';
 import { MobileAgenda } from './MobileAgenda';
 import { MobileRepertoire } from './MobileRepertoire';
 import { MobileFund } from './MobileFund';
+import { MobileBrainstorm } from './MobileBrainstorm';
 import { MobileProfile } from './MobileProfile';
 
 /* devPill(v): 30x26 icon toggle inside the device Segment */
@@ -34,10 +35,57 @@ function TabButton({ active, onClick, icon, label }: { active: boolean; onClick:
   );
 }
 
-export function MobileShell() {
-  const { t, lang, setLang, isAdmin, roleLabel, toggleRole, isDesktop, isMobile, setDevice, bandName, balanceStr, state, setMobileTab } = useBandSync();
+/** The actual mobile app: header + scroll area + bottom tab bar. */
+function MobileApp() {
+  const { t, bandName, balanceStr, state, setMobileTab } = useBandSync();
   const tab: MobileTab = state.mobileTab;
 
+  return (
+    <>
+      {/* app header */}
+      <div className="pt-[calc(env(safe-area-inset-top)+6px)] px-5 pb-3.5 flex items-center gap-[11px] flex-none border-b border-[#131c2e]">
+        <BrandMark size={32} radius={10} icon={17} />
+        <span className="min-w-0 flex-1">
+          <span className="block font-display font-bold text-[15px] leading-none text-[#f1f5f9]">BandSync</span>
+          <span className="block text-[10.5px] text-[#64748b] mt-[3px] truncate-1">{bandName}</span>
+        </span>
+        <span className="font-mono font-semibold text-[12px] text-[#34d399] bg-[#34d3991c] py-[5px] px-2.5 rounded-[20px] flex-none">{balanceStr}</span>
+      </div>
+
+      {/* scroll area */}
+      <div className="flex-1 overflow-y-auto pt-4 px-4 pb-[22px]">
+        {tab === 'agenda' && <MobileAgenda />}
+        {tab === 'repertoire' && <MobileRepertoire />}
+        {tab === 'fund' && <MobileFund />}
+        {tab === 'brainstorm' && <MobileBrainstorm />}
+        {tab === 'profile' && <MobileProfile />}
+      </div>
+
+      {/* bottom tab bar */}
+      <div className="flex-none border-t border-[#131c2e] bg-[#0b1220] flex pt-0 px-1.5 pb-[calc(env(safe-area-inset-bottom)+8px)]">
+        <TabButton active={tab === 'agenda'} onClick={() => setMobileTab('agenda')} icon={<Calendar size={21} strokeWidth={1.9} />} label={t.agenda} />
+        <TabButton active={tab === 'repertoire'} onClick={() => setMobileTab('repertoire')} icon={<Music size={21} strokeWidth={1.9} />} label={t.repertoire} />
+        <TabButton active={tab === 'fund'} onClick={() => setMobileTab('fund')} icon={<Receipt size={21} strokeWidth={1.9} />} label={t.fund} />
+        <TabButton active={tab === 'brainstorm'} onClick={() => setMobileTab('brainstorm')} icon={<Lightbulb size={21} strokeWidth={1.9} />} label={t.brainstorm} />
+        <TabButton active={tab === 'profile'} onClick={() => setMobileTab('profile')} icon={<User size={21} strokeWidth={1.9} />} label={t.profile} />
+      </div>
+    </>
+  );
+}
+
+export function MobileShell() {
+  const { lang, setLang, isAdmin, roleLabel, toggleRole, isDesktop, isMobile, setDevice, isMobileViewport } = useBandSync();
+
+  /* Real phone: full-screen app, no frame or dev controls. */
+  if (isMobileViewport) {
+    return (
+      <div className="h-dvh flex flex-col bg-[#020617] overflow-hidden">
+        <MobileApp />
+      </div>
+    );
+  }
+
+  /* Desktop preview: control column + 392px phone frame. */
   return (
     <div
       className="min-h-screen flex items-start justify-center gap-[26px] pt-[22px] px-5 pb-7 flex-wrap"
@@ -90,31 +138,7 @@ export function MobileShell() {
           </span>
         </div>
 
-        {/* app header */}
-        <div className="pt-1.5 px-5 pb-3.5 flex items-center gap-[11px] flex-none border-b border-[#131c2e]">
-          <BrandMark size={32} radius={10} icon={17} />
-          <span className="min-w-0 flex-1">
-            <span className="block font-display font-bold text-[15px] leading-none text-[#f1f5f9]">BandSync</span>
-            <span className="block text-[10.5px] text-[#64748b] mt-[3px] truncate-1">{bandName}</span>
-          </span>
-          <span className="font-mono font-semibold text-[12px] text-[#34d399] bg-[#34d3991c] py-[5px] px-2.5 rounded-[20px] flex-none">{balanceStr}</span>
-        </div>
-
-        {/* scroll area */}
-        <div className="flex-1 overflow-y-auto pt-4 px-4 pb-[22px]">
-          {tab === 'agenda' && <MobileAgenda />}
-          {tab === 'repertoire' && <MobileRepertoire />}
-          {tab === 'fund' && <MobileFund />}
-          {tab === 'profile' && <MobileProfile />}
-        </div>
-
-        {/* bottom tab bar */}
-        <div className="flex-none border-t border-[#131c2e] bg-[#0b1220] flex pt-0 px-1.5 pb-2">
-          <TabButton active={tab === 'agenda'} onClick={() => setMobileTab('agenda')} icon={<Calendar size={21} strokeWidth={1.9} />} label={t.agenda} />
-          <TabButton active={tab === 'repertoire'} onClick={() => setMobileTab('repertoire')} icon={<Music size={21} strokeWidth={1.9} />} label={t.repertoire} />
-          <TabButton active={tab === 'fund'} onClick={() => setMobileTab('fund')} icon={<Receipt size={21} strokeWidth={1.9} />} label={t.fund} />
-          <TabButton active={tab === 'profile'} onClick={() => setMobileTab('profile')} icon={<User size={21} strokeWidth={1.9} />} label={t.profile} />
-        </div>
+        <MobileApp />
       </div>
     </div>
   );

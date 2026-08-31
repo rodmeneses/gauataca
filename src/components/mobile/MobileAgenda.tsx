@@ -1,13 +1,37 @@
-/** Mobile "Agenda" tab: upcoming events with Instagram prep + details actions. */
-import { Instagram } from 'lucide-react';
+/** Mobile "Agenda" tab: upcoming/history toggle, "New event" (admin), and event cards. */
+import { Instagram, Plus } from 'lucide-react';
 import { useBandSync } from '../../store';
+import { Pill, Segment } from '../ui';
 
 export function MobileAgenda() {
-  const { t, upcoming, openShare, openEvent } = useBandSync();
+  const { t, isAdmin, state, calList, setCalTab, openNewEvent, openShare, openEvent } = useBandSync();
+  const tab = state.calTab;
+
   return (
     <div className="flex flex-col gap-3">
-      <div className="font-display font-semibold text-[10.5px] tracking-[.12em] uppercase text-[#64748b]">{t.upcoming}</div>
-      {upcoming.map((e) => (
+      <div className="flex items-center gap-2">
+        <Segment className="flex-1">
+          <Pill active={tab === 'upcoming'} color="#34d399" className="flex-1" onClick={() => setCalTab('upcoming')}>
+            {t.upcoming}
+          </Pill>
+          <Pill active={tab === 'history'} color="#34d399" className="flex-1" onClick={() => setCalTab('history')}>
+            {t.history}
+          </Pill>
+        </Segment>
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={openNewEvent}
+            className="flex items-center gap-[6px] min-h-[34px] py-0 px-3 rounded-[10px] border-none text-white font-sans font-semibold text-[12.5px] cursor-pointer flex-none"
+            style={{ background: 'linear-gradient(100deg,#8b5cf6,#d946ef)' }}
+          >
+            <Plus size={15} strokeWidth={2.2} />
+            {t.newEvent}
+          </button>
+        )}
+      </div>
+
+      {calList.map((e) => (
         <article key={e.id} className="bg-[#0f172a] border border-[#1e293b] rounded-[15px] p-[15px] flex flex-col gap-3">
           <div className="flex gap-1.5 flex-wrap">
             <span
