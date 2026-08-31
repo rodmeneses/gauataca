@@ -8,7 +8,7 @@ import { Button, Field, Input } from '../ui';
 export function SignInForm({ onSuccess }: { onSuccess?: () => void }) {
   const { state } = useStore();
   const t = T[state.lang];
-  const { signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithApple } = useAuth();
+  const { signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,12 +31,6 @@ export function SignInForm({ onSuccess }: { onSuccess?: () => void }) {
   const handleGoogle = async () => {
     setError(null);
     const { error } = await signInWithGoogle();
-    if (error) setError(error);
-  };
-
-  const handleApple = async () => {
-    setError(null);
-    const { error } = await signInWithApple();
     if (error) setError(error);
   };
 
@@ -77,12 +71,6 @@ export function SignInForm({ onSuccess }: { onSuccess?: () => void }) {
               <path d="M8 12h8M12 8v8" />
             </svg>
             Google
-          </Button>
-          <Button type="button" onClick={handleApple} variant="surface" className="w-full">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2c-1.1 0-2 .9-2 2v1c0 1.1.9 2 2 2s2-.9 2-2V4c0-1.1-.9-2-2-2zm-4 5c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2H8z" />
-            </svg>
-            Apple
           </Button>
         </div>
 

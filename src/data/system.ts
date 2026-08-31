@@ -35,7 +35,7 @@ export const TYPE_SCALE: TypeScaleRow[] = [
 /** Handoff notes for Phase 2. `%STALE%` is replaced with the current staleDays knob. */
 export const HANDOFF_NOTES: { h: Localized; items: Localized[] }[] = [
   { h: { es: 'Stack de Fase 2', en: 'Phase 2 stack' }, items: [
-    { es: 'Supabase free tier: Postgres + Auth (email/password, Google, Apple) + RLS. Sin Storage: todo media es un enlace externo.', en: 'Supabase free tier: Postgres + Auth (email/password, Google, Apple) + RLS. No Storage: all media is an external link.' },
+    { es: 'Supabase free tier: Postgres + Auth (email/password, Google) + RLS. Sin Storage: todo media es un enlace externo.', en: 'Supabase free tier: Postgres + Auth (email/password, Google) + RLS. No Storage: all media is an external link.' },
     { es: 'Frontend: React + Tailwind. Los tokens de la pestaña Sistema mapean 1:1 a la escala slate/emerald/violet/amber de Tailwind.', en: 'Frontend: React + Tailwind. The tokens in the System tab map 1:1 to Tailwind slate/emerald/violet/amber.' },
   ] },
   { h: { es: 'Tablas sugeridas', en: 'Suggested tables' }, items: [
