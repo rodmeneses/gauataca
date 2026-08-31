@@ -3,8 +3,8 @@
  * Three centered modals (design lines 1113–1265). Shell mounts each one only
  * while `modal.kind` matches, so they render unconditionally here.
  */
-import type { ReactNode } from 'react';
-import { ExternalLink, X } from 'lucide-react';
+import { useMemo, useState, type ReactNode } from 'react';
+import { ExternalLink, Plus, Search, X } from 'lucide-react';
 import { useBandSync } from '@/store';
 import { Button, DatePicker, Field, Input, Modal, Select, Textarea } from '@/components/ui';
 import { GENRES, GENRE_IDS } from '@/data';
@@ -43,7 +43,19 @@ function FormFooter({ cancel, save, onCancel, onSave }: { cancel: string; save: 
 
 /* -------------------------------------------------------------- new event */
 export function NewEventModal() {
-  const { t, lang, form, setForm, closeModal, saveEvent } = useBandSync();
+  const { t, lang, form, setForm, closeModal, saveEvent, songs } = useBandSync();
+  const [query, setQuery] = useState('');
+
+  const byId = useMemo(() => new Map(songs.map((s) => [s.id, s])), [songs]);
+  const selected = (form.setlist || []).map((id) => byId.get(id)).filter((s): s is NonNullable<typeof s> => !!s);
+  const q = query.trim().toLowerCase();
+  const available = songs.filter(
+    (s) => !(form.setlist || []).includes(s.id) && (!q || s.title.toLowerCase().includes(q) || s.key.toLowerCase() === q),
+  );
+
+  const add = (id: string) => setForm('setlist', [...(form.setlist || []), id]);
+  const remove = (id: string) => setForm('setlist', (form.setlist || []).filter((x) => x !== id));
+
   return (
     <Modal onClose={closeModal} maxWidth={560}>
       <FormHeader title={t.newEvent} onClose={closeModal} />
@@ -86,6 +98,48 @@ export function NewEventModal() {
             className="text-[13.5px]"
           />
         </Field>
+
+        {/* setlist picker */}
+        <div>
+          <div className="font-display font-semibold text-[10.5px] leading-[normal] tracking-[.11em] uppercase text-[#64748b] mb-[9px]">{t.setlist}</div>
+          {selected.length > 0 && (
+            <div className="flex flex-col gap-[5px] mb-[9px]">
+              {selected.map((s, i) => (
+                <div key={s.id} className="flex items-center gap-[12px] py-[9px] px-[12px] rounded-[10px] bg-[#0f172a] border border-[#172033]">
+                  <span className="font-mono font-semibold text-[12px] leading-[normal] text-[#475569] flex-none">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="w-[3px] h-[18px] rounded-[2px] flex-none" style={{ background: s.genreColor }} />
+                  <span className="flex-1 min-w-0 font-sans font-semibold text-[13.5px] leading-[normal] text-[#e2e8f0]">{s.title}</span>
+                  <span className="font-mono font-medium text-[11px] leading-[normal] text-[#64748b] flex-none">{s.key} · {s.dur}</span>
+                  <button type="button" onClick={() => remove(s.id)} title={t.removeSong} aria-label={t.removeSong} className="grid place-items-center w-[24px] h-[24px] rounded-[7px] border border-[#1e293b] bg-[#0b1220] text-[#64748b] hover:text-[#cbd5e1] hover:border-[#34d39955] cursor-pointer flex-none">
+                    <X size={13} strokeWidth={2.2} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="relative mb-[9px]">
+            <Search size={15} strokeWidth={1.9} className="absolute left-[12px] top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: '#475569' }} />
+            <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t.searchSongs} className="pl-[36px]" />
+          </div>
+          <div className="max-h-[160px] overflow-y-auto flex flex-col gap-[4px]">
+            {available.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => add(s.id)}
+                className="flex items-center gap-[12px] py-[9px] px-[12px] rounded-[10px] border border-[#1e293b] bg-[#0b1220] text-left cursor-pointer hover:border-[#34d39955]"
+              >
+                <span className="w-[3px] h-[18px] rounded-[2px] flex-none" style={{ background: s.genreColor }} />
+                <span className="flex-1 min-w-0 font-sans font-medium text-[13px] leading-[normal] text-[#cbd5e1]">{s.title}</span>
+                <span className="font-mono font-medium text-[11px] leading-[normal] text-[#64748b] flex-none">{s.key} · {s.dur}</span>
+                <Plus size={15} strokeWidth={2.2} className="flex-none" style={{ color: '#34d399' }} />
+              </button>
+            ))}
+            {available.length === 0 && (
+              <p className="m-0 font-sans font-normal text-[12.5px] leading-[normal] text-[#475569]">{t.noResults}</p>
+            )}
+          </div>
+        </div>
       </FormBody>
       <FormFooter cancel={t.cancel} save={t.save} onCancel={closeModal} onSave={saveEvent} />
     </Modal>

@@ -272,10 +272,11 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
 export async function createEvent(
   input: { title: string; venue: string; date: string; time: string; hours: number; money: number; note: string; type: EventType },
   _userId: string,
-): Promise<void> {
+): Promise<string> {
   const startsAt = `${input.date}T${input.time || '19:00'}:00Z`;
+  const id = newId('x');
   await supabase.from('events').insert({
-    id: newId('x'),
+    id,
     type: input.type,
     state: 'active',
     starts_at: startsAt,
@@ -288,6 +289,7 @@ export async function createEvent(
     note_es: input.note,
     note_en: input.note,
   });
+  return id;
 }
 
 export async function createSong(

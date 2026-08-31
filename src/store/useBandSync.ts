@@ -69,6 +69,7 @@ export interface FormVm {
   dur: string;
   genre: GenreId;
   chart: string;
+  setlist: string[];
 }
 
 export interface BandSync {
@@ -360,6 +361,7 @@ export function useBandSync(): BandSync {
       title: f.title || '', venue: f.venue || '', date: f.date || '', time: f.time || '', hours: f.hours || '', money: f.money || '', note: f.note || '',
       type: f.type || 'gig', desc: f.desc || '', amt: f.amt || '', proof: f.proof || '', kind: f.kind || 'in',
       key: f.key || '', bpm: f.bpm || '', dur: f.dur || '', genre: f.genre || 'joropo', chart: f.chart || '',
+      setlist: f.setlist || [],
     };
 
     const viewSubKey = ('sub' + st.view.charAt(0).toUpperCase() + st.view.slice(1)) as keyof Dict;
@@ -492,11 +494,13 @@ export function useBandSync(): BandSync {
       setForm: (k, v) => set((s) => ({ form: { ...s.form, [k]: v } })),
       saveEvent: async () => {
         const dte = f.date || '2026-11-07';
+        const songIds = f.setlist || [];
         set({ modal: null, form: {} });
-        await createEvent({
+        const id = await createEvent({
           title: f.title || 'Evento nuevo', venue: f.venue || 'Bay Area, CA', date: dte, time: f.time || '19:00', hours: +(f.hours || 0),
           money: +(f.money || 0), note: f.note || '', type: f.type || 'gig',
         });
+        if (id && songIds.length) await persistSetlist(id, songIds);
         toast(t.eventCreated);
       },
       saveTx: async () => {

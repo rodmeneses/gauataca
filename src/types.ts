@@ -189,6 +189,8 @@ export interface FormState {
   dur?: string;
   genre?: GenreId;
   chart?: string;
+  /** Song ids picked for a new event's setlist. */
+  setlist?: string[];
 }
 
 /** Supabase profile (extends auth.users). */

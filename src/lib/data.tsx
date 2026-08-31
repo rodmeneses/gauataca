@@ -24,7 +24,7 @@ interface DataValue extends DataSnapshot {
   /** Non-null when a live fetch failed (e.g. schema not applied yet). */
   error: string | null;
   reload: () => Promise<void>;
-  createEvent: (input: CreateEventInput) => Promise<void>;
+  createEvent: (input: CreateEventInput) => Promise<string | undefined>;
   createSong: (input: CreateSongInput) => Promise<void>;
   createTransaction: (input: CreateTxInput) => Promise<void>;
   setRsvp: (eventId: string, status: RsvpStatus | null) => Promise<void>;
@@ -93,13 +93,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<DataValue>(() => {
     const uid = user?.id ?? '';
-    const run = async (fn: () => Promise<void>) => {
-      if (isDemo) return;
+    const run = async <T,>(fn: () => Promise<T>): Promise<T | undefined> => {
+      if (isDemo) return undefined;
       try {
-        await fn();
+        const result = await fn();
         await reload();
+        return result;
       } catch (err) {
         console.error('Mutation failed:', err);
+        return undefined;
       }
     };
     return {
