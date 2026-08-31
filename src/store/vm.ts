@@ -21,8 +21,13 @@ export interface Ctx {
 }
 
 /** Resolve a member id to a Member (falls back to the first member). */
+const FALLBACK_MEMBER: Member = {
+  id: '', name: '', short: '', initial: '', role: 'member',
+  title: { es: '', en: '' }, email: '', joined: '', instruments: [], vocals: [],
+};
+
 export function memberById(members: Member[], id: string): Member {
-  return members.find((m) => m.id === id) ?? members[0];
+  return members.find((m) => m.id === id) ?? members[0] ?? FALLBACK_MEMBER;
 }
 
 export const L = (lang: Lang, v: Localized | string | null | undefined): string =>
