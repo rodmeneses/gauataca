@@ -37,7 +37,7 @@ interface DataValue extends DataSnapshot {
 
 const DataContext = createContext<DataValue | null>(null);
 
-const isDemo = !import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY;
+export const isDemo = !import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 const DEMO: DataSnapshot = {
   songs: SONGS,

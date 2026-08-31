@@ -1,4 +1,7 @@
 import { useBandSync } from '../../store';
+import { useAuth } from '../../lib/auth';
+import { isDemo } from '../../lib/data';
+import { LoginPage } from '../auth/LoginPage';
 import { DesktopShell } from './DesktopShell';
 import { MobileShell } from '../mobile/MobileShell';
 import { EventModal } from '../modals/EventModal';
@@ -16,7 +19,21 @@ import { Toasts } from '../modals/Toasts';
 /** Root layout: desktop or phone-preview shell, plus every overlay layer. */
 export function Shell() {
   const bs = useBandSync();
+  const { user, loading: authLoading } = useAuth();
   const { modal } = bs;
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-base grid place-items-center">
+        <div className="flex flex-col items-center gap-3 text-[#64748b]">
+          <div className="w-7 h-7 rounded-full border-2 border-[#1e293b] border-t-[#34d399] animate-spin" />
+          <span className="font-mono text-[12px] tracking-[.08em] uppercase">…</span>
+        </div>
+      </div>
+    );
+  }
+  if (!isDemo && !user) {
+    return <LoginPage />;
+  }
   if (bs.loading) {
     return (
       <div className="min-h-screen bg-base grid place-items-center">
