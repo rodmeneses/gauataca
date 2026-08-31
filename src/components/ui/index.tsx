@@ -201,3 +201,4 @@ export function Pill({ active, color = '#7c3aed', activeText, className, childre
 }
 
 export { cx };
+export { DatePicker } from './DatePicker';

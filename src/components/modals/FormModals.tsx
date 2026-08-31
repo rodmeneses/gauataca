@@ -6,7 +6,7 @@
 import type { ReactNode } from 'react';
 import { ExternalLink, X } from 'lucide-react';
 import { useBandSync } from '@/store';
-import { Button, Field, Input, Modal, Select, Textarea } from '@/components/ui';
+import { Button, DatePicker, Field, Input, Modal, Select, Textarea } from '@/components/ui';
 import { GENRES, GENRE_IDS } from '@/data';
 import type { EventType, GenreId, TxKind } from '@/types';
 
@@ -43,7 +43,7 @@ function FormFooter({ cancel, save, onCancel, onSave }: { cancel: string; save: 
 
 /* -------------------------------------------------------------- new event */
 export function NewEventModal() {
-  const { t, form, setForm, closeModal, saveEvent } = useBandSync();
+  const { t, lang, form, setForm, closeModal, saveEvent } = useBandSync();
   return (
     <Modal onClose={closeModal} maxWidth={560}>
       <FormHeader title={t.newEvent} onClose={closeModal} />
@@ -60,7 +60,7 @@ export function NewEventModal() {
         </Field>
         <div className="grid grid-cols-2 md:grid-cols-[1.5fr_1fr_1fr] gap-3">
           <Field label={t.date} className="col-span-2 md:col-span-1">
-            <Input mono type="date" value={form.date} onChange={(e) => setForm('date', e.target.value)} />
+            <DatePicker value={form.date} onChange={(v) => setForm('date', v)} lang={lang} placeholder={t.pickDate} />
           </Field>
           <Field label={t.hourL}>
             <Input mono type="time" value={form.time} onChange={(e) => setForm('time', e.target.value)} />
@@ -94,7 +94,7 @@ export function NewEventModal() {
 
 /* ---------------------------------------------------------- new movement */
 export function NewTxModal() {
-  const { t, form, setForm, closeModal, saveTx } = useBandSync();
+  const { t, lang, form, setForm, closeModal, saveTx } = useBandSync();
   return (
     <Modal onClose={closeModal} maxWidth={520}>
       <FormHeader title={t.newTx} onClose={closeModal} />
@@ -114,7 +114,7 @@ export function NewTxModal() {
           <Input value={form.desc} onChange={(e) => setForm('desc', e.target.value)} placeholder="Cachet — Festival Latino de Fruitvale" />
         </Field>
         <Field label={t.date}>
-          <Input mono type="date" value={form.date} onChange={(e) => setForm('date', e.target.value)} />
+          <DatePicker value={form.date} onChange={(v) => setForm('date', v)} lang={lang} placeholder={t.pickDate} />
         </Field>
         <Field
           label={
