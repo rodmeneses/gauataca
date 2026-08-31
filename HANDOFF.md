@@ -50,11 +50,14 @@ Answering "is X already there?" honestly. None of these exist as UI today; the E
 > Closed in this PR (code-first, see `docs/design.md` §5.4): **RSVP / attendance confirmation** — members answer
 > Voy / Quizás / No voy on upcoming events, "Confirmados" is derived, cards show the answer. Backend still needs
 > the `event_attendance` table in §4.1. The design snapshot in `design/` does not include it (`docs/implementation.md` §5).
+>
+> Closed (code-first): **Setlist builder** — admins edit an event's setlist in the detail modal (add / remove / reorder
+> with a live runtime total), persisted to `event_songs` via `setEventSetlist` (delete + re-insert with `position`).
+> "Last rehearsed" is derived from past events' setlists, so this editor is what makes the rehearsal analytics real.
 
 | SPEC | Missing | Notes |
 | --- | --- | --- |
 | §4 events | Edit / cancel / reschedule an existing event | Only *create* exists. States `cancelled` / `rescheduled` (+ `prevDate`) are rendered but only set in mock data |
-| §4 setlists | **Setlist builder** for gigs; tagging songs rehearsed at a practice | Setlists are displayed (order, key, runtime) but there is no editor. "Last rehearsed" is derived from `setlist` of past events, so this editor is what makes the rehearsal analytics real |
 | §4 media | "Add gallery link" on past events | Galleries render (`event.media[]`) but members cannot submit a link |
 | §5 feedback | Admin **poll authoring** | One poll exists in mock data; there is no "add poll" UI. Aggregated view exists |
 | §3 songs | Edit song / edit its four resource links | Create only; links are generated placeholder URLs (`chart`, `yt`, `sp`, `rec` in `vm.ts`) |

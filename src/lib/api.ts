@@ -386,6 +386,15 @@ export async function pickPoll(eventId: string, optionIndex: number, userId: str
   await supabase.from('poll_votes').insert({ option_id: opt.id, profile_id: userId });
 }
 
+export async function setEventSetlist(eventId: string, songIds: string[], _userId: string): Promise<void> {
+  await supabase.from('event_songs').delete().eq('event_id', eventId);
+  if (songIds.length) {
+    await supabase.from('event_songs').insert(
+      songIds.map((songId, i) => ({ event_id: eventId, song_id: songId, position: i + 1 })),
+    );
+  }
+}
+
 export async function transferCustody(gearId: string, toMemberId: string, _userId: string): Promise<void> {
   const { data } = await supabase.from('gear').select('custodian_id').eq('id', gearId).single();
   const fromId = data?.custodian_id ?? null;

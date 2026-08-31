@@ -181,6 +181,8 @@ export interface BandSync {
   transferCustody: (memberId: string) => Promise<void>;
   /** Set the signed-in member's RSVP; choosing the current answer again withdraws it (back to pending). */
   setRsvp: (eventId: string, status: RsvpStatus) => Promise<void>;
+  /** Replace an event's setlist (ordered song ids). */
+  setEventSetlist: (eventId: string, songIds: string[]) => Promise<void>;
   voteThread: (id: string) => Promise<void>;
   setCommentDraft: (s: string) => void;
   sendComment: () => Promise<void>;
@@ -228,6 +230,7 @@ export function useBandSync(): BandSync {
     myThreadVotes, myPollPicks, loading, error,
     createEvent, createSong, createTransaction, setRsvp: persistRsvp, voteThread: persistVote,
     addComment: persistComment, submitFeedback: persistFeedback, pickPoll: persistPoll, transferCustody: persistCustody,
+    setEventSetlist: persistSetlist,
   } = useData();
   const isMobileViewport = useMediaQuery('(max-width: 768px)');
 
@@ -452,6 +455,10 @@ export function useBandSync(): BandSync {
         await persistRsvp(eventId, next);
         toast(t.rsvpSaved);
       },
+      setEventSetlist: async (eventId, songIds) => {
+        await persistSetlist(eventId, songIds);
+        toast(t.setlistSaved);
+      },
       voteThread: async (id) => {
         await persistVote(id);
         toast(t.voted);
@@ -515,5 +522,5 @@ export function useBandSync(): BandSync {
       closeHandoff: () => set({ handoff: false }),
       toast,
     };
-  }, [st, props, set, toast, user, profile, signOut, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, myThreadVotes, myPollPicks, loading, error, isMobileViewport, createEvent, createSong, createTransaction, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody]);
+  }, [st, props, set, toast, user, profile, signOut, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, myThreadVotes, myPollPicks, loading, error, isMobileViewport, createEvent, createSong, createTransaction, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist]);
 }

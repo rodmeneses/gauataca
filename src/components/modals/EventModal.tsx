@@ -5,6 +5,7 @@
 import { ChartColumn, Check, EyeOff, ExternalLink, Image, Instagram, Star } from 'lucide-react';
 import { RSVP_COLOR, RSVP_ORDER, RSVP_PENDING_COLOR, rsvpLabel, useBandSync } from '@/store';
 import { Avatar, Badge, Button, CloseButton, Modal } from '@/components/ui';
+import { SetlistEditor } from './SetlistEditor';
 import type { RatingKey } from '@/types';
 
 const RATING_KEYS: RatingKey[] = ['sound', 'perf', 'log', 'energy'];
@@ -16,7 +17,7 @@ const textareaCls =
   'w-full py-[11px] px-[13px] rounded-[10px] border border-[#1e293b] bg-[#020617] text-[#e2e8f0] font-sans font-normal text-[13px] leading-[normal] outline-none resize-y';
 
 export function EventModal() {
-  const { t, ev, fb, state, closeModal, openShare, pickPoll, setRating, toggleAnon, setFbWell, setFbImprove, submitFb, setRsvp } = useBandSync();
+  const { t, ev, fb, state, songs, isAdmin, closeModal, openShare, pickPoll, setRating, toggleAnon, setFbWell, setFbImprove, submitFb, setRsvp, setEventSetlist } = useBandSync();
   if (!ev) return null;
 
   const ratingLabel: Record<RatingKey, string> = { sound: t.sound, perf: t.perf, log: t.logistics, energy: t.energy };
@@ -125,25 +126,16 @@ export function EventModal() {
         </div>
       )}
 
-      {/* ---- setlist */}
-      {ev.hasSetlist && (
-        <div className="py-5 px-6 border-b border-[#172033]">
-          <div className="flex items-baseline gap-[11px] mb-[13px]">
-            <h3 className="m-0 font-display font-semibold text-[13px] leading-[normal] tracking-[.02em] text-[#cbd5e1]">{ev.setlistLabel}</h3>
-            <span className="font-mono font-medium text-[11.5px] leading-[normal] text-[#64748b] whitespace-nowrap">{ev.setlistCount} · {t.runtime} {ev.runtime}</span>
-          </div>
-          <div className="flex flex-col gap-[5px]">
-            {ev.setlist.map((s) => (
-              <div key={s.n} className="flex items-center gap-[14px] py-[11px] px-[13px] rounded-[10px] bg-[#0f172a] border border-[#172033]">
-                <span className="font-mono font-semibold text-[12px] leading-[normal] text-[#475569] flex-none">{s.n}</span>
-                <span className="w-[3px] h-[22px] rounded-[2px] flex-none" style={{ background: s.genreColor }} />
-                <span className="flex-1 min-w-0 font-sans font-semibold text-[14px] leading-[normal] text-[#e2e8f0]">{s.title}</span>
-                <span className="font-mono font-medium text-[11.5px] leading-[normal] text-[#64748b] flex-none">{s.key}</span>
-                <span className="font-mono font-medium text-[11.5px] leading-[normal] text-[#94a3b8] flex-none min-w-[38px] text-right">{s.dur}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* ---- setlist (builder for admins, read-only for members) */}
+      {(isAdmin || ev.hasSetlist) && (
+        <SetlistEditor
+          currentIds={ev.setlist.map((s) => s.id)}
+          songs={songs}
+          setlistLabel={ev.setlistLabel}
+          isAdmin={isAdmin}
+          onSave={(ids) => setEventSetlist(ev.id, ids)}
+          t={t}
+        />
       )}
 
       {/* ---- media */}

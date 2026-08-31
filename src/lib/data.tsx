@@ -8,8 +8,8 @@ import { useAuth } from './auth';
 import {
   addComment as apiAddComment, createEvent as apiCreateEvent, createSong as apiCreateSong,
   createTransaction as apiCreateTransaction, fetchAll, pickPoll as apiPickPoll,
-  setRsvp as apiSetRsvp, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody,
-  voteThread as apiVoteThread, type DataSnapshot,
+  setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, submitFeedback as apiSubmitFeedback,
+  transferCustody as apiTransferCustody, voteThread as apiVoteThread, type DataSnapshot,
 } from './api';
 import { EVENTS, GEAR, MEMBERS, SONGS, THREADS, TRANSACTIONS } from '../data';
 import type { EventType, GenreId, RsvpStatus, TxKind } from '../types';
@@ -33,6 +33,7 @@ interface DataValue extends DataSnapshot {
   submitFeedback: (eventId: string, input: FeedbackInput) => Promise<void>;
   pickPoll: (eventId: string, optionIndex: number) => Promise<void>;
   transferCustody: (gearId: string, toMemberId: string) => Promise<void>;
+  setEventSetlist: (eventId: string, songIds: string[]) => Promise<void>;
 }
 
 const DataContext = createContext<DataValue | null>(null);
@@ -115,6 +116,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       submitFeedback: (eventId, input) => run(() => apiSubmitFeedback(eventId, input, uid)),
       pickPoll: (eventId, optionIndex) => run(() => apiPickPoll(eventId, optionIndex, uid)),
       transferCustody: (gearId, toMemberId) => run(() => apiTransferCustody(gearId, toMemberId, uid)),
+      setEventSetlist: (eventId, songIds) => run(() => apiSetEventSetlist(eventId, songIds, uid)),
     };
   }, [snap, loading, error, reload, user?.id]);
 
