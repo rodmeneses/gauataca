@@ -112,16 +112,23 @@ export function Ledger() {
                 <span className="text-[12.5px] text-ink-meta">{x.by}</span>
               </span>
               <span>
-                {x.hasProof && (
-                  <a
-                    href={x.proof ?? undefined}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-[7px] font-sans font-semibold text-[11.5px] text-[#6ee7b7] border border-[#34d39944] bg-[#34d3990f] py-[6px] px-[10px] rounded-lg no-underline hover:bg-[#34d39922]"
-                  >
-                    <ExternalLink size={12} strokeWidth={2.1} />
-                    {x.proofKind}
-                  </a>
+                {x.hasProof && x.proof && (
+                  x.proofIsImage ? (
+                    <a href={x.proof} target="_blank" rel="noreferrer" className="inline-flex items-center gap-[7px] no-underline group">
+                      <img src={x.proof} alt={x.proofKind} className="h-[40px] w-[40px] object-cover rounded-[8px] border border-[#1e293b] group-hover:border-[#34d39955]" />
+                      <span className="font-sans font-semibold text-[11px] text-[#6ee7b7]">{x.proofKind}</span>
+                    </a>
+                  ) : (
+                    <a
+                      href={x.proof}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-[7px] font-sans font-semibold text-[11.5px] text-[#6ee7b7] border border-[#34d39944] bg-[#34d3990f] py-[6px] px-[10px] rounded-lg no-underline hover:bg-[#34d39922]"
+                    >
+                      <ExternalLink size={12} strokeWidth={2.1} />
+                      {x.proofKind}
+                    </a>
+                  )
                 )}
               </span>
               <span className="font-mono font-semibold text-[14.5px] text-right" style={{ color: x.color }}>{x.amountStr}</span>

@@ -305,6 +305,8 @@ export interface TxVm {
   byInitial: string;
   proof: string | null;
   hasProof: boolean;
+  /** true when the proof URL points at an image (render a thumbnail). */
+  proofIsImage: boolean;
   /** "Zelle" | "Invoice" | "Photo" | "Receipt" */
   proofKind: string;
   /** Localized title of the linked event, or null. */
@@ -335,6 +337,7 @@ export function txVm(x: Transaction, ctx: Ctx): TxVm {
     byInitial: by.initial,
     proof: x.proof || null,
     hasProof: !!x.proof,
+    proofIsImage: /\.(png|jpe?g|webp|gif|heic)(\?|$)/i.test(x.proof || ''),
     proofKind: x.proofKind === 'zelle' ? t.zelle : x.proofKind === 'invoice' ? t.invoice : x.proofKind === 'photo' ? t.photo : t.receipt,
     eventLabel: ev ? L(lang, ev.title) : null,
     gearLabel: g ? L(lang, g.name) : null,

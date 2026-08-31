@@ -163,15 +163,21 @@ export function Dashboard() {
                 <span className="block text-[11px] text-ink-muted mt-[3px]">{x.dateStr} · {t.addedBy} {x.by}</span>
               </span>
               {x.hasProof && x.proof && (
-                <a
-                  href={x.proof}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-[6px] font-sans font-semibold text-[11px] text-ink-meta border border-line p-[5px_9px] rounded-[8px] no-underline whitespace-nowrap hover:border-[#34d39955] hover:text-emerald-light"
-                >
-                  <ExternalLink size={12} strokeWidth={2.1} />
-                  {x.proofKind}
-                </a>
+                x.proofIsImage ? (
+                  <a href={x.proof} target="_blank" rel="noreferrer" className="flex-none no-underline">
+                    <img src={x.proof} alt={x.proofKind} className="h-[34px] w-[34px] object-cover rounded-[8px] border border-line hover:border-[#34d39955]" />
+                  </a>
+                ) : (
+                  <a
+                    href={x.proof}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-[6px] font-sans font-semibold text-[11px] text-ink-meta border border-line p-[5px_9px] rounded-[8px] no-underline whitespace-nowrap hover:border-[#34d39955] hover:text-emerald-light"
+                  >
+                    <ExternalLink size={12} strokeWidth={2.1} />
+                    {x.proofKind}
+                  </a>
+                )
               )}
               <span className="font-mono font-semibold text-[14px] min-w-[92px] text-right" style={{ color: x.color }}>{x.amountStr}</span>
             </div>
