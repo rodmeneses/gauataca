@@ -9,7 +9,7 @@ const VIEWS: View[] = ['dashboard', 'calendar', 'repertoire', 'ledger', 'brainst
 
 /**
  * Prototype knobs (the design's "tweaks"). Override via URL query, e.g.
- *   ?lang=en&role=member&view=ledger&tour=0&stale=45&band=Mi%20Grupo
+ *   ?lang=en&role=member&view=ledger&tour=1&stale=45&band=Mi%20Grupo
  */
 function readProps(): AppProps {
   const q = new URLSearchParams(window.location.search);
@@ -22,7 +22,7 @@ function readProps(): AppProps {
     initialLang: (lang === 'en' ? 'en' : 'es') as Lang,
     initialRole: (role === 'member' ? 'member' : 'admin') as Role,
     startView: VIEWS.includes(view as View) ? (view as View) : 'dashboard',
-    showTour: q.get('tour') !== '0',
+    showTour: q.get('tour') === '1',
     staleDays: Number.isFinite(stale) && stale >= 14 && stale <= 120 ? stale : 30,
   };
 }
