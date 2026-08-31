@@ -29,6 +29,12 @@ export function Shell() {
   }
   return (
     <div className="min-h-screen bg-base text-ink-base font-sans text-[14px] leading-normal">
+      {bs.error && (
+        <div className="sticky top-0 z-40 bg-[#f43f5e14] border-b border-[#f43f5e4d] px-6 py-3 text-[13px] text-[#fda4af]">
+          <span className="font-semibold">Couldn't load data from Supabase.</span>{' '}
+          <span className="text-[#fda4af99]">Check that the schema + seed are applied and the env keys are set. ({bs.error})</span>
+        </div>
+      )}
       {bs.isDesktop ? <DesktopShell /> : <MobileShell />}
 
       {modal?.kind === 'event' && bs.ev && <EventModal />}

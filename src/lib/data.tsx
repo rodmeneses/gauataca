@@ -21,6 +21,8 @@ export interface FeedbackInput { sound: number; perf: number; log: number; energ
 
 interface DataValue extends DataSnapshot {
   loading: boolean;
+  /** Non-null when a live fetch failed (e.g. schema not applied yet). */
+  error: string | null;
   reload: () => Promise<void>;
   createEvent: (input: CreateEventInput) => Promise<void>;
   createSong: (input: CreateSongInput) => Promise<void>;
@@ -48,10 +50,22 @@ const DEMO: DataSnapshot = {
   myPollPicks: {},
 };
 
+const EMPTY: DataSnapshot = {
+  songs: [],
+  events: [],
+  transactions: [],
+  gear: [],
+  threads: [],
+  members: [],
+  myThreadVotes: [],
+  myPollPicks: {},
+};
+
 export function DataProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [snap, setSnap] = useState<DataSnapshot>(DEMO);
+  const [snap, setSnap] = useState<DataSnapshot>(isDemo ? DEMO : EMPTY);
   const [loading, setLoading] = useState(!isDemo);
+  const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     if (isDemo) {
@@ -60,9 +74,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
       return;
     }
     setLoading(true);
+    setError(null);
     try {
       setSnap(await fetchAll(user?.id ?? null));
     } catch (err) {
+      setSnap(EMPTY);
+      setError(err instanceof Error ? err.message : String(err));
       console.error('Failed to load data:', err);
     } finally {
       setLoading(false);
@@ -87,6 +104,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return {
       ...snap,
       loading,
+      error,
       reload,
       createEvent: (input) => run(() => apiCreateEvent(input, uid)),
       createSong: (input) => run(() => apiCreateSong(input, uid)),
@@ -98,7 +116,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       pickPoll: (eventId, optionIndex) => run(() => apiPickPoll(eventId, optionIndex, uid)),
       transferCustody: (gearId, toMemberId) => run(() => apiTransferCustody(gearId, toMemberId, uid)),
     };
-  }, [snap, loading, reload, user?.id]);
+  }, [snap, loading, error, reload, user?.id]);
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }

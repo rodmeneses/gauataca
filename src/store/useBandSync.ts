@@ -92,6 +92,8 @@ export interface BandSync {
   staleDays: number;
   /** true while the data layer is fetching (live mode). */
   loading: boolean;
+  /** Non-null when a live fetch failed (e.g. schema not applied yet). */
+  error: string | null;
 
   // ---- collections (view-models)
   songs: SongVm[];
@@ -216,7 +218,7 @@ export function useBandSync(): BandSync {
   const { user, profile } = useAuth();
   const {
     songs: dbSongs, events: dbEvents, transactions: dbTx, gear: dbGear, threads: dbThreads, members: dbMembers,
-    myThreadVotes, myPollPicks, loading,
+    myThreadVotes, myPollPicks, loading, error,
     createEvent, createSong, createTransaction, setRsvp: persistRsvp, voteThread: persistVote,
     addComment: persistComment, submitFeedback: persistFeedback, pickPoll: persistPoll, transferCustody: persistCustody,
   } = useData();
@@ -354,7 +356,7 @@ export function useBandSync(): BandSync {
       roleLabel: isAdmin ? t.admin : t.member, me,
       bandName: props.bandName || 'Dulce Tricolor Venezolano',
       view: st.view, viewTitle: t[st.view] || t.dashboard, viewSub: t[viewSubKey] || '',
-      isDesktop: st.device === 'desktop', isMobile: st.device === 'mobile', staleDays, loading,
+      isDesktop: st.device === 'desktop', isMobile: st.device === 'mobile', staleDays, loading, error,
 
       songs, filteredSongs, staleSongs, genreChips,
       events, upcoming, history, calList: st.calTab === 'upcoming' ? upcoming : history, nextEvent, dashUpcoming,
@@ -502,5 +504,5 @@ export function useBandSync(): BandSync {
       closeHandoff: () => set({ handoff: false }),
       toast,
     };
-  }, [st, props, set, toast, user, profile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, myThreadVotes, myPollPicks, loading, createEvent, createSong, createTransaction, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody]);
+  }, [st, props, set, toast, user, profile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, myThreadVotes, myPollPicks, loading, error, createEvent, createSong, createTransaction, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody]);
 }
