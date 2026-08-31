@@ -272,7 +272,7 @@ export function useBandSync(): BandSync {
     /* ---- raw collections (from the data layer) */
     const allSongs: Song[] = dbSongs;
     const allEvents: BandEvent[] = dbEvents;
-    const allTx: Transaction[] = dbTx;
+    const allTx: Transaction[] = [...dbTx].sort((a, b) => (a.date < b.date ? 1 : -1));
 
     const income = allTx.filter((x) => x.kind === 'in').reduce((a, b) => a + b.amt, 0);
     const expense = allTx.filter((x) => x.kind === 'out').reduce((a, b) => a + b.amt, 0);
