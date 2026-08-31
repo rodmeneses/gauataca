@@ -1,11 +1,11 @@
-import { ArrowLeftRight, BookOpen, LogIn, LogOut, Monitor, Search, ShieldCheck, Smartphone } from 'lucide-react';
+import { BookOpen, LogIn, LogOut, Monitor, Search, ShieldCheck, Smartphone } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import { useBandSync } from '../../store';
 import { Pill, Segment, cx } from '../ui';
 
 /** Sticky desktop header: view title, palette trigger, ES/EN, role toggle, device switch, handoff (design lines 102–137). */
 export function TopBar() {
-  const { t, lang, isAdmin, isDesktop, isMobile, roleLabel, viewTitle, viewSub, openPalette, setLang, setDevice, toggleHandoff, openSignIn } = useBandSync();
+  const { t, lang, isAdmin, isDesktop, isMobile, viewTitle, viewSub, openPalette, setLang, setDevice, toggleHandoff, openSignIn } = useBandSync();
   const { user, profile, signOut } = useAuth();
 
   return (

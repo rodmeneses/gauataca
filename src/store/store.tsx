@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type {
-  AppProps, BandEvent, CalTab, CustodyDialog, Device, FormState, GenreId, Lang, LocalComment, MobileTab, Modal,
-  RatingKey, Role, RsvpStatus, ShareSheet, Song, Toast, Transaction, View,
+  AppProps, CalTab, CustodyDialog, Device, FormState, GenreId, Lang, MobileTab, Modal,
+  RatingKey, Role, ShareSheet, Toast, View,
 } from '../types';
 
 /**
@@ -26,28 +26,15 @@ export interface State {
   /** Tour step index, -1 = dismissed. */
   tour: number;
   handoff: boolean;
-  /** thread id → 1 when the current user has upvoted. */
-  votes: Record<string, 0 | 1>;
-  pollPick: number | null;
   anon: boolean;
   myRatings: Record<RatingKey, number>;
   fbWell: string;
   fbImprove: string;
-  fbSent: boolean;
-  extraComments: Record<string, LocalComment[]>;
   commentDraft: string;
-  extraTx: Transaction[];
-  extraSongs: Song[];
-  extraEvents: BandEvent[];
-  /** gear id → member id (custody transfers made in this session). */
-  custodyOverrides: Record<string, string>;
-  /** event id → member id → RSVP set in this session (null = answer withdrawn, back to pending). */
-  rsvpOverrides: Record<string, Record<string, RsvpStatus | null>>;
   form: FormState;
   mobileTab: MobileTab;
   sheet: ShareSheet | null;
   custody: CustodyDialog | null;
-  seq: number;
 }
 
 export type Updater = Partial<State> | ((s: State) => Partial<State>);
@@ -79,25 +66,15 @@ export function initialState(props: AppProps): State {
     pq: '',
     tour: props.showTour === false ? -1 : 0,
     handoff: false,
-    votes: {},
-    pollPick: null,
     anon: false,
     myRatings: { sound: 0, perf: 0, log: 0, energy: 0 },
     fbWell: '',
     fbImprove: '',
-    fbSent: false,
-    extraComments: {},
     commentDraft: '',
-    extraTx: [],
-    extraSongs: [],
-    extraEvents: [],
-    custodyOverrides: {},
-    rsvpOverrides: {},
     form: {},
     mobileTab: 'agenda',
     sheet: null,
     custody: null,
-    seq: 0,
   };
 }
 

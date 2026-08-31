@@ -5,16 +5,17 @@
 import { useMemo } from 'react';
 import { T, type Dict } from '../i18n';
 import {
-  COLOR_TOKENS, EVENTS, GEAR, GENRES, GENRE_IDS, HANDOFF_NOTES, MEMBERS, SONGS, THREADS, TOUR_STEPS, TRANSACTIONS, TYPE_SCALE, memberById,
+  COLOR_TOKENS, GENRES, GENRE_IDS, HANDOFF_NOTES, TOUR_STEPS, TYPE_SCALE,
 } from '../data';
 import { d, days, money, money0 } from '../lib/format';
 import type {
-  AppProps, BandEvent, CustodyDialog, FormState, GenreId, Lang, Member, MobileTab, Modal, RatingKey, RsvpStatus, ShareSheet, Song, Toast, Transaction, View,
+  AppProps, BandEvent, CustodyDialog, FormState, GenreId, Lang, Member, MobileTab, Modal, Profile, RatingKey, RsvpStatus, ShareSheet, Song, Toast, Transaction, View,
 } from '../types';
 import { useStore, type State } from './store';
 import { useAuth } from '../lib/auth';
+import { useData } from '../lib/data';
 import {
-  L, eventVm, feedbackVm, gearVm, igCaption, memberVm, songVm, threadVm, txVm,
+  L, eventVm, feedbackVm, gearVm, igCaption, memberById, memberVm, songVm, threadVm, txVm,
   type Ctx, type EventVm, type FeedbackVm, type GearVm, type MemberVm, type SongVm, type ThreadVm, type TxVm,
 } from './vm';
 
@@ -89,6 +90,8 @@ export interface BandSync {
   isDesktop: boolean;
   isMobile: boolean;
   staleDays: number;
+  /** true while the data layer is fetching (live mode). */
+  loading: boolean;
 
   // ---- collections (view-models)
   songs: SongVm[];
@@ -166,23 +169,23 @@ export interface BandSync {
   openFlyer: () => void;
   openCustody: (gearId: string) => void;
   closeCustody: () => void;
-  transferCustody: (memberId: string) => void;
+  transferCustody: (memberId: string) => Promise<void>;
   /** Set the signed-in member's RSVP; choosing the current answer again withdraws it (back to pending). */
   setRsvp: (eventId: string, status: RsvpStatus) => Promise<void>;
-  voteThread: (id: string) => void;
+  voteThread: (id: string) => Promise<void>;
   setCommentDraft: (s: string) => void;
-  sendComment: () => void;
+  sendComment: () => Promise<void>;
   convertThread: (id: string) => void;
-  pickPoll: (i: number) => void;
+  pickPoll: (i: number) => Promise<void>;
   setRating: (k: RatingKey, n: number) => void;
   toggleAnon: () => void;
   setFbWell: (s: string) => void;
   setFbImprove: (s: string) => void;
-  submitFb: () => void;
+  submitFb: () => Promise<void>;
   setForm: <K extends keyof FormState>(k: K, v: FormState[K]) => void;
-  saveEvent: () => void;
-  saveTx: () => void;
-  saveSong: () => void;
+  saveEvent: () => Promise<void>;
+  saveTx: () => Promise<void>;
+  saveSong: () => Promise<void>;
   openPalette: () => void;
   closePalette: () => void;
   setPq: (s: string) => void;
@@ -193,23 +196,44 @@ export interface BandSync {
   toast: (msg: string, tone?: Toast['tone']) => void;
 }
 
+function profileToMember(p: Profile): Member {
+  return {
+    id: p.id,
+    name: p.name,
+    short: p.name.split(/\s+/)[0],
+    initial: p.name.split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase(),
+    role: p.role,
+    title: { es: '', en: '' },
+    email: p.email,
+    joined: (p.joined_at ?? '').slice(0, 10),
+    instruments: [],
+    vocals: [],
+  };
+}
+
 export function useBandSync(): BandSync {
   const { state: st, props, set, toast } = useStore();
   const { user, profile } = useAuth();
+  const {
+    songs: dbSongs, events: dbEvents, transactions: dbTx, gear: dbGear, threads: dbThreads, members: dbMembers,
+    myThreadVotes, myPollPicks, loading,
+    createEvent, createSong, createTransaction, setRsvp: persistRsvp, voteThread: persistVote,
+    addComment: persistComment, submitFeedback: persistFeedback, pickPoll: persistPoll, transferCustody: persistCustody,
+  } = useData();
 
   return useMemo<BandSync>(() => {
     const lang = st.lang;
     const t = T[lang];
     const isAdmin = profile?.role === 'admin' || (!user && st.role === 'admin');
     const staleDays = props.staleDays || 30;
-    const me = memberById(isAdmin ? 'm1' : 'm2');
-    const ctx: Ctx = { lang, t, staleDays, meId: me.id, rsvpOverrides: st.rsvpOverrides };
+    const me = user && profile ? profileToMember(profile) : memberById(dbMembers, isAdmin ? 'm1' : 'm2');
+    const ctx: Ctx = { lang, t, staleDays, meId: me.id, members: dbMembers };
     const Lx = (v: { es: string; en: string } | string | null | undefined) => L(lang, v);
 
-    /* ---- raw collections (session additions first, like the design) */
-    const allSongs: Song[] = [...st.extraSongs, ...SONGS];
-    const allEvents: BandEvent[] = [...st.extraEvents, ...EVENTS];
-    const allTx: Transaction[] = [...st.extraTx, ...TRANSACTIONS];
+    /* ---- raw collections (from the data layer) */
+    const allSongs: Song[] = dbSongs;
+    const allEvents: BandEvent[] = dbEvents;
+    const allTx: Transaction[] = dbTx;
 
     const income = allTx.filter((x) => x.kind === 'in').reduce((a, b) => a + b.amt, 0);
     const expense = allTx.filter((x) => x.kind === 'out').reduce((a, b) => a + b.amt, 0);
@@ -241,18 +265,18 @@ export function useBandSync(): BandSync {
     const dashUpcoming = upcomingRaw.filter((e) => e.state !== 'cancelled').slice(0, 3).map(evm);
 
     const tx = allTx.map((x) => txVm(x, ctx));
-    const gear = GEAR.map((g) => gearVm(g, st.custodyOverrides[g.id] ?? g.holder, ctx));
-    const threads = THREADS.map((b) => threadVm(b, st.votes[b.id], st.extraComments[b.id] || [], ctx));
-    const members = MEMBERS.map((m) => memberVm(m, ctx));
+    const gear = dbGear.map((g) => gearVm(g, g.holder, ctx));
+    const threads = dbThreads.map((b) => threadVm(b, myThreadVotes.includes(b.id), ctx));
+    const members = dbMembers.map((m) => memberVm(m, ctx));
 
     /* ---- modal selections */
     const modal = st.modal;
     const evSel = modal?.kind === 'event' ? allEvents.find((e) => e.id === modal.id) ?? null : null;
     const ev = evSel ? evm(evSel) : null;
-    const fb = evSel?.feedback ? feedbackVm(evSel.feedback, st.pollPick, st.fbSent, ctx) : null;
-    const thSel = modal?.kind === 'thread' ? THREADS.find((x) => x.id === modal.id) ?? null : null;
-    const th = thSel ? threadVm(thSel, st.votes[thSel.id], st.extraComments[thSel.id] || [], ctx) : null;
-    const mbSel = modal?.kind === 'member' ? MEMBERS.find((x) => x.id === modal.id) ?? null : null;
+    const fb = evSel?.feedback ? feedbackVm(evSel.feedback, myPollPicks[evSel.id] ?? null, ctx) : null;
+    const thSel = modal?.kind === 'thread' ? dbThreads.find((x) => x.id === modal.id) ?? null : null;
+    const th = thSel ? threadVm(thSel, myThreadVotes.includes(thSel.id), ctx) : null;
+    const mbSel = modal?.kind === 'member' ? dbMembers.find((x) => x.id === modal.id) ?? null : null;
     const mb = mbSel ? memberVm(mbSel, ctx) : null;
 
     /* ---- actions */
@@ -266,7 +290,7 @@ export function useBandSync(): BandSync {
       set({ sheet: { title: Lx(e.title), caption: igCaption(e, lang), flyer: e.flyer || null }, modal: null });
     };
     const convertThread = (id: string) => {
-      const b = THREADS.find((x) => x.id === id);
+      const b = dbThreads.find((x) => x.id === id);
       if (!b) return;
       set({ modal: { kind: 'newEvent' }, view: 'calendar', form: { title: Lx(b.title), note: Lx(b.body), type: 'gig' } });
       toast(t.ideaLoaded, 'violet');
@@ -288,7 +312,7 @@ export function useBandSync(): BandSync {
       { group: t.actions, label: t.handoff, sub: '', run: () => set({ palette: false, handoff: true }) },
       { group: t.actions, label: t.switchLang, sub: '', run: () => set((s) => ({ lang: s.lang === 'es' ? 'en' : 'es', palette: false })) },
       { group: t.actions, label: t.roleHint, sub: '', run: () => set((s) => ({ role: s.role === 'admin' ? 'member' : 'admin', palette: false })) },
-  { group: t.actions, label: user ? t.signOut : t.signIn, sub: '', run: () => { set({ palette: false }); if (!user) set({ modal: { kind: 'signin' } }); } },
+      { group: t.actions, label: user ? t.signOut : t.signIn, sub: '', run: () => { set({ palette: false }); if (!user) set({ modal: { kind: 'signin' } }); } },
       ...songs.slice(0, 40).map((s) => ({
         group: t.repertoire,
         label: s.title,
@@ -330,12 +354,12 @@ export function useBandSync(): BandSync {
       roleLabel: isAdmin ? t.admin : t.member, me,
       bandName: props.bandName || 'Dulce Tricolor Venezolano',
       view: st.view, viewTitle: t[st.view] || t.dashboard, viewSub: t[viewSubKey] || '',
-      isDesktop: st.device === 'desktop', isMobile: st.device === 'mobile', staleDays,
+      isDesktop: st.device === 'desktop', isMobile: st.device === 'mobile', staleDays, loading,
 
       songs, filteredSongs, staleSongs, genreChips,
       events, upcoming, history, calList: st.calTab === 'upcoming' ? upcoming : history, nextEvent, dashUpcoming,
       tx, recentTx: tx.slice(0, 4),
-      gear, gearValue: money0(GEAR.reduce((a, b) => a + b.cost, 0)),
+      gear, gearValue: money0(dbGear.reduce((a, b) => a + b.cost, 0)),
       threads, members,
 
       balanceStr: money(balance), incomeStr: money(income), expenseStr: money(expense),
@@ -344,7 +368,7 @@ export function useBandSync(): BandSync {
       statStale: String(staleSongs.length), staleHint: t.staleHint.replace('%d', String(staleDays)),
 
       modal, ev, fb, th, mb,
-      sheet: st.sheet, custody: st.custody, custodyTargets: MEMBERS, form, paletteResults, tour,
+      sheet: st.sheet, custody: st.custody, custodyTargets: dbMembers, form, paletteResults, tour,
       toasts: st.toasts.map((x) => ({
         ...x,
         color: x.tone === 'violet' ? '#a78bfa' : '#6ee7b7',
@@ -402,102 +426,71 @@ export function useBandSync(): BandSync {
         set({ custody: { id: g.id, name: g.name, holder: g.holder } });
       },
       closeCustody: () => set({ custody: null }),
-      transferCustody: (memberId) => {
+      transferCustody: async (memberId) => {
         const c = st.custody;
         if (!c) return;
-        set((s) => ({ custody: null, custodyOverrides: { ...s.custodyOverrides, [c.id]: memberId } }));
-        toast(t.custodyTo + memberById(memberId).short);
+        set({ custody: null });
+        await persistCustody(c.id, memberId);
+        toast(t.custodyTo + memberById(dbMembers, memberId).short);
       },
       setRsvp: async (eventId, status) => {
         const current = events.find((e) => e.id === eventId)?.rsvp ?? null;
         const next: RsvpStatus | null = current === status ? null : status;
-        const uid = user?.id ?? me.id;
-    
-        // Optimistic update
-        set((s) => ({ rsvpOverrides: { ...s.rsvpOverrides, [eventId]: { ...(s.rsvpOverrides[eventId] ?? {}), [uid]: next } } }));
+        await persistRsvp(eventId, next);
         toast(t.rsvpSaved);
-
-        // Persist to Supabase
-        try {
-          if (!user) return;
-
-          if (next === null) {
-            // Withdraw RSVP
-            await supabase
-              .from('event_attendance')
-              .delete()
-              .eq('event_id', eventId)
-              .eq('profile_id', user.id);
-          } else {
-            // Upsert RSVP
-            await supabase
-              .from('event_attendance')
-              .upsert({
-                event_id: eventId,
-                profile_id: user.id,
-                status: next,
-                updated_at: new Date().toISOString(),
-              });
-          }
-        } catch (err) {
-          console.error('Failed to persist RSVP:', err);
-          // Rollback on error
-          set((s) => ({ rsvpOverrides: { ...s.rsvpOverrides, [eventId]: { ...(s.rsvpOverrides[eventId] ?? {}), [uid]: current } } }));
-          toast('Failed to save RSVP', 'violet');
-        }
       },
-      voteThread: (id) => set((s) => ({ votes: { ...s.votes, [id]: s.votes[id] ? 0 : 1 } })),
+      voteThread: async (id) => {
+        await persistVote(id);
+        toast(t.voted);
+      },
       setCommentDraft: (v) => set({ commentDraft: v }),
-      sendComment: () => {
+      sendComment: async () => {
         const txt = st.commentDraft.trim();
         if (!txt || !thSel) return;
-        set((s) => ({
-          extraComments: { ...s.extraComments, [thSel.id]: [...(s.extraComments[thSel.id] || []), { by: me.short, initial: me.initial, text: txt }] },
-          commentDraft: '',
-        }));
+        set({ commentDraft: '' });
+        await persistComment(thSel.id, txt);
         toast(t.commentPosted);
       },
       convertThread,
-      pickPoll: (i) => { set({ pollPick: i }); toast(t.voted); },
+      pickPoll: async (i) => {
+        if (!evSel) return;
+        await persistPoll(evSel.id, i);
+        toast(t.voted);
+      },
       setRating: (k, n) => set((s) => ({ myRatings: { ...s.myRatings, [k]: n } })),
       toggleAnon: () => set((s) => ({ anon: !s.anon })),
       setFbWell: (v) => set({ fbWell: v }),
       setFbImprove: (v) => set({ fbImprove: v }),
-      submitFb: () => { set({ fbSent: true }); toast(t.fbSubmitted); },
+      submitFb: async () => {
+        if (!evSel) return;
+        await persistFeedback(evSel.id, {
+          sound: st.myRatings.sound, perf: st.myRatings.perf, log: st.myRatings.log, energy: st.myRatings.energy,
+          well: st.fbWell, improve: st.fbImprove, anon: st.anon,
+        });
+        toast(t.fbSubmitted);
+      },
       setForm: (k, v) => set((s) => ({ form: { ...s.form, [k]: v } })),
-      saveEvent: () => {
+      saveEvent: async () => {
         const dte = f.date || '2026-11-07';
-        set((s) => ({
-          modal: null,
-          extraEvents: [{
-            id: 'x' + s.seq, type: f.type || 'gig', state: 'active', date: dte, time: f.time || '19:00',
-            title: { es: f.title || 'Evento nuevo', en: f.title || 'New event' }, venue: f.venue || 'Bay Area, CA',
-            money: +(f.money || 0), setlist: [], attend: 0, note: { es: f.note || '', en: f.note || '' },
-          }, ...s.extraEvents],
-          seq: s.seq + 1, form: {},
-        }));
+        set({ modal: null, form: {} });
+        await createEvent({
+          title: f.title || 'Evento nuevo', venue: f.venue || 'Bay Area, CA', date: dte, time: f.time || '19:00',
+          money: +(f.money || 0), note: f.note || '', type: f.type || 'gig',
+        });
         toast(t.eventCreated);
       },
-      saveTx: () => {
-        set((s) => ({
-          modal: null,
-          extraTx: [{
-            id: 'y' + s.seq, kind: f.kind || 'in', amt: +(f.amt || 0), date: f.date || '2026-08-25', by: isAdmin ? 'm3' : 'm2',
-            desc: { es: f.desc || 'Movimiento', en: f.desc || 'Movement' }, proof: f.proof || null, proofKind: 'receipt',
-          }, ...s.extraTx],
-          seq: s.seq + 1, form: {},
-        }));
+      saveTx: async () => {
+        set({ modal: null, form: {} });
+        await createTransaction({
+          kind: f.kind || 'in', amt: +(f.amt || 0), date: f.date || '2026-08-25', desc: f.desc || 'Movimiento', proof: f.proof || null,
+        });
         toast(t.txLogged);
       },
-      saveSong: () => {
-        set((s) => ({
-          modal: null,
-          extraSongs: [{
-            id: 'z' + s.seq, title: f.title || 'Canción nueva', genre: f.genre || 'joropo', key: f.key || 'Am',
-            bpm: +(f.bpm || 120), dur: f.dur || '3:30', last: null,
-          }, ...s.extraSongs],
-          seq: s.seq + 1, form: {},
-        }));
+      saveSong: async () => {
+        set({ modal: null, form: {} });
+        await createSong({
+          title: f.title || 'Canción nueva', genre: f.genre || 'joropo', key: f.key || 'Am', bpm: +(f.bpm || 120), dur: f.dur || '3:30',
+        });
         toast(t.songAdded);
       },
       openPalette: () => set({ palette: true, pq: '' }),
@@ -509,5 +502,5 @@ export function useBandSync(): BandSync {
       closeHandoff: () => set({ handoff: false }),
       toast,
     };
-  }, [st, props, set, toast]);
+  }, [st, props, set, toast, user, profile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, myThreadVotes, myPollPicks, loading, createEvent, createSong, createTransaction, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody]);
 }

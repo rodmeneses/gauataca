@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { BandSyncProvider } from './store';
 import { AuthProvider } from './lib/auth';
+import { DataProvider } from './lib/data';
 import type { AppProps, Lang, Role, View } from './types';
 import { Shell } from './components/shell/Shell';
 
@@ -30,9 +31,11 @@ export default function App() {
   const props = useMemo(readProps, []);
   return (
     <AuthProvider>
-      <BandSyncProvider props={props}>
-        <Shell />
-      </BandSyncProvider>
+      <DataProvider>
+        <BandSyncProvider props={props}>
+          <Shell />
+        </BandSyncProvider>
+      </DataProvider>
     </AuthProvider>
   );
 }

@@ -17,6 +17,16 @@ import { Toasts } from '../modals/Toasts';
 export function Shell() {
   const bs = useBandSync();
   const { modal } = bs;
+  if (bs.loading) {
+    return (
+      <div className="min-h-screen bg-base grid place-items-center">
+        <div className="flex flex-col items-center gap-3 text-[#64748b]">
+          <div className="w-7 h-7 rounded-full border-2 border-[#1e293b] border-t-[#34d399] animate-spin" />
+          <span className="font-mono text-[12px] tracking-[.08em] uppercase">…</span>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-base text-ink-base font-sans text-[14px] leading-normal">
       {bs.isDesktop ? <DesktopShell /> : <MobileShell />}

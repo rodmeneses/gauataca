@@ -1,8 +1,8 @@
 import type { Lang } from '../types';
 import { T } from '../i18n';
 
-/** Fixed "now" for the prototype so mock data stays stable. */
-export const TODAY = new Date('2026-08-25T12:00:00');
+/** "Now" for relative dates. Live mode uses the real clock; the mock data is dated around 2026-08. */
+export const TODAY = new Date();
 
 export function d(iso: string): Date {
   return new Date(iso + 'T12:00:00');

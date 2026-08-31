@@ -4,7 +4,7 @@
  * produced, minus the closures (actions live in useBandSync).
  */
 import type { Dict } from '../i18n';
-import { GENRES, MEMBERS, memberById } from '../data';
+import { GENRES } from '../data';
 import { d, days, durationSeconds, fmt, money, money0, monthShort, rel, slug } from '../lib/format';
 import type {
   BandEvent, EventFeedback, Gear, GenreId, Lang, LocalComment, Localized, Member, Proficiency, RatingKey, RsvpStatus, Song, Thread, Transaction,
@@ -16,8 +16,13 @@ export interface Ctx {
   staleDays: number;
   /** Signed-in member (admin → m1, member → m2 in the prototype). */
   meId: string;
-  /** Session RSVP changes layered over the mock `attendance` maps. */
-  rsvpOverrides: Record<string, Record<string, RsvpStatus | null>>;
+  /** All members, for resolving ids to names/initials. */
+  members: Member[];
+}
+
+/** Resolve a member id to a Member (falls back to the first member). */
+export function memberById(members: Member[], id: string): Member {
+  return members.find((m) => m.id === id) ?? members[0];
 }
 
 export const L = (lang: Lang, v: Localized | string | null | undefined): string =>
@@ -202,13 +207,12 @@ export function eventVm(e: BandEvent, allSongs: Song[], ctx: Ctx): EventVm {
   const stateColor = STATE_COLOR[e.state];
   const typeColor = TYPE_COLOR[e.type];
 
-  /* ---- attendance: mock map layered with this session's answers */
+  /* ---- attendance: from the fetched map */
   const hasAttendance = !!e.attendance;
-  const over = ctx.rsvpOverrides[e.id] ?? {};
-  const statusOf = (id: string): RsvpStatus | null => (id in over ? over[id] : (e.attendance?.[id] ?? null));
+  const statusOf = (id: string): RsvpStatus | null => e.attendance?.[id] ?? null;
   const groups: Record<RsvpStatus | 'pending', RsvpPerson[]> = { going: [], maybe: [], no: [], pending: [] };
   if (hasAttendance) {
-    for (const m of MEMBERS) groups[statusOf(m.id) ?? 'pending'].push({ id: m.id, initial: m.initial, name: m.short });
+    for (const m of ctx.members) groups[statusOf(m.id) ?? 'pending'].push({ id: m.id, initial: m.initial, name: m.short });
   }
   const myRsvp = hasAttendance ? statusOf(ctx.meId) : null;
   const canRsvp = hasAttendance && !past && e.state !== 'cancelled';
@@ -239,7 +243,7 @@ export function eventVm(e: BandEvent, allSongs: Song[], ctx: Ctx): EventVm {
     moneyLabel: e.money > 0 ? t.fee : t.costLabel,
     moneyColor: e.money > 0 ? '#34d399' : '#fbbf24',
     attend: String(hasAttendance ? groups.going.length : e.attend || 0),
-    total: String(MEMBERS.length),
+    total: String(ctx.members.length),
     hasAttendance,
     canRsvp,
     rsvp: myRsvp,
@@ -289,7 +293,7 @@ export interface TxVm {
 export function txVm(x: Transaction, ctx: Ctx): TxVm {
   const { lang, t } = ctx;
   const inc = x.kind === 'in';
-  const by = memberById(x.by);
+  const by = memberById(ctx.members, x.by);
   return {
     id: x.id,
     dateStr: fmt(x.date, lang, true),
@@ -326,7 +330,7 @@ export interface GearVm {
 
 export function gearVm(g: Gear, holderId: string, ctx: Ctx): GearVm {
   const { lang, t } = ctx;
-  const h = memberById(holderId);
+  const h = memberById(ctx.members, holderId);
   const good = g.cond === 'good';
   return {
     id: g.id,
@@ -359,15 +363,13 @@ export interface ThreadVm {
   comments: LocalComment[];
 }
 
-export function threadVm(b: Thread, myVote: 0 | 1 | undefined, extra: LocalComment[], ctx: Ctx): ThreadVm {
+export function threadVm(b: Thread, voted: boolean, ctx: Ctx): ThreadVm {
   const { lang } = ctx;
-  const a = memberById(b.by);
-  const comments: LocalComment[] = b.comments
-    .map((c) => {
-      const m = memberById(c.by);
-      return { by: m.short, initial: m.initial, text: L(lang, c.text) };
-    })
-    .concat(extra);
+  const a = memberById(ctx.members, b.by);
+  const comments: LocalComment[] = b.comments.map((c) => {
+    const m = memberById(ctx.members, c.by);
+    return { by: m.short, initial: m.initial, text: L(lang, c.text) };
+  });
   return {
     id: b.id,
     title: L(lang, b.title),
@@ -375,8 +377,8 @@ export function threadVm(b: Thread, myVote: 0 | 1 | undefined, extra: LocalComme
     author: a.short,
     initial: a.initial,
     dateStr: fmt(b.date, lang, true),
-    votes: String(b.votes + (myVote || 0)),
-    voted: !!myVote,
+    votes: String(b.votes),
+    voted,
     commentCount: String(comments.length),
     comments,
   };
@@ -458,13 +460,13 @@ function ratingRow(key: RatingKey, label: string, val: number): RatingRow {
   return { key, label, val: val.toFixed(1), pct: pct + '%', color: val >= 4.2 ? '#34d399' : val >= 3.5 ? '#fbbf24' : '#f87171' };
 }
 
-export function feedbackVm(f: EventFeedback, pollPick: number | null, fbSent: boolean, ctx: Ctx): FeedbackVm {
+export function feedbackVm(f: EventFeedback, pollPick: number | null, ctx: Ctx): FeedbackVm {
   const { lang, t } = ctx;
   const anonLabel = t.anonymous;
-  const base = f.poll.options.map((o, i) => ({ i, label: L(lang, o.label), v: o.v + (pollPick === i ? 1 : 0) }));
+  const base = f.poll.options.map((o, i) => ({ i, label: L(lang, o.label), v: o.v }));
   const total = base.reduce((a, b) => a + b.v, 0) || 1;
   return {
-    responses: String(f.responses + (fbSent ? 1 : 0)),
+    responses: String(f.responses),
     rows: [ratingRow('sound', t.sound, f.sound), ratingRow('perf', t.perf, f.perf), ratingRow('log', t.logistics, f.log), ratingRow('energy', t.energy, f.energy)],
     well: f.well.map((w) => ({ text: L(lang, w.text), by: w.anon ? anonLabel : (w.by ?? anonLabel), anon: w.anon })),
     improve: f.improve.map((w) => ({ text: L(lang, w.text), by: w.anon ? anonLabel : (w.by ?? anonLabel), anon: w.anon })),
