@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type {
-  AppProps, CalTab, CustodyDialog, Device, FormState, GenreId, Lang, MobileTab, Modal,
-  RatingKey, Role, SettleDialog, ShareSheet, Toast, TxDate, TxFilter, View,
+  AppProps, CalTab, CustodyDialog, Device, FormState, GenreId, Lang, Localized, MobileTab, Modal,
+  RatingKey, Role, SettleDialog, ShareSheet, SongSort, Toast, TxDate, TxFilter, View,
 } from '../types';
 
 /**
@@ -19,6 +19,7 @@ export interface State {
   q: string;
   genre: GenreId | 'all';
   staleOnly: boolean;
+  songSort: SongSort;
   modal: Modal | null;
   toasts: Toast[];
   palette: boolean;
@@ -38,6 +39,10 @@ export interface State {
   sheet: ShareSheet | null;
   custody: CustodyDialog | null;
   settle: SettleDialog | null;
+  /** Custom instruments created this session (id → name), merged into the catalog. */
+  customInstruments: { id: string; name: Localized }[];
+  /** true once the sign-up onboarding has been shown and dismissed/skipped this session. */
+  onboardDismissed: boolean;
 }
 
 export type Updater = Partial<State> | ((s: State) => Partial<State>);
@@ -63,6 +68,7 @@ export function initialState(props: AppProps): State {
     q: '',
     genre: 'all',
     staleOnly: false,
+    songSort: 'recorded',
     modal: null,
     toasts: [],
     palette: false,
@@ -81,6 +87,8 @@ export function initialState(props: AppProps): State {
     sheet: null,
     custody: null,
     settle: null,
+    customInstruments: [],
+    onboardDismissed: false,
   };
 }
 

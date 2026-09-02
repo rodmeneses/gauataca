@@ -15,19 +15,34 @@ insert into profiles (id, name, email, role, title_es, title_en, joined_at) valu
 on conflict (id) do nothing;
 
 -- ---------------------------------------------------------------------------
+-- Instrument catalog (5 basic + 4 custom used by the demo members)
+-- ---------------------------------------------------------------------------
+insert into instruments (id, name_es, name_en, is_basic) values
+  ('cuatro', 'Cuatro', 'Cuatro', true),
+  ('guitarra', 'Guitarra', 'Guitar', true),
+  ('bajo', 'Bajo', 'Bass', true),
+  ('piano', 'Piano', 'Piano', true),
+  ('percusion', 'Percusión', 'Percussion', true),
+  ('arpa', 'Arpa llanera', 'Llanera harp', false),
+  ('voz', 'Voz principal', 'Lead vocals', false),
+  ('tambores', 'Tambores culo''e puya', 'Culo''e puya drums', false),
+  ('furruco', 'Furruco', 'Furruco', false)
+on conflict (id) do nothing;
+
+-- ---------------------------------------------------------------------------
 -- Profile instruments / vocals
 -- ---------------------------------------------------------------------------
-insert into profile_instruments (profile_id, instrument_es, instrument_en, proficiency) values
-  ('11111111-1111-1111-1111-111111111111', 'Arpa llanera', 'Llanera harp', 'expert'),
-  ('11111111-1111-1111-1111-111111111111', 'Cuatro', 'Cuatro', 'inter'),
-  ('22222222-2222-2222-2222-222222222222', 'Voz principal', 'Lead vocals', 'expert'),
-  ('22222222-2222-2222-2222-222222222222', 'Cuatro', 'Cuatro', 'beg'),
-  ('33333333-3333-3333-3333-333333333333', 'Cuatro', 'Cuatro', 'expert'),
-  ('33333333-3333-3333-3333-333333333333', 'Guitarra', 'Guitar', 'inter'),
-  ('44444444-4444-4444-4444-444444444444', 'Tambores culo''e puya', 'Culo''e puya drums', 'expert'),
-  ('44444444-4444-4444-4444-444444444444', 'Furruco', 'Furruco', 'inter'),
-  ('55555555-5555-5555-5555-555555555555', 'Guitarra', 'Guitar', 'expert'),
-  ('55555555-5555-5555-5555-555555555555', 'Cuatro', 'Cuatro', 'inter')
+insert into profile_instruments (profile_id, instrument_id, proficiency) values
+  ('11111111-1111-1111-1111-111111111111', 'arpa', 'expert'),
+  ('11111111-1111-1111-1111-111111111111', 'cuatro', 'inter'),
+  ('22222222-2222-2222-2222-222222222222', 'voz', 'expert'),
+  ('22222222-2222-2222-2222-222222222222', 'cuatro', 'beg'),
+  ('33333333-3333-3333-3333-333333333333', 'cuatro', 'expert'),
+  ('33333333-3333-3333-3333-333333333333', 'guitarra', 'inter'),
+  ('44444444-4444-4444-4444-444444444444', 'tambores', 'expert'),
+  ('44444444-4444-4444-4444-444444444444', 'furruco', 'inter'),
+  ('55555555-5555-5555-5555-555555555555', 'guitarra', 'expert'),
+  ('55555555-5555-5555-5555-555555555555', 'cuatro', 'inter')
 on conflict do nothing;
 
 insert into profile_vocals (profile_id, flag) values
@@ -67,6 +82,35 @@ insert into songs (id, title_es, title_en, genre, key, bpm, duration, last_rehea
   ('s22', 'Calipso del Callao', 'Calipso del Callao', 'calipso', 'G', 118, '4:00', '2026-08-08'),
   ('s23', 'Guasipati', 'Guasipati', 'calipso', 'C', 116, '3:36', '2026-07-26'),
   ('s24', 'El Callao Suena', 'El Callao Suena', 'calipso', 'F', 120, '3:52', '2026-05-16')
+on conflict (id) do nothing;
+
+-- ---------------------------------------------------------------------------
+-- Song → required instruments
+-- ---------------------------------------------------------------------------
+insert into song_instruments (song_id, instrument_id) values
+  ('s1', 'arpa'), ('s1', 'cuatro'), ('s1', 'tambores'),
+  ('s2', 'arpa'), ('s2', 'cuatro'),
+  ('s9', 'arpa'), ('s9', 'cuatro'),
+  ('s14', 'furruco'), ('s14', 'cuatro'), ('s14', 'tambores'),
+  ('s19', 'tambores'), ('s19', 'cuatro'),
+  ('s22', 'cuatro'), ('s22', 'percusion')
+on conflict do nothing;
+
+-- ---------------------------------------------------------------------------
+-- Song links (tabs / sheet music — several per song)
+-- ---------------------------------------------------------------------------
+insert into song_links (id, song_id, label_es, label_en, url, position) values
+  (1, 's1', 'Partitura (Google Docs)', 'Chart (Google Docs)', 'https://docs.google.com/document/d/dtv-alma-llanera', 1),
+  (2, 's1', 'Tabs de cuatro', 'Cuatro tabs', 'https://drive.google.com/file/d/dtv-alma-llanera-tabs', 2),
+  (3, 's2', 'Partitura (Google Docs)', 'Chart (Google Docs)', 'https://docs.google.com/document/d/dtv-pajarillo', 1),
+  (4, 's9', 'Partitura (Google Docs)', 'Chart (Google Docs)', 'https://docs.google.com/document/d/dtv-caballo-viejo', 1),
+  (5, 's9', 'Letra y acordes', 'Lyrics & chords', 'https://drive.google.com/file/d/dtv-caballo-viejo-chords', 2),
+  (6, 's11', 'Partitura (Google Docs)', 'Chart (Google Docs)', 'https://docs.google.com/document/d/dtv-sabana', 1),
+  (7, 's11', 'Tabs de arpa', 'Harp tabs', 'https://drive.google.com/file/d/dtv-sabana-harp', 2),
+  (8, 's14', 'Partitura (Google Docs)', 'Chart (Google Docs)', 'https://docs.google.com/document/d/dtv-sentir-zuliano', 1),
+  (9, 's19', 'Partitura (Google Docs)', 'Chart (Google Docs)', 'https://docs.google.com/document/d/dtv-san-juan', 1),
+  (10, 's19', 'Patrón de tambores', 'Drum pattern', 'https://drive.google.com/file/d/dtv-san-juan-drums', 2),
+  (11, 's22', 'Partitura (Google Docs)', 'Chart (Google Docs)', 'https://docs.google.com/document/d/dtv-calipso-callao', 1)
 on conflict (id) do nothing;
 
 -- ---------------------------------------------------------------------------
@@ -131,6 +175,19 @@ insert into event_media (id, event_id, label_es, label_en, url, submitted_by) va
   (1, 'h1', 'Álbum compartido de iCloud — fotos', 'iCloud shared album — photos', 'https://www.icloud.com/sharedalbum/dtv-berkeley-2026', null),
   (2, 'h1', 'Carpeta de Drive — video del set', 'Drive folder — set video', 'https://drive.google.com/drive/folders/dtv-berkeley-video', null),
   (3, 'h4', 'Fotos del puesto — Drive', 'Booth photos — Drive', 'https://drive.google.com/drive/folders/dtv-ashby', null)
+on conflict (id) do nothing;
+
+-- ---------------------------------------------------------------------------
+-- Song recordings ("takes") on practice events
+-- ---------------------------------------------------------------------------
+insert into takes (id, event_id, song_id, url, n) values
+  ('k1', 'h3', 's11', 'https://drive.google.com/file/d/dtv-sabana-take1', 1),
+  ('k2', 'h3', 's11', 'https://drive.google.com/file/d/dtv-sabana-take2', 2),
+  ('k3', 'h3', 's11', 'https://drive.google.com/file/d/dtv-sabana-take3', 3),
+  ('k4', 'h2', 's4', 'https://drive.google.com/file/d/dtv-s4-take1', 1),
+  ('k5', 'h2', 's6', 'https://drive.google.com/file/d/dtv-s6-take1', 1),
+  ('k6', 'h5', 's19', 'https://drive.google.com/file/d/dtv-s19-take1', 1),
+  ('k7', 'h5', 's20', 'https://drive.google.com/file/d/dtv-s20-take1', 1)
 on conflict (id) do nothing;
 
 -- ---------------------------------------------------------------------------
@@ -201,19 +258,19 @@ on conflict do nothing;
 -- ---------------------------------------------------------------------------
 -- Gear (6)
 -- ---------------------------------------------------------------------------
-insert into gear (id, name_es, name_en, cost_cents, purchased_on, custodian_id, condition, note_es, note_en) values
+insert into gear (id, name_es, name_en, cost_cents, purchased_on, custodian_id, condition, note_es, note_en, purchased_by) values
   ('g1', 'Mezcladora Behringer Xenyx Q1202USB', 'Behringer Xenyx Q1202USB mixer', 30500, '2026-07-12', '33333333-3333-3333-3333-333333333333', 'good',
-    'Funciona bien. Falta un XLR de repuesto.', 'Working fine. Missing a spare XLR.'),
+    'Funciona bien. Falta un XLR de repuesto.', 'Working fine. Missing a spare XLR.', '33333333-3333-3333-3333-333333333333'),
   ('g2', 'Par de maracas de capacho', 'Pair of capacho maracas', 8500, '2026-05-10', '44444444-4444-4444-4444-444444444444', 'good',
-    'Excelente. Sofía las guarda en su estuche.', 'Excellent. Sofía keeps them in her case.'),
+    'Excelente. Sofía las guarda en su estuche.', 'Excellent. Sofía keeps them in her case.', '44444444-4444-4444-4444-444444444444'),
   ('g3', 'Micrófonos Shure SM58 (x2)', 'Shure SM58 microphones (x2)', 19800, '2026-04-12', '11111111-1111-1111-1111-111111111111', 'good',
-    'Uno con la rejilla abollada, suena igual.', 'One has a dented grille, sounds fine.'),
+    'Uno con la rejilla abollada, suena igual.', 'One has a dented grille, sounds fine.', '11111111-1111-1111-1111-111111111111'),
   ('g4', 'Furruco artesanal', 'Handmade furruco', 21000, '2025-11-18', '44444444-4444-4444-4444-444444444444', 'attention',
-    'Parche flojo. Cambiar antes de la temporada de gaitas.', 'Loose head. Replace before gaita season.'),
+    'Parche flojo. Cambiar antes de la temporada de gaitas.', 'Loose head. Replace before gaita season.', null),
   ('g5', 'Cuatro de repuesto', 'Backup cuatro', 34000, '2025-10-05', '55555555-5555-5555-5555-555555555555', 'good',
-    'Encordado nuevo en julio.', 'Restrung in July.'),
+    'Encordado nuevo en julio.', 'Restrung in July.', null),
   ('g6', 'Atriles plegables (4)', 'Folding music stands (4)', 5600, '2026-02-20', '22222222-2222-2222-2222-222222222222', 'attention',
-    'Uno con la manivela trabada.', 'One has a jammed crank.')
+    'Uno con la manivela trabada.', 'One has a jammed crank.', null)
 on conflict (id) do nothing;
 
 -- ---------------------------------------------------------------------------

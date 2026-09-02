@@ -9,7 +9,7 @@ import {
 } from '../data';
 import { d, days, money, money0, sameMonth } from '../lib/format';
 import type {
-  AppProps, BandEvent, CustodyDialog, FormState, GenreId, Lang, Member, MobileTab, Modal, Profile, ProofKind, RatingKey, RsvpStatus, SettleDialog, ShareSheet, Song, Toast, Transaction, TxCategory, TxDate, TxFilter, View,
+  AppProps, BandEvent, CustodyDialog, FormState, GearCondition, GenreId, Instrument, Lang, Member, MobileTab, Modal, Profile, Proficiency, ProofKind, RatingKey, Role, RsvpStatus, SettleDialog, ShareSheet, Song, SongSort, Toast, Transaction, TxCategory, TxDate, TxFilter, View, VocalFlag,
 } from '../types';
 import { useStore, type State } from './store';
 import { useAuth } from '../lib/auth';
@@ -76,6 +76,16 @@ export interface FormVm {
   genre: GenreId;
   chart: string;
   setlist: string[];
+  name: string;
+  custodian: string;
+  cond: GearCondition;
+  boughtBy: string;
+  memberName: string;
+  memberEmail: string;
+  memberRole: Role;
+  memberInstruments: { id: string; lv: Proficiency }[];
+  memberVocals: VocalFlag[];
+  songInstruments: string[];
 }
 
 export interface BandSync {
@@ -137,6 +147,8 @@ export interface BandSync {
   gearValue: string;
   threads: ThreadVm[];
   members: MemberVm[];
+  /** Instrument catalog (basic + custom), for the picker and name resolution. */
+  instruments: Instrument[];
 
   // ---- headline numbers (pre-formatted)
   balanceStr: string;
@@ -177,12 +189,25 @@ export interface BandSync {
   setQ: (q: string) => void;
   setGenre: (g: GenreId | 'all') => void;
   toggleStale: () => void;
+  setSongSort: (s: SongSort) => void;
   openEvent: (id: string) => void;
   openThread: (id: string) => void;
   openMember: (id: string) => void;
   openNewEvent: () => void;
   openNewSong: () => void;
   openNewTx: () => void;
+  openNewGear: () => void;
+  openNewMember: () => void;
+  openEditMember: (id: string) => void;
+  saveMember: () => Promise<void>;
+  /** Complete sign-up onboarding (instruments + vocals). */
+  onboard: (instruments: { id: string; lv: Proficiency }[], vocals: VocalFlag[]) => Promise<void>;
+  /** Open the sign-up onboarding modal. */
+  openOnboard: () => void;
+  /** Dismiss onboarding without saving (won't re-open this session). */
+  skipOnboard: () => void;
+  /** Create a custom instrument; resolves to its id. */
+  createInstrument: (name: string) => Promise<string>;
   setTxFilter: (f: TxFilter) => void;
   setTxDate: (d: TxDate) => void;
   setCuota: (cents: number) => Promise<void>;
@@ -207,6 +232,10 @@ export interface BandSync {
   setRsvp: (eventId: string, status: RsvpStatus) => Promise<void>;
   /** Replace an event's setlist (ordered song ids). */
   setEventSetlist: (eventId: string, songIds: string[]) => Promise<void>;
+  /** Add a recording ("take") of a song during a practice event. */
+  addTake: (eventId: string, songId: string, url: string) => Promise<void>;
+  /** Remove a recording ("take"). */
+  deleteTake: (id: string) => Promise<void>;
   voteThread: (id: string) => Promise<void>;
   setCommentDraft: (s: string) => void;
   sendComment: () => Promise<void>;
@@ -221,6 +250,7 @@ export interface BandSync {
   saveEvent: () => Promise<void>;
   saveTx: () => Promise<void>;
   saveSong: () => Promise<void>;
+  saveGear: () => Promise<void>;
   openPalette: () => void;
   closePalette: () => void;
   setPq: (s: string) => void;
@@ -248,11 +278,14 @@ function profileToMember(p: Profile): Member {
 
 export function useBandSync(): BandSync {
   const { state: st, props, set, toast } = useStore();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, refreshProfile } = useAuth();
   const {
     songs: dbSongs, events: dbEvents, transactions: dbTx, gear: dbGear, threads: dbThreads, members: dbMembers,
-    myThreadVotes, myPollPicks, loading, error, monthlyCuotaCents,
-    createEvent, createSong, createTransaction, setRsvp: persistRsvp, voteThread: persistVote,
+    instruments: dbInstruments, takes: dbTakes, myThreadVotes, myPollPicks, loading, error, monthlyCuotaCents,
+    createEvent, createSong, createTransaction, createGear: persistGear, createInstrument: persistInstrument,
+    saveMember: persistMember, onboard: persistOnboard, setSongInstruments: persistSongInstruments,
+    addTake: persistTake, deleteTake: persistDeleteTake,
+    setRsvp: persistRsvp, voteThread: persistVote,
     addComment: persistComment, submitFeedback: persistFeedback, pickPoll: persistPoll, transferCustody: persistCustody,
     setEventSetlist: persistSetlist, updateCuota: persistCuota, settleEvent: persistSettle, uploadProof: persistUpload,
   } = useData();
@@ -266,7 +299,11 @@ export function useBandSync(): BandSync {
     const isDesktop = !isMobile;
     const staleDays = props.staleDays || 30;
     const me = user && profile ? profileToMember(profile) : memberById(dbMembers, isAdmin ? 'm1' : 'm2');
-    const ctx: Ctx = { lang, t, staleDays, meId: me.id, isAdmin, members: dbMembers, events: dbEvents, gear: dbGear };
+    const instruments: Instrument[] = (() => {
+      const seen = new Set(dbInstruments.map((i) => i.id));
+      return [...dbInstruments, ...st.customInstruments.filter((c) => !seen.has(c.id)).map((c) => ({ ...c, isBasic: false }))];
+    })();
+    const ctx: Ctx = { lang, t, staleDays, meId: me.id, isAdmin, members: dbMembers, events: dbEvents, gear: dbGear, instruments, takes: dbTakes };
     const Lx = (v: { es: string; en: string } | string | null | undefined) => L(lang, v);
 
     /* ---- raw collections (from the data layer) */
@@ -285,12 +322,18 @@ export function useBandSync(): BandSync {
     const songs = allSongs.map((s) => songVm(s, allEvents, st.openSong, ctx));
     const staleSongs = songs.filter((s) => s.isStale).sort((a, b) => (a.lastDate < b.lastDate ? -1 : 1));
     const q = st.q.trim().toLowerCase();
-    const filteredSongs = songs.filter(
-      (s) =>
-        (st.genre === 'all' || s.genre === st.genre) &&
-        (!st.staleOnly || s.isStale) &&
-        (!q || s.title.toLowerCase().includes(q) || s.genreLabel.toLowerCase().includes(q) || s.key.toLowerCase() === q),
-    );
+    const filteredSongs = songs
+      .filter(
+        (s) =>
+          (st.genre === 'all' || s.genre === st.genre) &&
+          (!st.staleOnly || s.isStale) &&
+          (!q || s.title.toLowerCase().includes(q) || s.genreLabel.toLowerCase().includes(q) || s.key.toLowerCase() === q),
+      )
+      .sort((a, b) => {
+        if (st.songSort === 'name') return a.title.localeCompare(b.title);
+        if (st.songSort === 'takes') return a.takeCount - b.takeCount || a.title.localeCompare(b.title);
+        return b.takeCount - a.takeCount || a.title.localeCompare(b.title); // 'recorded' (most takes first)
+      });
     const genreChips: GenreChip[] = [
       { id: 'all', label: t.allGenres, color: '#a78bfa', active: st.genre === 'all' },
       ...GENRE_IDS.map((k): GenreChip => ({ id: k, label: Lx(GENRES[k].label), color: GENRES[k].color, active: st.genre === k })),
@@ -409,6 +452,10 @@ export function useBandSync(): BandSync {
       event: f.event || '', gear: f.gear || '', category: f.category || 'fee', contributor: f.contributor || '',
       key: f.key || '', bpm: f.bpm || '', dur: f.dur || '', genre: f.genre || 'joropo', chart: f.chart || '',
       setlist: f.setlist || [],
+      name: f.name || '', custodian: f.custodian || '', cond: f.cond || 'good', boughtBy: f.boughtBy || '',
+      memberName: f.memberName || '', memberEmail: f.memberEmail || '', memberRole: f.memberRole || 'member',
+      memberInstruments: f.memberInstruments || [], memberVocals: f.memberVocals || [],
+      songInstruments: f.songInstruments || [],
     };
 
     const viewSubKey = ('sub' + st.view.charAt(0).toUpperCase() + st.view.slice(1)) as keyof Dict;
@@ -425,7 +472,7 @@ export function useBandSync(): BandSync {
       tx, recentTx, txFilter: st.txFilter, txDate: st.txDate,
       contributions, cuotaStr: money(monthlyCuotaCents / 100), cuotaCents: monthlyCuotaCents,
       gear, gearValue: money0(dbGear.reduce((a, b) => a + b.cost, 0)),
-      threads, members,
+      threads, members, instruments,
 
       balanceStr: money(balance), incomeStr: money(income), expenseStr: money(expense),
       txCount: String(allTx.length), statSongs: String(allSongs.length),
@@ -458,12 +505,42 @@ export function useBandSync(): BandSync {
       setQ: (v) => set({ q: v }),
       setGenre: (g) => set({ genre: g }),
       toggleStale: () => set((s) => ({ staleOnly: !s.staleOnly })),
+      setSongSort: (s) => set({ songSort: s }),
       openEvent: (id) => set({ modal: { kind: 'event', id } }),
       openThread: (id) => set({ modal: { kind: 'thread', id } }),
       openMember: (id) => set({ modal: { kind: 'member', id } }),
       openNewEvent: () => set({ modal: { kind: 'newEvent' }, form: {} }),
       openNewSong: () => set({ modal: { kind: 'newSong' }, form: {} }),
       openNewTx: () => set({ modal: { kind: 'newTx' }, form: {} }),
+      openNewGear: () => set({ modal: { kind: 'newGear' }, form: { custodian: me.id, boughtBy: me.id } }),
+      openNewMember: () => set({ modal: { kind: 'newMember' }, form: { memberRole: 'member', memberInstruments: [], memberVocals: [] } }),
+      openEditMember: (id) => {
+        const m = dbMembers.find((x) => x.id === id);
+        if (!m) return;
+        set({ modal: { kind: 'newMember', id }, form: { memberName: m.name, memberEmail: m.email, memberRole: m.role, memberInstruments: m.instruments, memberVocals: m.vocals } });
+      },
+      saveMember: async () => {
+        const editingId = st.modal?.kind === 'newMember' ? st.modal.id : undefined;
+        set({ modal: null, form: {} });
+        await persistMember({
+          id: editingId, name: f.memberName || 'Músico nuevo', email: f.memberEmail || '', role: f.memberRole || 'member',
+          instruments: f.memberInstruments || [], vocals: f.memberVocals || [],
+        });
+        toast(t.memberSaved);
+      },
+      onboard: async (instruments, vocals) => {
+        await persistOnboard(instruments, vocals);
+        await refreshProfile();
+        set({ modal: null, onboardDismissed: true });
+        toast(t.onboarded);
+      },
+      openOnboard: () => set({ modal: { kind: 'onboard' } }),
+      skipOnboard: () => set({ modal: null, onboardDismissed: true }),
+      createInstrument: async (name) => {
+        const id = (await persistInstrument(name)) ?? 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+        set((s) => ({ customInstruments: [...s.customInstruments, { id, name: { es: name, en: name } }] }));
+        return id;
+      },
       setTxFilter: (f) => set({ txFilter: f }),
       setTxDate: (d) => set({ txDate: d }),
       setCuota: async (cents) => {
@@ -526,6 +603,14 @@ export function useBandSync(): BandSync {
         await persistSetlist(eventId, songIds);
         toast(t.setlistSaved);
       },
+      addTake: async (eventId, songId, url) => {
+        await persistTake(eventId, songId, url);
+        toast(t.recordingAdded);
+      },
+      deleteTake: async (id) => {
+        await persistDeleteTake(id);
+        toast(t.recordingDeleted);
+      },
       voteThread: async (id) => {
         await persistVote(id);
         toast(t.voted);
@@ -587,11 +672,21 @@ export function useBandSync(): BandSync {
         toast(t.txLogged);
       },
       saveSong: async () => {
+        const songInstruments = f.songInstruments || [];
         set({ modal: null, form: {} });
-        await createSong({
+        const id = await createSong({
           title: f.title || 'Canción nueva', genre: f.genre || 'joropo', key: f.key || 'Am', bpm: +(f.bpm || 120), dur: f.dur || '3:30',
         });
+        if (id && songInstruments.length) await persistSongInstruments(id, songInstruments);
         toast(t.songAdded);
+      },
+      saveGear: async () => {
+        set({ modal: null, form: {} });
+        await persistGear({
+          name: f.name || 'Equipo nuevo', cost: +(f.cost || 0), date: f.date || '2026-08-25', custodian: f.custodian || me.id,
+          cond: f.cond || 'good', note: f.note || '', boughtBy: f.boughtBy || me.id, proof: f.proof || null, proofKind: f.proofKind || 'receipt',
+        });
+        toast(t.gearCreated);
       },
       openPalette: () => set({ palette: true, pq: '' }),
       closePalette: () => set({ palette: false }),
@@ -602,5 +697,5 @@ export function useBandSync(): BandSync {
       closeHandoff: () => set({ handoff: false }),
       toast,
     };
-  }, [st, props, set, toast, user, profile, signOut, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, myThreadVotes, myPollPicks, loading, error, isMobileViewport, createEvent, createSong, createTransaction, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, monthlyCuotaCents, persistCuota, persistSettle, persistUpload]);
+  }, [st, props, set, toast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myThreadVotes, myPollPicks, loading, error, isMobileViewport, createEvent, createSong, createTransaction, persistGear, persistInstrument, persistMember, persistOnboard, persistSongInstruments, persistTake, persistDeleteTake, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, monthlyCuotaCents, persistCuota, persistSettle, persistUpload]);
 }

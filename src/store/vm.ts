@@ -5,9 +5,9 @@
  */
 import type { Dict } from '../i18n';
 import { GENRES } from '../data';
-import { d, days, durationSeconds, fmt, money, money0, monthShort, rel, slug } from '../lib/format';
+import { d, days, durationSeconds, fmt, money, money0, monthShort, rel } from '../lib/format';
 import type {
-  BandEvent, EventFeedback, Gear, GenreId, Lang, LocalComment, Localized, Member, Proficiency, RatingKey, RsvpStatus, Song, Thread, Transaction,
+  BandEvent, EventFeedback, Gear, GenreId, Instrument, Lang, LocalComment, Localized, Member, Proficiency, RatingKey, RsvpStatus, Song, Take, Thread, Transaction,
 } from '../types';
 
 export interface Ctx {
@@ -24,6 +24,10 @@ export interface Ctx {
   events: BandEvent[];
   /** All gear, for resolving a transaction's linked gear id. */
   gear: Gear[];
+  /** Instrument catalog, for resolving instrument ids to names. */
+  instruments: Instrument[];
+  /** Song recordings ("takes"), for resolving per-event / per-song links. */
+  takes: Take[];
 }
 
 /** Resolve a member id to a Member (falls back to the first member). */
@@ -77,17 +81,27 @@ export interface SongVm {
   staleBg: string;
   isStale: boolean;
   open: boolean;
-  chart: string;
+  /** Real-version links (YouTube / Apple Music / Spotify), synthesized when unset. */
   yt: string;
+  am: string;
   sp: string;
-  rec: string;
+  /** Tabs / sheet-music links (several possible). */
+  charts: { label: string; url: string }[];
+  hasCharts: boolean;
   logs: RehearsalLog[];
   logCount: number;
+  /** Localized names of the instruments this song requires. */
+  instruments: string[];
+  hasInstruments: boolean;
+  /** Recordings ("takes") of this song, oldest first. */
+  takes: TakeVm[];
+  hasTakes: boolean;
+  /** Number of takes (drives the repertoire sort). */
+  takeCount: number;
 }
 
 export function songVm(s: Song, allEvents: BandEvent[], openSong: string | null, ctx: Ctx): SongVm {
   const { lang, t } = ctx;
-  const sl = slug(s.title);
   const gap = s.last ? -days(s.last) : 9999;
   const stale = gap > ctx.staleDays;
   const veryStale = gap > 90;
@@ -96,6 +110,18 @@ export function songVm(s: Song, allEvents: BandEvent[], openSong: string | null,
     .filter((e) => (e.setlist || []).includes(s.id) && days(e.date) <= 0)
     .sort((a, b) => d(b.date).getTime() - d(a.date).getTime())
     .map((e) => ({ id: e.id, title: L(lang, e.title), date: fmt(e.date, lang, true), typeLabel: t[e.type] }));
+  const songInstruments = (s.instruments || []).map((id) => {
+    const inst = ctx.instruments.find((x) => x.id === id);
+    return inst ? L(lang, inst.name) : id;
+  });
+  const takes = (ctx.takes ?? [])
+    .filter((tk) => tk.songId === s.id)
+    .sort((a, b) => a.n - b.n)
+    .map((tk) => {
+      const ev = allEvents.find((x) => x.id === tk.eventId);
+      return takeVm(tk, s.title, ev ? fmt(ev.date, lang, true) : '', ctx);
+    });
+  const charts = (s.charts ?? []).map((c) => ({ label: L(lang, c.label), url: c.url }));
   return {
     id: s.id,
     title: s.title,
@@ -113,12 +139,42 @@ export function songVm(s: Song, allEvents: BandEvent[], openSong: string | null,
     staleBg: veryStale ? '#f43f5e1c' : stale ? '#fbbf241c' : '#34d3991c',
     isStale: stale,
     open: openSong === s.id,
-    chart: 'https://docs.google.com/document/d/dtv-' + sl,
-    yt: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(s.title + ' venezuela'),
-    sp: 'https://open.spotify.com/search/' + encodeURIComponent(s.title),
-    rec: 'https://drive.google.com/drive/folders/dtv-rec-' + sl,
+    yt: s.yt ?? 'https://www.youtube.com/results?search_query=' + encodeURIComponent(s.title + ' venezuela'),
+    am: s.am ?? 'https://music.apple.com/us/search?term=' + encodeURIComponent(s.title),
+    sp: s.sp ?? 'https://open.spotify.com/search/' + encodeURIComponent(s.title),
+    charts,
+    hasCharts: charts.length > 0,
     logs,
     logCount: logs.length,
+    instruments: songInstruments,
+    hasInstruments: songInstruments.length > 0,
+    takes,
+    hasTakes: takes.length > 0,
+    takeCount: takes.length,
+  };
+}
+
+/* ------------------------------------------------------------------- takes */
+export interface TakeVm {
+  id: string;
+  songId: string;
+  songTitle: string;
+  url: string;
+  /** "Toma 1" / "Take 1" */
+  label: string;
+  /** Date of the practice event the take came from. */
+  dateStr: string;
+}
+
+export function takeVm(tk: Take, songTitle: string, dateStr: string, ctx: Ctx): TakeVm {
+  const { t } = ctx;
+  return {
+    id: tk.id,
+    songId: tk.songId,
+    songTitle,
+    url: tk.url,
+    label: t.takeN.replace('%d', String(tk.n)),
+    dateStr,
   };
 }
 
@@ -149,6 +205,8 @@ export interface EventVm {
   typeColor: string;
   typeBg: string;
   isGig: boolean;
+  /** true for studio / garage (practice) events. */
+  isPractice: boolean;
   state: BandEvent['state'];
   stateLabel: string;
   stateColor: string;
@@ -204,6 +262,9 @@ export interface EventVm {
   setlistLabel: string;
   media: { label: string; url: string }[];
   hasMedia: boolean;
+  /** Recordings ("takes") made during this practice event. */
+  takes: TakeVm[];
+  hasTakes: boolean;
   hasFeedback: boolean;
   cancelled: boolean;
   /** "Movido del sáb 27 sep 2026" or null. */
@@ -235,6 +296,14 @@ export function eventVm(e: BandEvent, allSongs: Song[], ctx: Ctx): EventVm {
   const canRsvp = hasAttendance && !past && e.state !== 'cancelled';
   const rsvpColor = myRsvp ? RSVP_COLOR[myRsvp] : RSVP_PENDING_COLOR;
 
+  const takes = (ctx.takes ?? [])
+    .filter((tk) => tk.eventId === e.id)
+    .sort((a, b) => a.n - b.n)
+    .map((tk) => {
+      const song = allSongs.find((s) => s.id === tk.songId);
+      return takeVm(tk, song ? song.title : tk.songId, fmt(e.date, lang, true), ctx);
+    });
+
   return {
     id: e.id,
     type: e.type,
@@ -242,6 +311,7 @@ export function eventVm(e: BandEvent, allSongs: Song[], ctx: Ctx): EventVm {
     typeColor,
     typeBg: tint(typeColor),
     isGig: e.type === 'gig',
+    isPractice: e.type !== 'gig',
     state: e.state,
     stateLabel: t[e.state],
     stateColor,
@@ -282,6 +352,8 @@ export function eventVm(e: BandEvent, allSongs: Song[], ctx: Ctx): EventVm {
     setlistLabel: e.type === 'gig' ? t.setlist : t.rehearsed,
     media: (e.media || []).map((m) => ({ label: L(lang, m.label), url: m.url })),
     hasMedia: (e.media || []).length > 0,
+    takes,
+    hasTakes: takes.length > 0,
     hasFeedback: !!e.feedback,
     cancelled: e.state === 'cancelled',
     movedFrom: e.prevDate ? t.movedFrom + ' ' + fmt(e.prevDate, lang, true) : null,
@@ -389,11 +461,15 @@ export interface GearVm {
   condColor: string;
   condBg: string;
   hasTx: boolean;
+  /** Short name of the member who bought it, or null. */
+  boughtBy: string | null;
+  boughtByInitial: string;
 }
 
 export function gearVm(g: Gear, holderId: string, ctx: Ctx): GearVm {
   const { lang, t } = ctx;
   const h = memberById(ctx.members, holderId);
+  const buyer = g.boughtBy ? memberById(ctx.members, g.boughtBy) : null;
   const good = g.cond === 'good';
   return {
     id: g.id,
@@ -408,6 +484,8 @@ export function gearVm(g: Gear, holderId: string, ctx: Ctx): GearVm {
     condColor: good ? '#34d399' : '#fbbf24',
     condBg: good ? '#34d3991c' : '#fbbf241c',
     hasTx: !!g.tx,
+    boughtBy: buyer ? buyer.short : null,
+    boughtByInitial: buyer ? buyer.initial : '',
   };
 }
 
@@ -486,7 +564,10 @@ export function memberVm(m: Member, ctx: Ctx): MemberVm {
     roleColor: admin ? '#34d399' : '#94a3b8',
     roleBg: admin ? '#34d3991c' : '#94a3b81c',
     since: t.since + ' ' + fmt(m.joined, lang, true),
-    instruments: m.instruments.map((i) => ({ name: L(lang, i.n), level: t[i.lv], pct: LEVEL_PCT[i.lv], color: LEVEL_COLOR[i.lv] })),
+    instruments: m.instruments.map((i) => {
+      const inst = ctx.instruments.find((x) => x.id === i.id);
+      return { name: inst ? L(lang, inst.name) : i.id, level: t[i.lv], pct: LEVEL_PCT[i.lv], color: LEVEL_COLOR[i.lv] };
+    }),
     vocals: m.vocals.map((v) => ({ label: t[v], isNone: v === 'none' })),
   };
 }

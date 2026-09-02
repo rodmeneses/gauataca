@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useBandSync } from '../../store';
 import { useAuth } from '../../lib/auth';
 import { isDemo } from '../../lib/data';
@@ -5,9 +6,10 @@ import { LoginPage } from '../auth/LoginPage';
 import { DesktopShell } from './DesktopShell';
 import { MobileShell } from '../mobile/MobileShell';
 import { EventModal } from '../modals/EventModal';
-import { NewEventModal, NewSongModal, NewTxModal } from '../modals/FormModals';
+import { NewEventModal, NewGearModal, NewMemberModal, NewSongModal, NewTxModal } from '../modals/FormModals';
 import { ThreadModal } from '../modals/ThreadModal';
 import { MemberModal } from '../modals/MemberModal';
+import { OnboardModal } from '../modals/OnboardModal';
 import { SignInModal } from '../modals/SignInModal';
 import { ShareSheet } from '../modals/ShareSheet';
 import { CustodyDialog } from '../modals/CustodyDialog';
@@ -20,8 +22,17 @@ import { Toasts } from '../modals/Toasts';
 /** Root layout: desktop or phone-preview shell, plus every overlay layer. */
 export function Shell() {
   const bs = useBandSync();
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const { modal } = bs;
+
+  // First sign-in: open the instrument/vocal onboarding once, until completed or skipped.
+  useEffect(() => {
+    if (!isDemo && user && profile && profile.onboarded === false && !bs.state.onboardDismissed && !modal) {
+      bs.openOnboard();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDemo, user, profile, bs.state.onboardDismissed, modal]);
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-base grid place-items-center">
@@ -59,6 +70,9 @@ export function Shell() {
       {modal?.kind === 'newEvent' && <NewEventModal />}
       {modal?.kind === 'newTx' && <NewTxModal />}
       {modal?.kind === 'newSong' && <NewSongModal />}
+      {modal?.kind === 'newGear' && <NewGearModal />}
+      {modal?.kind === 'newMember' && <NewMemberModal />}
+      {modal?.kind === 'onboard' && <OnboardModal />}
       {modal?.kind === 'thread' && bs.th && <ThreadModal />}
       {modal?.kind === 'member' && bs.mb && <MemberModal />}
       {modal?.kind === 'signin' && <SignInModal />}

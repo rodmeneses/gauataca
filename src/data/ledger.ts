@@ -53,11 +53,11 @@ export const TRANSACTIONS: Transaction[] = [
 
 export const GEAR: Gear[] = [
   { id: 'g1', name: { es: 'Mezcladora Behringer Xenyx Q1202USB', en: 'Behringer Xenyx Q1202USB mixer' }, cost: 305, date: '2026-07-12', holder: 'm3', tx: 't5',
-    cond: 'good', note: { es: 'Funciona bien. Falta un XLR de repuesto.', en: 'Working fine. Missing a spare XLR.' } },
+    cond: 'good', note: { es: 'Funciona bien. Falta un XLR de repuesto.', en: 'Working fine. Missing a spare XLR.' }, boughtBy: 'm3' },
   { id: 'g2', name: { es: 'Par de maracas de capacho', en: 'Pair of capacho maracas' }, cost: 85, date: '2026-05-10', holder: 'm4', tx: 't10',
-    cond: 'good', note: { es: 'Excelente. Sofía las guarda en su estuche.', en: 'Excellent. Sofía keeps them in her case.' } },
+    cond: 'good', note: { es: 'Excelente. Sofía las guarda en su estuche.', en: 'Excellent. Sofía keeps them in her case.' }, boughtBy: 'm4' },
   { id: 'g3', name: { es: 'Micrófonos Shure SM58 (x2)', en: 'Shure SM58 microphones (x2)' }, cost: 198, date: '2026-04-12', holder: 'm1', tx: 't12',
-    cond: 'good', note: { es: 'Uno con la rejilla abollada, suena igual.', en: 'One has a dented grille, sounds fine.' } },
+    cond: 'good', note: { es: 'Uno con la rejilla abollada, suena igual.', en: 'One has a dented grille, sounds fine.' }, boughtBy: 'm1' },
   { id: 'g4', name: { es: 'Furruco artesanal', en: 'Handmade furruco' }, cost: 210, date: '2025-11-18', holder: 'm4',
     cond: 'attention', note: { es: 'Parche flojo. Cambiar antes de la temporada de gaitas.', en: 'Loose head. Replace before gaita season.' } },
   { id: 'g5', name: { es: 'Cuatro de repuesto', en: 'Backup cuatro' }, cost: 340, date: '2025-10-05', holder: 'm5',

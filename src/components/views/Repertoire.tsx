@@ -1,22 +1,24 @@
 /**
- * Repertoire view — search + genre filter chips + song rows with resource links,
- * and an expandable panel (resources / rehearsal log) per song.
- * Faithful port of the design's `isRep` section.
+ * Repertoire view — a dashboard of songs. Each card shows the real-version
+ * streaming links (YouTube / Apple Music / Spotify), the tabs/sheet-music links
+ * (several possible) and every recorded take, plus a sort control (most recorded
+ * by default, by name, or fewest takes).
  */
 import { Clock, FileText, Mic, Plus, Search, Youtube } from 'lucide-react';
-import { IconLink, Pill, SpotifyIcon } from '@/components/ui';
+import { AppleMusicIcon, Pill, Segment, SpotifyIcon } from '@/components/ui';
 import { useBandSync } from '@/store';
 
-/** Shared classes for the three neutral resource links in the expanded panel. */
-const RESOURCE_LINK =
-  'flex items-center gap-[11px] p-[11px_13px] rounded-[10px] border border-[#1e293b] bg-[#0f172a] text-[#cbd5e1] hover:text-[#cbd5e1] no-underline font-sans font-medium text-[13px] hover:border-[#334155]';
+/** Shared classes for the labeled resource links (streaming / chart / take). */
+const LINK =
+  'flex items-center gap-[9px] p-[9px_12px] rounded-[10px] border border-[#1e293b] bg-[#0f172a] text-[#cbd5e1] hover:text-[#cbd5e1] no-underline font-sans font-medium text-[12.5px] leading-[normal] hover:border-[#334155]';
+const EYEBROW = 'font-display font-semibold text-[10.5px] tracking-[.12em] uppercase text-[#64748b] mb-[9px]';
 
 export function Repertoire() {
-  const { state, t, isAdmin, setQ, openNewSong, genreChips, setGenre, toggleStale, filteredSongs, statSongs, toggleSong } = useBandSync();
+  const { state, t, isAdmin, setQ, openNewSong, genreChips, setGenre, toggleStale, filteredSongs, statSongs, setSongSort, toggleSong } = useBandSync();
 
   return (
     <div className="flex flex-col gap-4 animate-fade">
-      {/* ---- search + new song */}
+      {/* ---- search + sort + new song */}
       <div className="flex gap-3 items-center flex-wrap">
         <div className="relative flex-1 min-w-[260px]">
           <span className="absolute left-[14px] top-1/2 -translate-y-1/2 flex text-[#475569]">
@@ -29,6 +31,17 @@ export function Repertoire() {
             className="w-full p-[13px_14px_13px_42px] rounded-[12px] border border-[#1e293b] bg-[#0b1220] text-[#e2e8f0] font-sans text-[15px] outline-none"
           />
         </div>
+        <Segment>
+          <Pill active={state.songSort === 'recorded'} color="#a78bfa" onClick={() => setSongSort('recorded')}>
+            {t.sortRecorded}
+          </Pill>
+          <Pill active={state.songSort === 'name'} color="#a78bfa" onClick={() => setSongSort('name')}>
+            {t.sortName}
+          </Pill>
+          <Pill active={state.songSort === 'takes'} color="#a78bfa" onClick={() => setSongSort('takes')}>
+            {t.sortTakes}
+          </Pill>
+        </Segment>
         {isAdmin && (
           <button
             type="button"
@@ -57,103 +70,114 @@ export function Repertoire() {
         </span>
       </div>
 
-      {/* ---- song rows */}
+      {/* ---- song cards */}
       <div className="flex flex-col gap-2">
         {filteredSongs.map((s) => (
           <div key={s.id} className="bg-[#0f172a] border border-[#1e293b] rounded-[13px] overflow-hidden">
-            <div className="flex items-center gap-x-[14px] gap-y-3 flex-wrap p-[14px_16px] min-h-[72px]">
-              <button
-                type="button"
-                onClick={() => toggleSong(s.id)}
-                className="flex items-center gap-[14px] flex-[1_1_300px] min-w-0 border-none bg-transparent cursor-pointer text-left p-0 text-inherit"
-              >
-                <span className="w-1 h-10 rounded-[3px] flex-none opacity-[.85]" style={{ background: s.genreColor }} />
-                <span className="min-w-0 flex-1">
-                  <span className="block font-display font-semibold text-[16px] leading-[1.25] text-[#f1f5f9] tracking-[-.01em]">{s.title}</span>
-                  <span className="flex items-center gap-[9px] mt-[6px] font-sans font-medium text-[11.5px] text-[#64748b] flex-nowrap whitespace-nowrap min-w-0 overflow-hidden">
-                    <span className="flex-none" style={{ color: s.genreColor }}>{s.genreShort}</span>
-                    <span className="divider-dot" />
-                    <span className="font-mono flex-none">{s.key}</span>
-                    <span className="divider-dot" />
-                    <span className="font-mono flex-none">{s.bpm} BPM</span>
-                    <span className="divider-dot" />
-                    <span className="font-mono flex-none">{s.dur}</span>
-                  </span>
+            {/* header (click toggles the rehearsal log) */}
+            <button
+              type="button"
+              onClick={() => toggleSong(s.id)}
+              className="flex items-center gap-x-[14px] gap-y-3 flex-wrap p-[14px_16px] w-full border-none bg-transparent cursor-pointer text-left text-inherit"
+            >
+              <span className="w-1 h-10 rounded-[3px] flex-none opacity-[.85]" style={{ background: s.genreColor }} />
+              <span className="min-w-0 flex-1">
+                <span className="block font-display font-semibold text-[16px] leading-[1.25] text-[#f1f5f9] tracking-[-.01em]">{s.title}</span>
+                <span className="flex items-center gap-[9px] mt-[6px] font-sans font-medium text-[11.5px] text-[#64748b] flex-nowrap whitespace-nowrap min-w-0 overflow-hidden">
+                  <span className="flex-none" style={{ color: s.genreColor }}>{s.genreShort}</span>
+                  <span className="divider-dot" />
+                  <span className="font-mono flex-none">{s.key}</span>
+                  <span className="divider-dot" />
+                  <span className="font-mono flex-none">{s.bpm} BPM</span>
+                  <span className="divider-dot" />
+                  <span className="font-mono flex-none">{s.dur}</span>
                 </span>
-                <span className="flex items-center gap-[7px] flex-none pr-1" title={t.lastRehearsed}>
-                  <Clock size={13} strokeWidth={2} color={s.staleColor} className="flex-none opacity-80" />
-                  <span
-                    className="font-mono font-semibold text-[11.5px] p-[3px_9px] rounded-[20px] whitespace-nowrap"
-                    style={{ color: s.staleColor, background: s.staleBg }}
-                  >
-                    {s.lastLabel}
-                  </span>
+              </span>
+              {s.hasTakes && (
+                <span
+                  className="flex items-center gap-[6px] font-mono font-semibold text-[11.5px] p-[3px_9px] rounded-[20px] whitespace-nowrap flex-none"
+                  style={{ color: '#6ee7b7', background: '#34d3991c' }}
+                  title={t.takesCount.replace('%d', String(s.takeCount))}
+                >
+                  <Mic size={12} strokeWidth={2} />
+                  {s.takeCount}
                 </span>
-              </button>
-              <div className="flex gap-[7px] flex-none">
-                <IconLink href={s.chart} color="#60a5fa" title={t.chart}>
-                  <FileText size={19} strokeWidth={1.8} />
-                </IconLink>
-                <IconLink href={s.yt} color="#f87171" title={t.ytLink}>
-                  <Youtube size={19} strokeWidth={1.8} />
-                </IconLink>
-                <IconLink href={s.sp} color="#34d399" title={t.spLink}>
-                  <SpotifyIcon size={19} strokeWidth={1.8} />
-                </IconLink>
-                <IconLink href={s.rec} color="#c4b5fd" hoverColor="#a78bfa" title={t.recLink}>
-                  <Mic size={19} strokeWidth={1.8} />
-                </IconLink>
-              </div>
-            </div>
+              )}
+              <span className="flex items-center gap-[7px] flex-none" title={t.lastRehearsed}>
+                <Clock size={13} strokeWidth={2} color={s.staleColor} className="flex-none opacity-80" />
+                <span
+                  className="font-mono font-semibold text-[11.5px] p-[3px_9px] rounded-[20px] whitespace-nowrap"
+                  style={{ color: s.staleColor, background: s.staleBg }}
+                >
+                  {s.lastLabel}
+                </span>
+              </span>
+            </button>
 
-            {s.open && (
-              <div className="border-t border-[#172033] bg-[#0b1220] p-4 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-[18px] animate-[bsFade_.2s_ease]">
-                {/* resources */}
+            {/* links + takes (always visible) */}
+            <div className="border-t border-[#172033] bg-[#0b1220] p-[14px_16px] flex flex-col gap-[14px]">
+              {/* real-version streaming links */}
+              <div className="flex gap-[7px] flex-wrap">
+                <a href={s.yt} target="_blank" rel="noreferrer" className={LINK}>
+                  <Youtube size={15} strokeWidth={1.9} className="flex-none" color="#f87171" />
+                  <span>{t.ytLink}</span>
+                </a>
+                <a href={s.am} target="_blank" rel="noreferrer" className={LINK}>
+                  <AppleMusicIcon size={15} strokeWidth={1.9} className="flex-none text-[#f472b6]" />
+                  <span>{t.amLink}</span>
+                </a>
+                <a href={s.sp} target="_blank" rel="noreferrer" className={LINK}>
+                  <SpotifyIcon size={15} strokeWidth={1.9} className="flex-none text-[#34d399]" />
+                  <span>{t.spLink}</span>
+                </a>
+              </div>
+
+              {/* tabs / sheet-music links */}
+              {s.hasCharts && (
                 <div>
-                  <div className="font-display font-semibold text-[10.5px] tracking-[.12em] uppercase text-[#64748b] mb-[11px]">{t.resources}</div>
-                  <div className="flex flex-col gap-[7px]">
-                    <a href={s.chart} target="_blank" rel="noreferrer" className={RESOURCE_LINK}>
-                      <FileText size={16} strokeWidth={1.9} color="#60a5fa" className="flex-none" />
-                      <span className="flex-1">{t.chart}</span>
-                      <span className="text-[11px] text-[#475569]">Google Docs</span>
-                    </a>
-                    <a href={s.yt} target="_blank" rel="noreferrer" className={RESOURCE_LINK}>
-                      <Youtube size={16} strokeWidth={1.9} color="#f87171" className="flex-none" />
-                      <span className="flex-1">{t.ytLink}</span>
-                      <span className="text-[11px] text-[#475569]">{t.reference}</span>
-                    </a>
-                    <a href={s.sp} target="_blank" rel="noreferrer" className={RESOURCE_LINK}>
-                      <SpotifyIcon size={16} strokeWidth={1.9} className="flex-none text-[#34d399]" />
-                      <span className="flex-1">{t.spLink}</span>
-                      <span className="text-[11px] text-[#475569]">{t.streaming}</span>
-                    </a>
-                    <a
-                      href={s.rec}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center gap-[11px] p-[11px_13px] rounded-[10px] border border-[#a78bfa33] bg-[#7c3aed12] text-[#e9d5ff] hover:text-[#e9d5ff] no-underline font-sans font-medium text-[13px] hover:border-[#a78bfa66]"
-                    >
-                      <Mic size={16} strokeWidth={1.9} color="#c4b5fd" className="flex-none" />
-                      <span className="flex-1">{t.recLink}</span>
-                      <span className="text-[11px] text-[#a78bfa]">Drive</span>
-                    </a>
+                  <div className={EYEBROW}>{t.charts}</div>
+                  <div className="flex flex-col gap-[6px]">
+                    {s.charts.map((c) => (
+                      <a key={c.url} href={c.url} target="_blank" rel="noreferrer" className={LINK}>
+                        <FileText size={15} strokeWidth={1.9} className="flex-none" color="#60a5fa" />
+                        <span className="flex-1 min-w-0 truncate">{c.label}</span>
+                      </a>
+                    ))}
                   </div>
                 </div>
+              )}
 
-                {/* rehearsal log */}
+              {/* recorded takes */}
+              {s.hasTakes && (
                 <div>
-                  <div className="font-display font-semibold text-[10.5px] tracking-[.12em] uppercase text-[#64748b] mb-[11px]">{t.rehearsalLog}</div>
-                  <div className="flex flex-col gap-[7px]">
-                    {s.logs.map((l) => (
-                      <div key={l.id} className="flex items-center gap-[11px] p-[10px_12px] rounded-[10px] border border-[#172033] bg-[#0f172a]">
-                        <span className="w-[6px] h-[6px] rounded-full bg-[#34d399] flex-none" />
-                        <span className="flex-1 min-w-0 font-sans font-medium text-[12.5px] text-[#cbd5e1]">{l.title}</span>
-                        <span className="font-mono font-medium text-[11px] text-[#64748b] whitespace-nowrap">{l.date}</span>
-                      </div>
+                  <div className={EYEBROW}>{t.recordings}</div>
+                  <div className="flex flex-col gap-[6px]">
+                    {s.takes.map((tk) => (
+                      <a key={tk.id} href={tk.url} target="_blank" rel="noreferrer" className={LINK}>
+                        <Mic size={13} strokeWidth={1.9} className="flex-none" color="#6ee7b7" />
+                        <span className="flex-1 min-w-0 truncate">{tk.label}</span>
+                        <span className="font-mono font-medium text-[11px] text-[#64748b] whitespace-nowrap">{tk.dateStr}</span>
+                      </a>
                     ))}
-                    <div className="text-[11.5px] text-[#475569] p-[8px_2px]">
-                      {t.lastRehearsed}: {s.lastDate}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* rehearsal log (collapsible) */}
+            {s.open && (
+              <div className="border-t border-[#172033] bg-[#0b1220] p-[14px_16px]">
+                <div className={EYEBROW}>{t.rehearsalLog}</div>
+                <div className="flex flex-col gap-[7px]">
+                  {s.logs.map((l) => (
+                    <div key={l.id} className="flex items-center gap-[11px] p-[10px_12px] rounded-[10px] border border-[#172033] bg-[#0f172a]">
+                      <span className="w-[6px] h-[6px] rounded-full bg-[#34d399] flex-none" />
+                      <span className="flex-1 min-w-0 font-sans font-medium text-[12.5px] text-[#cbd5e1]">{l.title}</span>
+                      <span className="font-mono font-medium text-[11px] text-[#64748b] whitespace-nowrap">{l.date}</span>
                     </div>
+                  ))}
+                  <div className="text-[11.5px] text-[#475569] p-[8px_2px]">
+                    {t.lastRehearsed}: {s.lastDate}
                   </div>
                 </div>
               </div>

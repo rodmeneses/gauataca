@@ -2,7 +2,7 @@
  * Calendar view — Upcoming / History pills, "New event" (admin) or "Admins only" lock note
  * (member), and the grid of event cards. Mirrors design lines 253–339.
  */
-import { Clock, Instagram, Lock, MapPin, Music, Plus, RefreshCcw } from 'lucide-react';
+import { Clock, Instagram, Lock, MapPin, Mic, Music, Plus, RefreshCcw } from 'lucide-react';
 import { useBandSync } from '@/store';
 import { Badge, Button, Card, Pill, Segment } from '@/components/ui';
 
@@ -96,6 +96,25 @@ export function CalendarView() {
                   </span>
                 )}
               </div>
+
+              {/* recordings ("takes") */}
+              {e.hasTakes && (
+                <div className="flex flex-col gap-[5px]">
+                  <div className="font-display font-semibold text-[10px] tracking-[.12em] uppercase text-ink-dim">{t.recordings}</div>
+                  {e.takes.map((tk) => (
+                    <a
+                      key={tk.id}
+                      href={tk.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-[7px] font-sans font-medium text-[12px] text-ink-body no-underline hover:text-ink-bright"
+                    >
+                      <Mic size={12} strokeWidth={2} className="flex-none" style={{ color: '#6ee7b7' }} />
+                      <span className="truncate">{tk.label} · {tk.songTitle}</span>
+                    </a>
+                  ))}
+                </div>
+              )}
 
               {/* actions */}
               <div className="flex gap-2 border-t border-line-soft pt-[13px]">

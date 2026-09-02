@@ -14,6 +14,13 @@ export type Localized = Record<Lang, string>;
 export type Proficiency = 'expert' | 'inter' | 'beg';
 export type VocalFlag = 'lead' | 'chorus' | 'none';
 
+/** A playable instrument in the shared catalog (basic or custom). */
+export interface Instrument {
+  id: string;
+  name: Localized;
+  isBasic: boolean;
+}
+
 export interface Member {
   id: string;
   name: string;
@@ -23,7 +30,8 @@ export interface Member {
   title: Localized;
   email: string;
   joined: string; // ISO date
-  instruments: { n: Localized; lv: Proficiency }[];
+  /** Instrument catalog ids + the member's proficiency on each. */
+  instruments: { id: string; lv: Proficiency }[];
   vocals: VocalFlag[];
 }
 
@@ -36,6 +44,12 @@ export interface Genre {
   color: string;
 }
 
+/** A link to a song's tabs / sheet music (several per song). */
+export interface SongLink {
+  label: Localized;
+  url: string;
+}
+
 export interface Song {
   id: string;
   title: string;
@@ -44,7 +58,18 @@ export interface Song {
   bpm: number;
   dur: string; // "m:ss"
   last: string | null; // ISO date of last rehearsal, null = never
+  /** Instrument catalog ids this song requires (optional). */
+  instruments?: string[];
+  /** Real-version links (YouTube / Apple Music / Spotify); null = not set. */
+  yt: string | null;
+  am: string | null;
+  sp: string | null;
+  /** Tabs / sheet-music links (several possible). */
+  charts: SongLink[];
 }
+
+/** Repertoire sort: most recorded (default), by name, or fewest takes. */
+export type SongSort = 'recorded' | 'name' | 'takes';
 
 export type EventType = 'gig' | 'studio' | 'garage';
 export type EventState = 'active' | 'cancelled' | 'rescheduled';
@@ -93,6 +118,16 @@ export interface BandEvent {
   feedback?: EventFeedback;
 }
 
+/** A recording of one song made during a practice event ("Take 1", "Take 2", …). */
+export interface Take {
+  id: string;
+  eventId: string;
+  songId: string;
+  url: string;
+  /** Take number for this song (1-based, global across all practices). */
+  n: number;
+}
+
 export type TxKind = 'in' | 'out';
 export type ProofKind = 'zelle' | 'invoice' | 'photo' | 'receipt';
 /** Income category (null for expenses). */
@@ -130,6 +165,8 @@ export interface Gear {
   tx?: string;
   cond: GearCondition;
   note: Localized;
+  /** Member id who bought it (for money tracking). */
+  boughtBy?: string;
 }
 
 export interface ThreadComment {
@@ -168,6 +205,9 @@ export type Modal =
   | { kind: 'newEvent' }
   | { kind: 'newSong' }
   | { kind: 'newTx' }
+  | { kind: 'newGear' }
+  | { kind: 'newMember'; id?: string }
+  | { kind: 'onboard' }
   | { kind: 'signin' };
 
 export interface ShareSheet {
@@ -220,6 +260,19 @@ export interface FormState {
   chart?: string;
   /** Song ids picked for a new event's setlist. */
   setlist?: string[];
+  /** New gear form. */
+  name?: string;
+  custodian?: string;
+  cond?: GearCondition;
+  boughtBy?: string;
+  /** New / edit member form. */
+  memberName?: string;
+  memberEmail?: string;
+  memberRole?: Role;
+  memberInstruments?: { id: string; lv: Proficiency }[];
+  memberVocals?: VocalFlag[];
+  /** Song form: required instrument ids. */
+  songInstruments?: string[];
 }
 
 /** Supabase profile (extends auth.users). */
@@ -229,6 +282,8 @@ export interface Profile {
   email: string;
   role: 'admin' | 'member';
   joined_at: string;
+  /** false until the member completes sign-up onboarding. */
+  onboarded?: boolean;
 }
 
 /** Prototype knobs (the "tweaks" of the design). */

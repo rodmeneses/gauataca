@@ -6,7 +6,7 @@ import { useBandSync } from '@/store';
 import { Avatar, CloseButton, Modal } from '@/components/ui';
 
 export function MemberModal() {
-  const { mb, t, closeModal } = useBandSync();
+  const { mb, t, isAdmin, closeModal, openEditMember } = useBandSync();
   if (!mb) return null;
 
   return (
@@ -18,6 +18,15 @@ export function MemberModal() {
           <h2 className="m-0 font-display font-semibold text-[19px] leading-[1.25] text-ink-bright">{mb.name}</h2>
           <div className="text-[12.5px] text-ink-muted mt-[6px]">{mb.title} · {mb.roleLabel}</div>
         </div>
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={() => openEditMember(mb.id)}
+            className="py-2 px-[13px] rounded-[9px] border border-line bg-raised text-ink-body font-sans font-semibold text-[12px] cursor-pointer whitespace-nowrap hover:border-ink-faint"
+          >
+            {t.edit}
+          </button>
+        )}
         <CloseButton onClick={closeModal} size={32} />
       </div>
 

@@ -5,7 +5,7 @@
  */
 import { supabase } from './supabase';
 import type {
-  BandEvent, EventFeedback, EventType, Gear, GenreId, Member, ProofKind, RsvpStatus, Song, Thread, Transaction, TxCategory, TxKind,
+  BandEvent, EventFeedback, EventType, Gear, GearCondition, GenreId, Instrument, Member, Proficiency, ProofKind, Role, RsvpStatus, Song, Take, Thread, Transaction, TxCategory, TxKind, VocalFlag,
 } from '../types';
 
 type Row = Record<string, any>;
@@ -17,6 +17,10 @@ export interface DataSnapshot {
   gear: Gear[];
   threads: Thread[];
   members: Member[];
+  /** Shared instrument catalog (basic + custom). */
+  instruments: Instrument[];
+  /** Song recordings ("takes") on practice events. */
+  takes: Take[];
   /** Thread ids the current user has upvoted. */
   myThreadVotes: string[];
   /** event id → poll option index the current user picked. */
@@ -58,15 +62,37 @@ function mapMembers(profiles: Row[], instruments: Row[], vocals: Row[]): Member[
     email: p.email ?? '',
     joined: (p.joined_at ?? '').slice(0, 10),
     instruments: (instr.get(p.id) ?? []).map((i) => ({
-      n: { es: i.instrument_es, en: i.instrument_en },
+      id: i.instrument_id,
       lv: i.proficiency,
     })),
     vocals: (voc.get(p.id) ?? []).map((v) => v.flag),
   }));
 }
 
+/* ------------------------------------------------------------- instruments */
+function mapInstruments(rows: Row[]): Instrument[] {
+  return rows.map((i) => ({
+    id: i.id,
+    name: { es: i.name_es, en: i.name_en },
+    isBasic: !!i.is_basic,
+  }));
+}
+
+/* ------------------------------------------------------------------- takes */
+function mapTakes(rows: Row[]): Take[] {
+  return rows.map((r) => ({
+    id: r.id,
+    eventId: r.event_id,
+    songId: r.song_id,
+    url: r.url,
+    n: r.n,
+  }));
+}
+
 /* -------------------------------------------------------------------- songs */
-function mapSongs(rows: Row[]): Song[] {
+function mapSongs(rows: Row[], songInstruments: Row[], songLinks: Row[]): Song[] {
+  const instrBySong = groupBy(songInstruments, 'song_id');
+  const linksBySong = groupBy(songLinks, 'song_id');
   return rows.map((s) => ({
     id: s.id,
     title: s.title_es ?? s.title_en,
@@ -75,6 +101,13 @@ function mapSongs(rows: Row[]): Song[] {
     bpm: s.bpm,
     dur: s.duration,
     last: s.last_rehearsed_at ?? null,
+    instruments: (instrBySong.get(s.id) ?? []).map((r) => r.instrument_id),
+    yt: s.youtube_url ?? null,
+    am: s.apple_music_url ?? null,
+    sp: s.spotify_url ?? null,
+    charts: (linksBySong.get(s.id) ?? [])
+      .sort((a, b) => a.position - b.position)
+      .map((l) => ({ label: { es: l.label_es, en: l.label_en }, url: l.url })),
   }));
 }
 
@@ -194,6 +227,7 @@ function mapGear(rows: Row[], transactions: Row[]): Gear[] {
     tx: txByGear.get(g.id),
     cond: g.condition,
     note: { es: g.note_es ?? '', en: g.note_en ?? '' },
+    boughtBy: g.purchased_by ?? undefined,
   }));
 }
 
@@ -217,13 +251,15 @@ function mapThreads(threads: Row[], votes: Row[], comments: Row[]): Thread[] {
 /* ------------------------------------------------------------------ fetch */
 export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
   const [
-    profiles, instruments, vocals, songs, events, eventSongs, eventMedia, attendance,
-    feedback, polls, pollOptions, pollVotes, gear, transactions, threads, threadVotes, threadComments, settings,
+    profiles, profileInstruments, vocals, songs, songInstruments, songLinks, events, eventSongs, eventMedia, attendance,
+    feedback, polls, pollOptions, pollVotes, gear, transactions, threads, threadVotes, threadComments, settings, instruments, takes,
   ] = await Promise.all([
     supabase.from('profiles').select('*'),
     supabase.from('profile_instruments').select('*'),
     supabase.from('profile_vocals').select('*'),
     supabase.from('songs').select('*'),
+    supabase.from('song_instruments').select('*'),
+    supabase.from('song_links').select('*'),
     supabase.from('events').select('*'),
     supabase.from('event_songs').select('*'),
     supabase.from('event_media').select('*'),
@@ -238,9 +274,11 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
     supabase.from('thread_votes').select('*'),
     supabase.from('thread_comments').select('*'),
     supabase.from('settings').select('*'),
+    supabase.from('instruments').select('*'),
+    supabase.from('takes').select('*'),
   ]);
 
-  const members = mapMembers(profiles.data ?? [], instruments.data ?? [], vocals.data ?? []);
+  const members = mapMembers(profiles.data ?? [], profileInstruments.data ?? [], vocals.data ?? []);
   const tx = mapTransactions(transactions.data ?? []);
   const cuotaRow = (settings.data ?? []).find((s) => s.key === 'monthly_cuota_cents');
   const monthlyCuotaCents = cuotaRow ? Number(cuotaRow.value) : 2000;
@@ -263,7 +301,7 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
   }
 
   return {
-    songs: mapSongs(songs.data ?? []),
+    songs: mapSongs(songs.data ?? [], songInstruments.data ?? [], songLinks.data ?? []),
     events: mapEvents(
       events.data ?? [], eventSongs.data ?? [], eventMedia.data ?? [], attendance.data ?? [],
       feedback.data ?? [], polls.data ?? [], pollOptions.data ?? [], pollVotes.data ?? [], members,
@@ -272,6 +310,8 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
     gear: mapGear(gear.data ?? [], transactions.data ?? []),
     threads: mapThreads(threads.data ?? [], threadVotes.data ?? [], threadComments.data ?? []),
     members,
+    instruments: mapInstruments(instruments.data ?? []),
+    takes: mapTakes(takes.data ?? []),
     myThreadVotes,
     myPollPicks,
     monthlyCuotaCents,
@@ -306,9 +346,10 @@ export async function createEvent(
 export async function createSong(
   input: { title: string; genre: GenreId; key: string; bpm: number; dur: string },
   _userId: string,
-): Promise<void> {
+): Promise<string> {
+  const id = newId('z');
   await supabase.from('songs').insert({
-    id: newId('z'),
+    id,
     title_es: input.title,
     title_en: input.title,
     genre: input.genre,
@@ -317,6 +358,77 @@ export async function createSong(
     duration: input.dur,
     last_rehearsed_at: null,
   });
+  return id;
+}
+
+/** Create a custom instrument in the catalog; returns its id. */
+export async function createInstrument(name: string): Promise<string> {
+  const id = newId('i');
+  await supabase.from('instruments').insert({ id, name_es: name, name_en: name, is_basic: false });
+  return id;
+}
+
+/** Replace a member's instruments + vocals (delete then insert). */
+async function replaceMemberInstruments(
+  profileId: string,
+  instruments: { id: string; lv: Proficiency }[],
+  vocals: VocalFlag[],
+): Promise<void> {
+  await supabase.from('profile_instruments').delete().eq('profile_id', profileId);
+  if (instruments.length) {
+    await supabase.from('profile_instruments').insert(
+      instruments.map((i) => ({ profile_id: profileId, instrument_id: i.id, proficiency: i.lv })),
+    );
+  }
+  await supabase.from('profile_vocals').delete().eq('profile_id', profileId);
+  if (vocals.length) {
+    await supabase.from('profile_vocals').insert(vocals.map((v) => ({ profile_id: profileId, flag: v })));
+  }
+}
+
+/** Create (no id) or update (with id) a roster member + their instruments/vocals. */
+export async function saveMember(
+  input: { id?: string; name: string; email: string; role: Role; instruments: { id: string; lv: Proficiency }[]; vocals: VocalFlag[] },
+  _userId: string,
+): Promise<string> {
+  const profileId = input.id ?? crypto.randomUUID();
+  if (input.id) {
+    await supabase.from('profiles').update({ name: input.name, email: input.email, role: input.role }).eq('id', profileId);
+  } else {
+    await supabase.from('profiles').insert({ id: profileId, name: input.name, email: input.email, role: input.role, onboarded: true });
+  }
+  await replaceMemberInstruments(profileId, input.instruments, input.vocals);
+  return profileId;
+}
+
+/** Complete sign-up onboarding: record instruments/vocals and mark onboarded. */
+export async function onboard(
+  profileId: string,
+  instruments: { id: string; lv: Proficiency }[],
+  vocals: VocalFlag[],
+): Promise<void> {
+  await replaceMemberInstruments(profileId, instruments, vocals);
+  await supabase.from('profiles').update({ onboarded: true }).eq('id', profileId);
+}
+
+/** Replace a song's required instruments. */
+export async function setSongInstruments(songId: string, instrumentIds: string[]): Promise<void> {
+  await supabase.from('song_instruments').delete().eq('song_id', songId);
+  if (instrumentIds.length) {
+    await supabase.from('song_instruments').insert(instrumentIds.map((iid) => ({ song_id: songId, instrument_id: iid })));
+  }
+}
+
+/** Add a recording ("take") of a song during a practice event. */
+export async function addTake(eventId: string, songId: string, url: string): Promise<void> {
+  const { data } = await supabase.from('takes').select('n').eq('song_id', songId).order('n', { ascending: false }).limit(1);
+  const n = (data?.[0]?.n ?? 0) + 1;
+  await supabase.from('takes').insert({ id: newId('k'), event_id: eventId, song_id: songId, url, n });
+}
+
+/** Remove a recording ("take"). */
+export async function deleteTake(id: string): Promise<void> {
+  await supabase.from('takes').delete().eq('id', id);
 }
 
 export async function createTransaction(
@@ -352,6 +464,38 @@ export async function uploadProof(file: File): Promise<string> {
   if (error) throw error;
   const { data } = supabase.storage.from('receipts').getPublicUrl(path);
   return data.publicUrl;
+}
+
+/** Register a gear purchase: insert the gear row and the matching expense transaction. */
+export async function createGear(
+  input: { name: string; cost: number; date: string; custodian: string; cond: GearCondition; note: string; boughtBy: string; proof: string | null; proofKind: ProofKind },
+  _userId: string,
+): Promise<void> {
+  const id = newId('g');
+  await supabase.from('gear').insert({
+    id,
+    name_es: input.name,
+    name_en: input.name,
+    cost_cents: Math.round(input.cost * 100),
+    purchased_on: input.date,
+    custodian_id: input.custodian,
+    condition: input.cond,
+    note_es: input.note,
+    note_en: input.note,
+    purchased_by: input.boughtBy,
+  });
+  await supabase.from('transactions').insert({
+    id: newId('y'),
+    kind: 'out',
+    amount_cents: Math.round(input.cost * 100),
+    occurred_on: input.date,
+    description_es: 'Compra — ' + input.name,
+    description_en: 'Purchase — ' + input.name,
+    proof_url: input.proof,
+    proof_kind: input.proofKind,
+    gear_id: id,
+    created_by: input.boughtBy,
+  });
 }
 
 export async function settleEvent(

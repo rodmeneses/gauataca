@@ -6,6 +6,7 @@ import { ChartColumn, Check, EyeOff, ExternalLink, Image, Instagram, Star } from
 import { RSVP_COLOR, RSVP_ORDER, RSVP_PENDING_COLOR, rsvpLabel, useBandSync } from '@/store';
 import { Avatar, Badge, Button, CloseButton, Modal } from '@/components/ui';
 import { SetlistEditor } from './SetlistEditor';
+import { RecordingsSection } from './RecordingsSection';
 import type { RatingKey } from '@/types';
 
 const RATING_KEYS: RatingKey[] = ['sound', 'perf', 'log', 'energy'];
@@ -17,7 +18,7 @@ const textareaCls =
   'w-full py-[11px] px-[13px] rounded-[10px] border border-[#1e293b] bg-[#020617] text-[#e2e8f0] font-sans font-normal text-[13px] leading-[normal] outline-none resize-y';
 
 export function EventModal() {
-  const { t, ev, fb, state, songs, isAdmin, closeModal, openShare, openSettle, pickPoll, setRating, toggleAnon, setFbWell, setFbImprove, submitFb, setRsvp, setEventSetlist } = useBandSync();
+  const { t, ev, fb, state, songs, isAdmin, closeModal, openShare, openSettle, pickPoll, setRating, toggleAnon, setFbWell, setFbImprove, submitFb, setRsvp, setEventSetlist, addTake, deleteTake } = useBandSync();
   if (!ev) return null;
 
   const ratingLabel: Record<RatingKey, string> = { sound: t.sound, perf: t.perf, log: t.logistics, energy: t.energy };
@@ -141,6 +142,18 @@ export function EventModal() {
           isAdmin={isAdmin}
           onSave={(ids) => setEventSetlist(ev.id, ids)}
           t={t}
+        />
+      )}
+
+      {/* ---- recordings ("takes") on practice events */}
+      {ev.isPractice && (isAdmin || ev.hasTakes) && (
+        <RecordingsSection
+          setlist={ev.setlist}
+          takes={ev.takes}
+          isAdmin={isAdmin}
+          t={t}
+          onAdd={(songId, url) => addTake(ev.id, songId, url)}
+          onDelete={deleteTake}
         />
       )}
 

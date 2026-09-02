@@ -10,6 +10,8 @@ interface AuthContextValue {
   signUpWithEmail: (email: string, password: string, name: string) => Promise<{ error: string | null }>;
   signInWithGoogle: () => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+  /** Re-fetch the signed-in user's profile (e.g. after onboarding). */
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -96,6 +98,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
   }, []);
 
+  const refreshProfile = useCallback(async () => {
+    if (user?.id) await loadProfile(user.id);
+  }, [user?.id, loadProfile]);
+
   const value = useMemo<AuthContextValue>(() => ({
     user,
     profile,
@@ -104,7 +110,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signUpWithEmail,
     signInWithGoogle,
     signOut,
-  }), [user, profile, loading, signInWithEmail, signUpWithEmail, signInWithGoogle, signOut]);
+    refreshProfile,
+  }), [user, profile, loading, signInWithEmail, signUpWithEmail, signInWithGoogle, signOut, refreshProfile]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

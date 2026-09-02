@@ -3,14 +3,28 @@
  * Card: avatar + name/title + role badge, instruments with proficiency bars,
  * vocal chips, and a footer with the join date and "view details".
  */
+import { Plus } from 'lucide-react';
 import { Badge } from '@/components/ui';
 import { useBandSync } from '@/store';
 
 export function Members() {
-  const { t, members, openMember } = useBandSync();
+  const { t, isAdmin, members, openMember, openNewMember } = useBandSync();
 
   return (
-    <div className="grid grid-cols-[repeat(auto-fill,minmax(330px,1fr))] gap-[14px] animate-fade">
+    <div className="flex flex-col gap-4 animate-fade">
+      {isAdmin && (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={openNewMember}
+            className="inline-flex items-center gap-2 p-[12px_16px] rounded-[11px] border border-[#34d39955] bg-[#34d39918] hover:bg-[#34d39928] text-[#6ee7b7] font-sans font-semibold text-[13px] cursor-pointer whitespace-nowrap"
+          >
+            <Plus size={15} strokeWidth={2.2} />
+            {t.newMember}
+          </button>
+        </div>
+      )}
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(330px,1fr))] gap-[14px]">
       {members.map((m) => (
         <article key={m.id} className="bg-surface border border-line rounded-[14px] p-[19px] flex flex-col gap-4">
           <div className="flex gap-[13px] items-center">
@@ -69,6 +83,7 @@ export function Members() {
           </div>
         </article>
       ))}
+      </div>
     </div>
   );
 }

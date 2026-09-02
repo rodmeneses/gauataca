@@ -11,7 +11,7 @@ import type { TxDate, TxFilter } from '@/types';
 const TX_GRID = 'min-w-[800px] grid grid-cols-[120px_1fr_130px_150px_120px] gap-3';
 
 export function Ledger() {
-  const { t, isAdmin, balanceStr, incomeStr, expenseStr, txCount, tx, txFilter, txDate, setTxFilter, setTxDate, gear, gearValue, openNewTx, openCustody, contributions, cuotaCents, setCuota } = useBandSync();
+  const { t, isAdmin, balanceStr, incomeStr, expenseStr, txCount, tx, txFilter, txDate, setTxFilter, setTxDate, gear, gearValue, openNewTx, openNewGear, openCustody, contributions, cuotaCents, setCuota } = useBandSync();
   const [cuotaDraft, setCuotaDraft] = useState(() => String(cuotaCents / 100));
   const paidCount = contributions.filter((c) => c.paid).length;
 
@@ -187,6 +187,12 @@ export function Ledger() {
         <div className="flex items-center gap-3 mb-[13px]">
           <h2 className="m-0 font-display font-semibold text-[15px] leading-none text-ink">{t.gear}</h2>
           <span className="font-mono font-semibold text-[11.5px] text-ink-meta bg-raised border border-line py-1 px-[10px] rounded-[20px]">{gearValue}</span>
+          {isAdmin && (
+            <Button variant="primary" className="ml-auto py-[10px] px-[15px]" onClick={openNewGear}>
+              <Plus size={15} strokeWidth={2.2} />
+              {t.newGear}
+            </Button>
+          )}
         </div>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-[14px]">
           {gear.map((g) => (
@@ -206,6 +212,12 @@ export function Ledger() {
                 </Badge>
               </div>
               <p className="m-0 text-[12.5px] text-ink-meta leading-[1.6]">{g.note}</p>
+              {g.boughtBy && (
+                <div className="flex items-center gap-[7px]">
+                  <span className="w-[20px] h-[20px] rounded-md bg-[#0ea5e91f] grid place-items-center font-display font-semibold text-[9px] text-[#7dd3fc] flex-none">{g.boughtByInitial}</span>
+                  <span className="font-sans font-medium text-[11.5px] text-ink-meta">{t.boughtBy}: {g.boughtBy}</span>
+                </div>
+              )}
               <div className="flex items-center gap-[10px] border-t border-line-soft pt-[13px]">
                 <span className="w-[26px] h-[26px] rounded-lg bg-[#7c3aed24] grid place-items-center font-display font-semibold text-[10.5px] text-[#c4b5fd] flex-none">{g.holderInitial}</span>
                 <span className="min-w-0 flex-1">

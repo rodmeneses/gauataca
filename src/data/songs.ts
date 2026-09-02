@@ -1,4 +1,4 @@
-import type { Genre, GenreId, Song } from '../types';
+import type { Genre, GenreId, Song, SongLink } from '../types';
 
 export const GENRES: Record<GenreId, Genre> = {
   joropo: { id: 'joropo', label: { es: 'Joropo llanero', en: 'Joropo llanero' }, short: 'Joropo', color: '#34d399' },
@@ -38,4 +38,51 @@ const RAW: [string, string, GenreId, string, number, string, string][] = [
   ['s24', 'El Callao Suena', 'calipso', 'F', 120, '3:52', '2026-05-16'],
 ];
 
-export const SONGS: Song[] = RAW.map(([id, title, genre, key, bpm, dur, last]) => ({ id, title, genre, key, bpm, dur, last }));
+// Song id → required instrument catalog ids (optional).
+const SONG_INSTRUMENTS: Record<string, string[]> = {
+  s1: ['arpa', 'cuatro', 'tambores'],
+  s2: ['arpa', 'cuatro'],
+  s9: ['arpa', 'cuatro'],
+  s14: ['furruco', 'cuatro', 'tambores'],
+  s19: ['tambores', 'cuatro'],
+  s22: ['cuatro', 'percusion'],
+};
+
+// Song id → tabs / sheet-music links (several per song). Streaming links
+// (YouTube / Apple Music / Spotify) are left null and synthesized in songVm.
+const SONG_CHARTS: Record<string, SongLink[]> = {
+  s1: [
+    { label: { es: 'Partitura (Google Docs)', en: 'Chart (Google Docs)' }, url: 'https://docs.google.com/document/d/dtv-alma-llanera' },
+    { label: { es: 'Tabs de cuatro', en: 'Cuatro tabs' }, url: 'https://drive.google.com/file/d/dtv-alma-llanera-tabs' },
+  ],
+  s2: [
+    { label: { es: 'Partitura (Google Docs)', en: 'Chart (Google Docs)' }, url: 'https://docs.google.com/document/d/dtv-pajarillo' },
+  ],
+  s9: [
+    { label: { es: 'Partitura (Google Docs)', en: 'Chart (Google Docs)' }, url: 'https://docs.google.com/document/d/dtv-caballo-viejo' },
+    { label: { es: 'Letra y acordes', en: 'Lyrics & chords' }, url: 'https://drive.google.com/file/d/dtv-caballo-viejo-chords' },
+  ],
+  s11: [
+    { label: { es: 'Partitura (Google Docs)', en: 'Chart (Google Docs)' }, url: 'https://docs.google.com/document/d/dtv-sabana' },
+    { label: { es: 'Tabs de arpa', en: 'Harp tabs' }, url: 'https://drive.google.com/file/d/dtv-sabana-harp' },
+  ],
+  s14: [
+    { label: { es: 'Partitura (Google Docs)', en: 'Chart (Google Docs)' }, url: 'https://docs.google.com/document/d/dtv-sentir-zuliano' },
+  ],
+  s19: [
+    { label: { es: 'Partitura (Google Docs)', en: 'Chart (Google Docs)' }, url: 'https://docs.google.com/document/d/dtv-san-juan' },
+    { label: { es: 'Patrón de tambores', en: 'Drum pattern' }, url: 'https://drive.google.com/file/d/dtv-san-juan-drums' },
+  ],
+  s22: [
+    { label: { es: 'Partitura (Google Docs)', en: 'Chart (Google Docs)' }, url: 'https://docs.google.com/document/d/dtv-calipso-callao' },
+  ],
+};
+
+export const SONGS: Song[] = RAW.map(([id, title, genre, key, bpm, dur, last]) => ({
+  id, title, genre, key, bpm, dur, last,
+  instruments: SONG_INSTRUMENTS[id],
+  yt: null,
+  am: null,
+  sp: null,
+  charts: SONG_CHARTS[id] ?? [],
+}));

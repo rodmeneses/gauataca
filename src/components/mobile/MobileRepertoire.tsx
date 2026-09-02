@@ -1,9 +1,10 @@
-/** Mobile "Repertorio" tab: search + "New song" (admin) + first 14 filtered songs with 4 link boxes each. */
+/** Mobile "Repertorio" tab: search + "New song" (admin) + first 14 filtered songs with streaming links, chart links and takes. */
 import { FileText, Mic, Plus, Youtube } from 'lucide-react';
 import { useBandSync } from '../../store';
-import { SpotifyIcon } from '../ui';
+import { AppleMusicIcon, SpotifyIcon } from '../ui';
 
 const linkBox = 'grid place-items-center min-h-[48px] rounded-[12px] border no-underline';
+const rowLink = 'flex items-center gap-[8px] py-[8px] px-[11px] rounded-[10px] border border-[#1e293b] bg-[#0b1220] text-[#cbd5e1] no-underline font-sans font-medium text-[12px] leading-[normal]';
 
 export function MobileRepertoire() {
   const { t, isAdmin, state, setQ, filteredSongs, openNewSong } = useBandSync();
@@ -37,6 +38,15 @@ export function MobileRepertoire() {
               <span className="block font-display font-semibold text-[15.5px] leading-[1.25] text-[#f1f5f9]">{s.title}</span>
               <span className="block font-mono font-medium text-[11px] text-[#64748b] mt-[5px]">{s.key} · {s.bpm} BPM · {s.dur}</span>
             </span>
+            {s.hasTakes && (
+              <span
+                className="flex items-center gap-[5px] font-mono font-semibold text-[10px] py-[3px] px-2 rounded-[20px] flex-none whitespace-nowrap"
+                style={{ color: '#6ee7b7', background: '#34d3991c' }}
+              >
+                <Mic size={11} strokeWidth={2} />
+                {s.takeCount}
+              </span>
+            )}
             <span
               className="font-mono font-semibold text-[10px] py-[3px] px-2 rounded-[20px] flex-none whitespace-nowrap"
               style={{ color: s.staleColor, background: s.staleBg }}
@@ -44,20 +54,38 @@ export function MobileRepertoire() {
               {s.lastLabel}
             </span>
           </div>
-          <div className="grid grid-cols-4 gap-2">
-            <a href={s.chart} target="_blank" rel="noreferrer" className={`${linkBox} border-[#1e293b] bg-[#0b1220] text-[#60a5fa]`}>
-              <FileText size={20} strokeWidth={1.8} />
-            </a>
+          <div className="grid grid-cols-3 gap-2">
             <a href={s.yt} target="_blank" rel="noreferrer" className={`${linkBox} border-[#1e293b] bg-[#0b1220] text-[#f87171]`}>
               <Youtube size={20} strokeWidth={1.8} />
+            </a>
+            <a href={s.am} target="_blank" rel="noreferrer" className={`${linkBox} border-[#1e293b] bg-[#0b1220] text-[#f472b6]`}>
+              <AppleMusicIcon size={20} strokeWidth={1.8} />
             </a>
             <a href={s.sp} target="_blank" rel="noreferrer" className={`${linkBox} border-[#1e293b] bg-[#0b1220] text-[#34d399]`}>
               <SpotifyIcon size={20} strokeWidth={1.8} />
             </a>
-            <a href={s.rec} target="_blank" rel="noreferrer" className={`${linkBox} border-[#a78bfa33] bg-[#7c3aed14] text-[#c4b5fd]`}>
-              <Mic size={20} strokeWidth={1.8} />
-            </a>
           </div>
+          {s.hasCharts && (
+            <div className="flex flex-col gap-[6px]">
+              {s.charts.map((c) => (
+                <a key={c.url} href={c.url} target="_blank" rel="noreferrer" className={rowLink}>
+                  <FileText size={14} strokeWidth={1.9} className="flex-none" color="#60a5fa" />
+                  <span className="flex-1 min-w-0 truncate">{c.label}</span>
+                </a>
+              ))}
+            </div>
+          )}
+          {s.hasTakes && (
+            <div className="flex flex-col gap-[6px]">
+              {s.takes.map((tk) => (
+                <a key={tk.id} href={tk.url} target="_blank" rel="noreferrer" className={rowLink}>
+                  <Mic size={13} strokeWidth={1.9} className="flex-none" color="#6ee7b7" />
+                  <span className="flex-1 min-w-0 truncate">{tk.label}</span>
+                  <span className="font-mono font-medium text-[10.5px] text-[#64748b] whitespace-nowrap">{tk.dateStr}</span>
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       ))}
     </div>

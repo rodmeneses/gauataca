@@ -159,6 +159,18 @@ export function SpotifyIcon({ size = 19, strokeWidth = 1.8, className }: { size?
   );
 }
 
+/* ----------------------------------------------------------- Apple Music */
+/** Custom glyph (lucide has no Apple Music icon) — a beamed note. */
+export function AppleMusicIcon({ size = 19, strokeWidth = 1.8, className }: { size?: number; strokeWidth?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M9 18V5l12-2v13" />
+      <circle cx="6" cy="18" r="3" />
+      <circle cx="18" cy="16" r="3" />
+    </svg>
+  );
+}
+
 /* -------------------------------------------------------------- BrandMark */
 /** Violet gradient tile with the music-note glyph (sidebar + phone header + tour). */
 export function BrandMark({ size = 38, radius = 11, icon = 20 }: { size?: number; radius?: number; icon?: number }) {

@@ -97,6 +97,21 @@ const es = {
   or: 'o', noAccount: '¿No tienes cuenta?', haveAccount: '¿Ya tienes cuenta?',
   // receipt / invoice upload
   upload: 'Subir imagen', uploading: 'Subiendo…', uploadFailed: 'No se pudo subir el archivo',
+  // gear
+  newGear: 'Nuevo equipo', boughtBy: 'Comprado por', gearCreated: 'Equipo registrado',
+  // instruments / members / onboarding
+  newMember: 'Nuevo músico', memberSaved: 'Músico guardado',
+  roleL: 'Rol', newInstrument: 'Nuevo instrumento', addInstrument: 'Agregar',
+  requiredInstruments: 'Instrumentos requeridos',
+  onboardingTitle: 'Cuéntanos qué tocas', onboardingSub: 'Elige tus instrumentos y nivel',
+  skip: 'Omitir', finish: 'Listo', onboarded: 'Perfil completado',
+  // recordings ("takes") on practice events
+  recordings: 'Grabaciones', addRecording: 'Agregar grabación', takeN: 'Toma %d',
+  recordingUrl: 'Enlace de la grabación', recordingAdded: 'Grabación agregada',
+  recordingDeleted: 'Grabación eliminada', pickSong: 'Elegir canción',
+  // repertoire dashboard: sort + song links
+  sortRecorded: 'Más grabadas', sortName: 'Nombre', sortTakes: 'Menos grabadas',
+  amLink: 'Apple Music', charts: 'Partituras y tabs', takesCount: '%d tomas',
 };
 
 const en: typeof es = {
@@ -194,6 +209,21 @@ const en: typeof es = {
   or: 'or', noAccount: "Don't have an account?", haveAccount: 'Already have an account?',
   // receipt / invoice upload
   upload: 'Upload image', uploading: 'Uploading…', uploadFailed: 'Could not upload the file',
+  // gear
+  newGear: 'New gear', boughtBy: 'Bought by', gearCreated: 'Gear added',
+  // instruments / members / onboarding
+  newMember: 'New musician', memberSaved: 'Musician saved',
+  roleL: 'Role', newInstrument: 'New instrument', addInstrument: 'Add',
+  requiredInstruments: 'Required instruments',
+  onboardingTitle: 'Tell us what you play', onboardingSub: 'Pick your instruments and level',
+  skip: 'Skip', finish: 'Done', onboarded: 'Profile completed',
+  // recordings ("takes") on practice events
+  recordings: 'Recordings', addRecording: 'Add recording', takeN: 'Take %d',
+  recordingUrl: 'Recording link', recordingAdded: 'Recording added',
+  recordingDeleted: 'Recording deleted', pickSong: 'Pick a song',
+  // repertoire dashboard: sort + song links
+  sortRecorded: 'Most recorded', sortName: 'Name', sortTakes: 'Fewest takes',
+  amLink: 'Apple Music', charts: 'Charts & tabs', takesCount: '%d takes',
 };
 
 export type Dict = typeof es;
