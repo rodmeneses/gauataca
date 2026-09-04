@@ -5,7 +5,7 @@
  */
 import { supabase } from './supabase';
 import type {
-  BandEvent, EventFeedback, EventType, Gear, GearCondition, GenreId, Instrument, Member, Proficiency, ProofKind, Role, RsvpStatus, Song, Take, Thread, Transaction, TxCategory, TxKind, VocalFlag,
+  BandEvent, EventFeedback, EventType, Gear, GearCondition, GenreId, Instrument, LinkKind, Member, Proficiency, ProofKind, RsvpStatus, Song, Take, Thread, Transaction, TxCategory, TxKind, VocalFlag,
 } from '../types';
 
 type Row = Record<string, any>;
@@ -25,8 +25,6 @@ export interface DataSnapshot {
   myThreadVotes: string[];
   /** event id → poll option index the current user picked. */
   myPollPicks: Record<string, number>;
-  /** Monthly cuota in cents (from the settings table). */
-  monthlyCuotaCents: number;
 }
 
 const groupBy = (rows: Row[], key: string): Map<string, Row[]> => {
@@ -102,12 +100,9 @@ function mapSongs(rows: Row[], songInstruments: Row[], songLinks: Row[]): Song[]
     dur: s.duration,
     last: s.last_rehearsed_at ?? null,
     instruments: (instrBySong.get(s.id) ?? []).map((r) => r.instrument_id),
-    yt: s.youtube_url ?? null,
-    am: s.apple_music_url ?? null,
-    sp: s.spotify_url ?? null,
-    charts: (linksBySong.get(s.id) ?? [])
+    links: (linksBySong.get(s.id) ?? [])
       .sort((a, b) => a.position - b.position)
-      .map((l) => ({ label: { es: l.label_es, en: l.label_en }, url: l.url })),
+      .map((l) => ({ kind: l.kind as LinkKind, label: { es: l.label_es, en: l.label_en }, url: l.url })),
   }));
 }
 
@@ -252,7 +247,7 @@ function mapThreads(threads: Row[], votes: Row[], comments: Row[]): Thread[] {
 export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
   const [
     profiles, profileInstruments, vocals, songs, songInstruments, songLinks, events, eventSongs, eventMedia, attendance,
-    feedback, polls, pollOptions, pollVotes, gear, transactions, threads, threadVotes, threadComments, settings, instruments, takes,
+    feedback, polls, pollOptions, pollVotes, gear, transactions, threads, threadVotes, threadComments, instruments, takes,
   ] = await Promise.all([
     supabase.from('profiles').select('*'),
     supabase.from('profile_instruments').select('*'),
@@ -273,15 +268,12 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
     supabase.from('threads').select('*'),
     supabase.from('thread_votes').select('*'),
     supabase.from('thread_comments').select('*'),
-    supabase.from('settings').select('*'),
     supabase.from('instruments').select('*'),
     supabase.from('takes').select('*'),
   ]);
 
   const members = mapMembers(profiles.data ?? [], profileInstruments.data ?? [], vocals.data ?? []);
   const tx = mapTransactions(transactions.data ?? []);
-  const cuotaRow = (settings.data ?? []).find((s) => s.key === 'monthly_cuota_cents');
-  const monthlyCuotaCents = cuotaRow ? Number(cuotaRow.value) : 2000;
 
   const myThreadVotes = userId
     ? (threadVotes.data ?? []).filter((v) => v.profile_id === userId).map((v) => v.thread_id)
@@ -314,7 +306,6 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
     takes: mapTakes(takes.data ?? []),
     myThreadVotes,
     myPollPicks,
-    monthlyCuotaCents,
   };
 }
 
@@ -361,6 +352,35 @@ export async function createSong(
   return id;
 }
 
+/** Update a song's core fields (title / genre / key / bpm / duration). */
+export async function updateSong(
+  id: string,
+  input: { title: string; genre: GenreId; key: string; bpm: number; dur: string },
+  _userId: string,
+): Promise<void> {
+  await supabase.from('songs').update({
+    title_es: input.title,
+    title_en: input.title,
+    genre: input.genre,
+    key: input.key,
+    bpm: input.bpm,
+    duration: input.dur,
+  }).eq('id', id);
+}
+
+/** Replace a song's links (delete then insert, preserving order via position). */
+export async function setSongLinks(
+  songId: string,
+  links: { kind: LinkKind; label: string; url: string }[],
+): Promise<void> {
+  await supabase.from('song_links').delete().eq('song_id', songId);
+  if (links.length) {
+    await supabase.from('song_links').insert(
+      links.map((l, i) => ({ song_id: songId, kind: l.kind, label_es: l.label, label_en: l.label, url: l.url, position: i + 1 })),
+    );
+  }
+}
+
 /** Create a custom instrument in the catalog; returns its id. */
 export async function createInstrument(name: string): Promise<string> {
   const id = newId('i');
@@ -384,21 +404,6 @@ async function replaceMemberInstruments(
   if (vocals.length) {
     await supabase.from('profile_vocals').insert(vocals.map((v) => ({ profile_id: profileId, flag: v })));
   }
-}
-
-/** Create (no id) or update (with id) a roster member + their instruments/vocals. */
-export async function saveMember(
-  input: { id?: string; name: string; email: string; role: Role; instruments: { id: string; lv: Proficiency }[]; vocals: VocalFlag[] },
-  _userId: string,
-): Promise<string> {
-  const profileId = input.id ?? crypto.randomUUID();
-  if (input.id) {
-    await supabase.from('profiles').update({ name: input.name, email: input.email, role: input.role }).eq('id', profileId);
-  } else {
-    await supabase.from('profiles').insert({ id: profileId, name: input.name, email: input.email, role: input.role, onboarded: true });
-  }
-  await replaceMemberInstruments(profileId, input.instruments, input.vocals);
-  return profileId;
 }
 
 /** Complete sign-up onboarding: record instruments/vocals and mark onboarded. */
@@ -452,10 +457,6 @@ export async function createTransaction(
   });
 }
 
-export async function updateCuota(cents: number, _userId: string): Promise<void> {
-  await supabase.from('settings').upsert({ key: 'monthly_cuota_cents', value: String(cents) });
-}
-
 /** Upload a receipt/invoice image to the public `receipts` bucket; returns its public URL. */
 export async function uploadProof(file: File): Promise<string> {
   const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
@@ -484,18 +485,21 @@ export async function createGear(
     note_en: input.note,
     purchased_by: input.boughtBy,
   });
-  await supabase.from('transactions').insert({
-    id: newId('y'),
-    kind: 'out',
-    amount_cents: Math.round(input.cost * 100),
-    occurred_on: input.date,
-    description_es: 'Compra — ' + input.name,
-    description_en: 'Purchase — ' + input.name,
-    proof_url: input.proof,
-    proof_kind: input.proofKind,
-    gear_id: id,
-    created_by: input.boughtBy,
-  });
+  // Only log an expense movement when the gear actually cost something.
+  if (input.cost > 0) {
+    await supabase.from('transactions').insert({
+      id: newId('y'),
+      kind: 'out',
+      amount_cents: Math.round(input.cost * 100),
+      occurred_on: input.date,
+      description_es: 'Compra — ' + input.name,
+      description_en: 'Purchase — ' + input.name,
+      proof_url: input.proof,
+      proof_kind: input.proofKind,
+      gear_id: id,
+      created_by: input.boughtBy,
+    });
+  }
 }
 
 export async function settleEvent(

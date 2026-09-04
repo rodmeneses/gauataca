@@ -44,8 +44,12 @@ export interface Genre {
   color: string;
 }
 
-/** A link to a song's tabs / sheet music (several per song). */
+/** What a song link points at — drives the icon and grouping on the card. */
+export type LinkKind = 'youtube' | 'apple' | 'spotify' | 'chart';
+
+/** A link attached to a song (real-version streaming or tabs/sheet music). */
 export interface SongLink {
+  kind: LinkKind;
   label: Localized;
   url: string;
 }
@@ -60,12 +64,8 @@ export interface Song {
   last: string | null; // ISO date of last rehearsal, null = never
   /** Instrument catalog ids this song requires (optional). */
   instruments?: string[];
-  /** Real-version links (YouTube / Apple Music / Spotify); null = not set. */
-  yt: string | null;
-  am: string | null;
-  sp: string | null;
-  /** Tabs / sheet-music links (several possible). */
-  charts: SongLink[];
+  /** Streaming + chart links (any number of each kind). */
+  links: SongLink[];
 }
 
 /** Repertoire sort: most recorded (default), by name, or fewest takes. */
@@ -203,10 +203,9 @@ export type Modal =
   | { kind: 'thread'; id: string }
   | { kind: 'member'; id: string }
   | { kind: 'newEvent' }
-  | { kind: 'newSong' }
+  | { kind: 'newSong'; id?: string }
   | { kind: 'newTx' }
   | { kind: 'newGear' }
-  | { kind: 'newMember'; id?: string }
   | { kind: 'onboard' }
   | { kind: 'signin' };
 
@@ -257,7 +256,8 @@ export interface FormState {
   bpm?: string;
   dur?: string;
   genre?: GenreId;
-  chart?: string;
+  /** Song form: streaming + chart links (kind, label, url). */
+  songLinks?: { kind: LinkKind; label: string; url: string }[];
   /** Song ids picked for a new event's setlist. */
   setlist?: string[];
   /** New gear form. */
@@ -265,12 +265,6 @@ export interface FormState {
   custodian?: string;
   cond?: GearCondition;
   boughtBy?: string;
-  /** New / edit member form. */
-  memberName?: string;
-  memberEmail?: string;
-  memberRole?: Role;
-  memberInstruments?: { id: string; lv: Proficiency }[];
-  memberVocals?: VocalFlag[];
   /** Song form: required instrument ids. */
   songInstruments?: string[];
 }

@@ -97,20 +97,27 @@ insert into song_instruments (song_id, instrument_id) values
 on conflict do nothing;
 
 -- ---------------------------------------------------------------------------
--- Song links (tabs / sheet music — several per song)
+-- Song links (streaming + tabs/sheet music — several per song, tagged by kind)
 -- ---------------------------------------------------------------------------
-insert into song_links (id, song_id, label_es, label_en, url, position) values
-  (1, 's1', 'Partitura (Google Docs)', 'Chart (Google Docs)', 'https://docs.google.com/document/d/dtv-alma-llanera', 1),
-  (2, 's1', 'Tabs de cuatro', 'Cuatro tabs', 'https://drive.google.com/file/d/dtv-alma-llanera-tabs', 2),
-  (3, 's2', 'Partitura (Google Docs)', 'Chart (Google Docs)', 'https://docs.google.com/document/d/dtv-pajarillo', 1),
-  (4, 's9', 'Partitura (Google Docs)', 'Chart (Google Docs)', 'https://docs.google.com/document/d/dtv-caballo-viejo', 1),
-  (5, 's9', 'Letra y acordes', 'Lyrics & chords', 'https://drive.google.com/file/d/dtv-caballo-viejo-chords', 2),
-  (6, 's11', 'Partitura (Google Docs)', 'Chart (Google Docs)', 'https://docs.google.com/document/d/dtv-sabana', 1),
-  (7, 's11', 'Tabs de arpa', 'Harp tabs', 'https://drive.google.com/file/d/dtv-sabana-harp', 2),
-  (8, 's14', 'Partitura (Google Docs)', 'Chart (Google Docs)', 'https://docs.google.com/document/d/dtv-sentir-zuliano', 1),
-  (9, 's19', 'Partitura (Google Docs)', 'Chart (Google Docs)', 'https://docs.google.com/document/d/dtv-san-juan', 1),
-  (10, 's19', 'Patrón de tambores', 'Drum pattern', 'https://drive.google.com/file/d/dtv-san-juan-drums', 2),
-  (11, 's22', 'Partitura (Google Docs)', 'Chart (Google Docs)', 'https://docs.google.com/document/d/dtv-calipso-callao', 1)
+insert into song_links (id, song_id, kind, label_es, label_en, url, position) values
+  (1, 's1', 'chart', 'Partitura (Google Docs)', 'Chart (Google Docs)', 'https://docs.google.com/document/d/dtv-alma-llanera', 1),
+  (2, 's1', 'chart', 'Tabs de cuatro', 'Cuatro tabs', 'https://drive.google.com/file/d/dtv-alma-llanera-tabs', 2),
+  (3, 's2', 'chart', 'Partitura (Google Docs)', 'Chart (Google Docs)', 'https://docs.google.com/document/d/dtv-pajarillo', 1),
+  (4, 's9', 'chart', 'Partitura (Google Docs)', 'Chart (Google Docs)', 'https://docs.google.com/document/d/dtv-caballo-viejo', 1),
+  (5, 's9', 'chart', 'Letra y acordes', 'Lyrics & chords', 'https://drive.google.com/file/d/dtv-caballo-viejo-chords', 2),
+  (6, 's11', 'chart', 'Partitura (Google Docs)', 'Chart (Google Docs)', 'https://docs.google.com/document/d/dtv-sabana', 1),
+  (7, 's11', 'chart', 'Tabs de arpa', 'Harp tabs', 'https://drive.google.com/file/d/dtv-sabana-harp', 2),
+  (8, 's14', 'chart', 'Partitura (Google Docs)', 'Chart (Google Docs)', 'https://docs.google.com/document/d/dtv-sentir-zuliano', 1),
+  (9, 's19', 'chart', 'Partitura (Google Docs)', 'Chart (Google Docs)', 'https://docs.google.com/document/d/dtv-san-juan', 1),
+  (10, 's19', 'chart', 'Patrón de tambores', 'Drum pattern', 'https://drive.google.com/file/d/dtv-san-juan-drums', 2),
+  (11, 's22', 'chart', 'Partitura (Google Docs)', 'Chart (Google Docs)', 'https://docs.google.com/document/d/dtv-calipso-callao', 1),
+  (12, 's1', 'youtube', 'Video oficial', 'Official video', 'https://www.youtube.com/watch?v=dtv-alma-llanera', 1),
+  (13, 's1', 'youtube', 'En vivo — Festival de Verano', 'Live — Summer Festival', 'https://www.youtube.com/watch?v=dtv-alma-llanera-live', 2),
+  (14, 's9', 'youtube', 'Video oficial', 'Official video', 'https://www.youtube.com/watch?v=dtv-caballo-viejo', 1),
+  (15, 's9', 'spotify', 'Spotify', 'Spotify', 'https://open.spotify.com/track/dtv-caballo-viejo', 1),
+  (16, 's9', 'apple', 'Apple Music', 'Apple Music', 'https://music.apple.com/us/album/dtv-caballo-viejo', 1),
+  (17, 's11', 'youtube', 'Video oficial', 'Official video', 'https://www.youtube.com/watch?v=dtv-sabana', 1),
+  (18, 's11', 'spotify', 'Spotify', 'Spotify', 'https://open.spotify.com/track/dtv-sabana', 1)
 on conflict (id) do nothing;
 
 -- ---------------------------------------------------------------------------
@@ -290,9 +297,9 @@ insert into transactions (id, kind, amount_cents, occurred_on, description_es, d
   ('t11', 'in', 25000, '2026-04-26', 'Cachet — Feria Cultural de Richmond', 'Fee — Richmond Cultural Fair', 'https://drive.google.com/file/d/dtv-zelle-richmond/view', 'zelle', '33333333-3333-3333-3333-333333333333', null, null, 'fee', null),
   ('t12', 'out', 19800, '2026-04-12', 'Micrófonos Shure SM58 (x2)', 'Shure SM58 microphones (x2)', 'https://drive.google.com/file/d/dtv-mics/view', 'invoice', '11111111-1111-1111-1111-111111111111', null, 'g3', null, null),
   ('t0', 'in', 80000, '2026-03-01', 'Saldo inicial — aportes de fundación (5 × $160)', 'Opening balance — founding contributions (5 × $160)', 'https://drive.google.com/file/d/dtv-seed/view', 'zelle', '33333333-3333-3333-3333-333333333333', null, null, 'contribution', null),
-  ('t13', 'in', 2000, '2026-08-20', 'Cuota agosto — Rodrigo', 'August cuota — Rodrigo', null, 'zelle', '33333333-3333-3333-3333-333333333333', null, null, 'contribution', '11111111-1111-1111-1111-111111111111'),
-  ('t14', 'in', 2000, '2026-08-22', 'Cuota agosto — Caro', 'August cuota — Caro', null, 'zelle', '33333333-3333-3333-3333-333333333333', null, null, 'contribution', '22222222-2222-2222-2222-222222222222'),
-  ('t15', 'in', 2000, '2026-08-25', 'Cuota agosto — Sofía', 'August cuota — Sofía', null, 'zelle', '33333333-3333-3333-3333-333333333333', null, null, 'contribution', '44444444-4444-4444-4444-444444444444')
+  ('t13', 'in', 2000, '2026-08-20', 'Aporte agosto — Rodrigo', 'August contribution — Rodrigo', null, 'zelle', '33333333-3333-3333-3333-333333333333', null, null, 'contribution', '11111111-1111-1111-1111-111111111111'),
+  ('t14', 'in', 2000, '2026-08-22', 'Aporte agosto — Caro', 'August contribution — Caro', null, 'zelle', '33333333-3333-3333-3333-333333333333', null, null, 'contribution', '22222222-2222-2222-2222-222222222222'),
+  ('t15', 'in', 2000, '2026-08-25', 'Aporte agosto — Sofía', 'August contribution — Sofía', null, 'zelle', '33333333-3333-3333-3333-333333333333', null, null, 'contribution', '44444444-4444-4444-4444-444444444444')
 on conflict (id) do nothing;
 
 -- ---------------------------------------------------------------------------
@@ -358,3 +365,4 @@ select setval('polls_id_seq', (select coalesce(max(id), 1) from polls));
 select setval('poll_options_id_seq', (select coalesce(max(id), 1) from poll_options));
 select setval('event_media_id_seq', (select coalesce(max(id), 1) from event_media));
 select setval('thread_comments_id_seq', (select coalesce(max(id), 1) from thread_comments));
+select setval('song_links_id_seq', (select coalesce(max(id), 1) from song_links));

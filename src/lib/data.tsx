@@ -8,18 +8,18 @@ import { useAuth } from './auth';
 import {
   addComment as apiAddComment, addTake as apiAddTake, createEvent as apiCreateEvent, createGear as apiCreateGear, createInstrument as apiCreateInstrument,
   createSong as apiCreateSong, createTransaction as apiCreateTransaction, deleteTake as apiDeleteTake, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
-  saveMember as apiSaveMember, setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, setSongInstruments as apiSetSongInstruments,
-  settleEvent as apiSettleEvent, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateCuota as apiUpdateCuota,
+  setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, setSongInstruments as apiSetSongInstruments, setSongLinks as apiSetSongLinks,
+  settleEvent as apiSettleEvent, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateSong as apiUpdateSong,
   uploadProof as apiUploadProof, voteThread as apiVoteThread, type DataSnapshot,
 } from './api';
 import { EVENTS, GEAR, INSTRUMENTS, MEMBERS, SONGS, TAKES, THREADS, TRANSACTIONS } from '../data';
-import type { EventType, GearCondition, GenreId, Proficiency, ProofKind, Role, RsvpStatus, TxCategory, TxKind, VocalFlag } from '../types';
+import type { EventType, GearCondition, GenreId, LinkKind, Proficiency, ProofKind, RsvpStatus, TxCategory, TxKind, VocalFlag } from '../types';
 
 export interface CreateEventInput { title: string; venue: string; date: string; time: string; hours: number; fee: number; cost: number; note: string; type: EventType; }
 export interface CreateSongInput { title: string; genre: GenreId; key: string; bpm: number; dur: string; }
+export interface SongLinkInput { kind: LinkKind; label: string; url: string; }
 export interface CreateTxInput { kind: TxKind; amt: number; date: string; desc: string; proof: string | null; proofKind: ProofKind; event?: string; gear?: string; category?: TxCategory; contributor?: string; }
 export interface CreateGearInput { name: string; cost: number; date: string; custodian: string; cond: GearCondition; note: string; boughtBy: string; proof: string | null; proofKind: ProofKind; }
-export interface CreateMemberInput { id?: string; name: string; email: string; role: Role; instruments: { id: string; lv: Proficiency }[]; vocals: VocalFlag[]; }
 export interface FeedbackInput { sound: number; perf: number; log: number; energy: number; well: string; improve: string; anon: boolean; }
 
 interface DataValue extends DataSnapshot {
@@ -29,10 +29,11 @@ interface DataValue extends DataSnapshot {
   reload: () => Promise<void>;
   createEvent: (input: CreateEventInput) => Promise<string | undefined>;
   createSong: (input: CreateSongInput) => Promise<string | undefined>;
+  updateSong: (id: string, input: CreateSongInput) => Promise<void>;
+  setSongLinks: (songId: string, links: SongLinkInput[]) => Promise<void>;
   createTransaction: (input: CreateTxInput) => Promise<void>;
   createGear: (input: CreateGearInput) => Promise<void>;
   createInstrument: (name: string) => Promise<string | undefined>;
-  saveMember: (input: CreateMemberInput) => Promise<string | undefined>;
   onboard: (instruments: { id: string; lv: Proficiency }[], vocals: VocalFlag[]) => Promise<void>;
   setSongInstruments: (songId: string, instrumentIds: string[]) => Promise<void>;
   addTake: (eventId: string, songId: string, url: string) => Promise<void>;
@@ -44,7 +45,6 @@ interface DataValue extends DataSnapshot {
   pickPoll: (eventId: string, optionIndex: number) => Promise<void>;
   transferCustody: (gearId: string, toMemberId: string) => Promise<void>;
   setEventSetlist: (eventId: string, songIds: string[]) => Promise<void>;
-  updateCuota: (cents: number) => Promise<void>;
   settleEvent: (eventId: string, input: { happened: boolean; fee: number; cost: number }) => Promise<void>;
   /** Upload a receipt/invoice file; resolves to its public URL (undefined in demo mode). */
   uploadProof: (file: File) => Promise<string | undefined>;
@@ -65,7 +65,6 @@ const DEMO: DataSnapshot = {
   takes: TAKES,
   myThreadVotes: [],
   myPollPicks: {},
-  monthlyCuotaCents: 2000,
 };
 
 const EMPTY: DataSnapshot = {
@@ -79,7 +78,6 @@ const EMPTY: DataSnapshot = {
   takes: [],
   myThreadVotes: [],
   myPollPicks: {},
-  monthlyCuotaCents: 2000,
 };
 
 export function DataProvider({ children }: { children: ReactNode }) {
@@ -131,10 +129,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
       reload,
       createEvent: (input) => run(() => apiCreateEvent(input, uid)),
       createSong: (input) => run(() => apiCreateSong(input, uid)),
+      updateSong: (id, input) => run(() => apiUpdateSong(id, input, uid)),
+      setSongLinks: (songId, links) => run(() => apiSetSongLinks(songId, links)),
       createTransaction: (input) => run(() => apiCreateTransaction(input, uid)),
       createGear: (input) => run(() => apiCreateGear(input, uid)),
       createInstrument: (name) => run(() => apiCreateInstrument(name)),
-      saveMember: (input) => run(() => apiSaveMember(input, uid)),
       onboard: (instruments, vocals) => run(() => apiOnboard(uid, instruments, vocals)),
       setSongInstruments: (songId, instrumentIds) => run(() => apiSetSongInstruments(songId, instrumentIds)),
       addTake: (eventId, songId, url) => run(() => apiAddTake(eventId, songId, url)),
@@ -146,7 +145,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
       pickPoll: (eventId, optionIndex) => run(() => apiPickPoll(eventId, optionIndex, uid)),
       transferCustody: (gearId, toMemberId) => run(() => apiTransferCustody(gearId, toMemberId, uid)),
       setEventSetlist: (eventId, songIds) => run(() => apiSetEventSetlist(eventId, songIds, uid)),
-      updateCuota: (cents) => run(() => apiUpdateCuota(cents, uid)),
       settleEvent: (eventId, input) => run(() => apiSettleEvent(eventId, input, uid)),
       uploadProof: async (file) => {
         if (isDemo) return undefined;

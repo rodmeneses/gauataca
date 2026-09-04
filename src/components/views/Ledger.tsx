@@ -2,7 +2,6 @@
  * Ledger & gear view — pool balance cards, the transactions table and the
  * equipment inventory grid (design lines 454–551).
  */
-import { useState } from 'react';
 import { ArrowLeftRight, ExternalLink, Package, Plus } from 'lucide-react';
 import { Badge, Button, Select } from '@/components/ui';
 import { useBandSync } from '@/store';
@@ -11,15 +10,7 @@ import type { TxDate, TxFilter } from '@/types';
 const TX_GRID = 'min-w-[800px] grid grid-cols-[120px_1fr_130px_150px_120px] gap-3';
 
 export function Ledger() {
-  const { t, isAdmin, balanceStr, incomeStr, expenseStr, txCount, tx, txFilter, txDate, setTxFilter, setTxDate, gear, gearValue, openNewTx, openNewGear, openCustody, contributions, cuotaCents, setCuota } = useBandSync();
-  const [cuotaDraft, setCuotaDraft] = useState(() => String(cuotaCents / 100));
-  const paidCount = contributions.filter((c) => c.paid).length;
-
-  const saveCuota = () => {
-    const v = parseFloat(cuotaDraft);
-    if (!Number.isFinite(v) || v <= 0) return;
-    void setCuota(Math.round(v * 100));
-  };
+  const { t, isAdmin, balanceStr, incomeStr, expenseStr, txCount, tx, txFilter, txDate, setTxFilter, setTxDate, gear, gearValue, openNewTx, openNewGear, openCustody, contributions } = useBandSync();
 
   return (
     <div className="flex flex-col gap-5 animate-fade">
@@ -141,24 +132,6 @@ export function Ledger() {
       <section>
         <div className="flex items-center gap-3 mb-[13px]">
           <h2 className="m-0 font-display font-semibold text-[15px] leading-none text-ink">{t.contributions}</h2>
-          <span className="text-[12px] text-ink-muted whitespace-nowrap">— {t.paidCount.replace('%d', String(paidCount)).replace('%d', String(contributions.length))}</span>
-          {isAdmin && (
-            <div className="ml-auto flex items-center gap-[8px]">
-              <span className="text-[12px] text-ink-muted whitespace-nowrap">{t.cuota}</span>
-              <input
-                type="number"
-                min="0"
-                step="1"
-                value={cuotaDraft}
-                onChange={(e) => setCuotaDraft(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && saveCuota()}
-                className="w-[72px] font-mono font-semibold text-[13px] text-ink-body bg-raised border border-line rounded-[8px] py-[6px] px-[9px] outline-none focus:border-[#34d39955]"
-              />
-              <Button variant="primary" className="py-[7px] px-[12px]" onClick={saveCuota}>
-                {t.save}
-              </Button>
-            </div>
-          )}
         </div>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-[14px]">
           {contributions.map((c) => (
@@ -170,13 +143,6 @@ export function Ledger() {
                   {t.thisMonth} {c.monthStr} · {t.totalL} {c.totalStr}
                 </div>
               </div>
-              {c.paid ? (
-                <Badge lg color="#34d399" className="tracking-[.08em] flex-none" style={{ background: '#34d3991c' }}>
-                  {t.upToDate}
-                </Badge>
-              ) : (
-                <span className="font-sans font-semibold text-[12px] text-[#fbbf24] flex-none">{c.shortfallStr}</span>
-              )}
             </article>
           ))}
         </div>

@@ -9,7 +9,7 @@ import {
 } from '../data';
 import { d, days, money, money0, sameMonth } from '../lib/format';
 import type {
-  AppProps, BandEvent, CustodyDialog, FormState, GearCondition, GenreId, Instrument, Lang, Member, MobileTab, Modal, Profile, Proficiency, ProofKind, RatingKey, Role, RsvpStatus, SettleDialog, ShareSheet, Song, SongSort, Toast, Transaction, TxCategory, TxDate, TxFilter, View, VocalFlag,
+  AppProps, BandEvent, CustodyDialog, FormState, GearCondition, GenreId, Instrument, Lang, LinkKind, Member, MobileTab, Modal, Profile, Proficiency, ProofKind, RatingKey, RsvpStatus, SettleDialog, ShareSheet, Song, SongSort, Toast, Transaction, TxCategory, TxDate, TxFilter, View, VocalFlag,
 } from '../types';
 import { useStore, type State } from './store';
 import { useAuth } from '../lib/auth';
@@ -74,17 +74,12 @@ export interface FormVm {
   bpm: string;
   dur: string;
   genre: GenreId;
-  chart: string;
+  songLinks: { kind: LinkKind; label: string; url: string }[];
   setlist: string[];
   name: string;
   custodian: string;
   cond: GearCondition;
   boughtBy: string;
-  memberName: string;
-  memberEmail: string;
-  memberRole: Role;
-  memberInstruments: { id: string; lv: Proficiency }[];
-  memberVocals: VocalFlag[];
   songInstruments: string[];
 }
 
@@ -137,12 +132,8 @@ export interface BandSync {
   recentTx: TxVm[];
   txFilter: TxFilter;
   txDate: TxDate;
-  /** Per-member contribution summary (who's up to date on the cuota). */
+  /** Per-member voluntary contribution summary. */
   contributions: ContributionVm[];
-  /** Monthly cuota, formatted ("$20"). */
-  cuotaStr: string;
-  /** Monthly cuota in cents (for the editor). */
-  cuotaCents: number;
   gear: GearVm[];
   gearValue: string;
   threads: ThreadVm[];
@@ -195,11 +186,9 @@ export interface BandSync {
   openMember: (id: string) => void;
   openNewEvent: () => void;
   openNewSong: () => void;
+  openEditSong: (id: string) => void;
   openNewTx: () => void;
   openNewGear: () => void;
-  openNewMember: () => void;
-  openEditMember: (id: string) => void;
-  saveMember: () => Promise<void>;
   /** Complete sign-up onboarding (instruments + vocals). */
   onboard: (instruments: { id: string; lv: Proficiency }[], vocals: VocalFlag[]) => Promise<void>;
   /** Open the sign-up onboarding modal. */
@@ -210,7 +199,6 @@ export interface BandSync {
   createInstrument: (name: string) => Promise<string>;
   setTxFilter: (f: TxFilter) => void;
   setTxDate: (d: TxDate) => void;
-  setCuota: (cents: number) => Promise<void>;
   openSignIn: () => void;
   signOut: () => Promise<void>;
   closeModal: () => void;
@@ -281,13 +269,13 @@ export function useBandSync(): BandSync {
   const { user, profile, signOut, refreshProfile } = useAuth();
   const {
     songs: dbSongs, events: dbEvents, transactions: dbTx, gear: dbGear, threads: dbThreads, members: dbMembers,
-    instruments: dbInstruments, takes: dbTakes, myThreadVotes, myPollPicks, loading, error, monthlyCuotaCents,
-    createEvent, createSong, createTransaction, createGear: persistGear, createInstrument: persistInstrument,
-    saveMember: persistMember, onboard: persistOnboard, setSongInstruments: persistSongInstruments,
+    instruments: dbInstruments, takes: dbTakes, myThreadVotes, myPollPicks, loading, error,
+    createEvent, createSong, updateSong, setSongLinks: persistSongLinks, createTransaction, createGear: persistGear, createInstrument: persistInstrument,
+    onboard: persistOnboard, setSongInstruments: persistSongInstruments,
     addTake: persistTake, deleteTake: persistDeleteTake,
     setRsvp: persistRsvp, voteThread: persistVote,
     addComment: persistComment, submitFeedback: persistFeedback, pickPoll: persistPoll, transferCustody: persistCustody,
-    setEventSetlist: persistSetlist, updateCuota: persistCuota, settleEvent: persistSettle, uploadProof: persistUpload,
+    setEventSetlist: persistSetlist, settleEvent: persistSettle, uploadProof: persistUpload,
   } = useData();
   const isMobileViewport = useMediaQuery('(max-width: 768px)');
 
@@ -366,9 +354,9 @@ export function useBandSync(): BandSync {
     const contributions = dbMembers
       .map((m) => {
         const c = contribByMember.get(m.id) ?? { total: 0, month: 0 };
-        return contributionVm(m, c.total, c.month, monthlyCuotaCents, ctx);
+        return contributionVm(m, c.total, c.month);
       })
-      .sort((a, b) => (a.paid === b.paid ? a.name.localeCompare(b.name) : a.paid ? -1 : 1));
+      .sort((a, b) => a.name.localeCompare(b.name));
 
     const gear = dbGear.map((g) => gearVm(g, g.holder, ctx));
     const threads = dbThreads.map((b) => threadVm(b, myThreadVotes.includes(b.id), ctx));
@@ -450,11 +438,9 @@ export function useBandSync(): BandSync {
       title: f.title || '', venue: f.venue || '', date: f.date || '', time: f.time || '', hours: f.hours || '', fee: f.fee || '', cost: f.cost || '', note: f.note || '',
       type: f.type || 'gig', desc: f.desc || '', amt: f.amt || '', proof: f.proof || '', proofKind: f.proofKind || 'receipt', kind: f.kind || 'in',
       event: f.event || '', gear: f.gear || '', category: f.category || 'fee', contributor: f.contributor || '',
-      key: f.key || '', bpm: f.bpm || '', dur: f.dur || '', genre: f.genre || 'joropo', chart: f.chart || '',
+      key: f.key || '', bpm: f.bpm || '', dur: f.dur || '', genre: f.genre || 'joropo', songLinks: f.songLinks || [],
       setlist: f.setlist || [],
       name: f.name || '', custodian: f.custodian || '', cond: f.cond || 'good', boughtBy: f.boughtBy || '',
-      memberName: f.memberName || '', memberEmail: f.memberEmail || '', memberRole: f.memberRole || 'member',
-      memberInstruments: f.memberInstruments || [], memberVocals: f.memberVocals || [],
       songInstruments: f.songInstruments || [],
     };
 
@@ -470,7 +456,7 @@ export function useBandSync(): BandSync {
       songs, filteredSongs, staleSongs, genreChips,
       events, upcoming, history, calList: st.calTab === 'upcoming' ? upcoming : history, nextEvent, dashUpcoming,
       tx, recentTx, txFilter: st.txFilter, txDate: st.txDate,
-      contributions, cuotaStr: money(monthlyCuotaCents / 100), cuotaCents: monthlyCuotaCents,
+      contributions,
       gear, gearValue: money0(dbGear.reduce((a, b) => a + b.cost, 0)),
       threads, members, instruments,
 
@@ -511,23 +497,20 @@ export function useBandSync(): BandSync {
       openMember: (id) => set({ modal: { kind: 'member', id } }),
       openNewEvent: () => set({ modal: { kind: 'newEvent' }, form: {} }),
       openNewSong: () => set({ modal: { kind: 'newSong' }, form: {} }),
+      openEditSong: (id) => {
+        const s = dbSongs.find((x) => x.id === id);
+        if (!s) return;
+        set({
+          modal: { kind: 'newSong', id },
+          form: {
+            title: s.title, genre: s.genre, key: s.key, bpm: String(s.bpm), dur: s.dur,
+            songInstruments: s.instruments || [],
+            songLinks: (s.links || []).map((l) => ({ kind: l.kind, label: Lx(l.label), url: l.url })),
+          },
+        });
+      },
       openNewTx: () => set({ modal: { kind: 'newTx' }, form: {} }),
       openNewGear: () => set({ modal: { kind: 'newGear' }, form: { custodian: me.id, boughtBy: me.id } }),
-      openNewMember: () => set({ modal: { kind: 'newMember' }, form: { memberRole: 'member', memberInstruments: [], memberVocals: [] } }),
-      openEditMember: (id) => {
-        const m = dbMembers.find((x) => x.id === id);
-        if (!m) return;
-        set({ modal: { kind: 'newMember', id }, form: { memberName: m.name, memberEmail: m.email, memberRole: m.role, memberInstruments: m.instruments, memberVocals: m.vocals } });
-      },
-      saveMember: async () => {
-        const editingId = st.modal?.kind === 'newMember' ? st.modal.id : undefined;
-        set({ modal: null, form: {} });
-        await persistMember({
-          id: editingId, name: f.memberName || 'Músico nuevo', email: f.memberEmail || '', role: f.memberRole || 'member',
-          instruments: f.memberInstruments || [], vocals: f.memberVocals || [],
-        });
-        toast(t.memberSaved);
-      },
       onboard: async (instruments, vocals) => {
         await persistOnboard(instruments, vocals);
         await refreshProfile();
@@ -543,10 +526,6 @@ export function useBandSync(): BandSync {
       },
       setTxFilter: (f) => set({ txFilter: f }),
       setTxDate: (d) => set({ txDate: d }),
-      setCuota: async (cents) => {
-        await persistCuota(cents);
-        toast(t.cuotaSaved);
-      },
       openSignIn: () => set({ modal: { kind: 'signin' } }),
       signOut,
       closeModal: () => set({ modal: null }),
@@ -672,13 +651,23 @@ export function useBandSync(): BandSync {
         toast(t.txLogged);
       },
       saveSong: async () => {
+        const editingId = st.modal?.kind === 'newSong' ? st.modal.id : undefined;
         const songInstruments = f.songInstruments || [];
+        const songLinks = f.songLinks || [];
         set({ modal: null, form: {} });
-        const id = await createSong({
-          title: f.title || 'Canción nueva', genre: f.genre || 'joropo', key: f.key || 'Am', bpm: +(f.bpm || 120), dur: f.dur || '3:30',
-        });
-        if (id && songInstruments.length) await persistSongInstruments(id, songInstruments);
-        toast(t.songAdded);
+        const input = { title: f.title || 'Canción nueva', genre: f.genre || 'joropo', key: f.key || 'Am', bpm: +(f.bpm || 120), dur: f.dur || '3:30' };
+        if (editingId) {
+          await updateSong(editingId, input);
+          await persistSongLinks(editingId, songLinks);
+          await persistSongInstruments(editingId, songInstruments);
+        } else {
+          const id = await createSong(input);
+          if (id) {
+            if (songLinks.length) await persistSongLinks(id, songLinks);
+            if (songInstruments.length) await persistSongInstruments(id, songInstruments);
+          }
+        }
+        toast(editingId ? t.songSaved : t.songAdded);
       },
       saveGear: async () => {
         set({ modal: null, form: {} });
@@ -697,5 +686,5 @@ export function useBandSync(): BandSync {
       closeHandoff: () => set({ handoff: false }),
       toast,
     };
-  }, [st, props, set, toast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myThreadVotes, myPollPicks, loading, error, isMobileViewport, createEvent, createSong, createTransaction, persistGear, persistInstrument, persistMember, persistOnboard, persistSongInstruments, persistTake, persistDeleteTake, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, monthlyCuotaCents, persistCuota, persistSettle, persistUpload]);
+  }, [st, props, set, toast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myThreadVotes, myPollPicks, loading, error, isMobileViewport, createEvent, createSong, updateSong, persistSongLinks, createTransaction, persistGear, persistInstrument, persistOnboard, persistSongInstruments, persistTake, persistDeleteTake, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
 }

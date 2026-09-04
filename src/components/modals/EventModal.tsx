@@ -98,14 +98,14 @@ export function EventModal() {
                     type="button"
                     onClick={() => setRsvp(ev.id, s)}
                     aria-pressed={active}
-                    className="flex items-center gap-[7px] py-[9px] px-[14px] rounded-[10px] border font-sans font-semibold text-[13px] leading-[normal] cursor-pointer transition-colors"
+                    className="flex items-center gap-[8px] py-[11px] px-[18px] rounded-[11px] border font-sans font-semibold text-[16px] leading-[normal] cursor-pointer transition-colors"
                     style={{
-                      borderColor: active ? color + '66' : '#1e293b',
-                      background: active ? color + '1a' : '#0b1220',
-                      color: active ? color : '#94a3b8',
+                      borderColor: active ? color + '99' : color + '55',
+                      background: active ? color + '26' : color + '12',
+                      color,
                     }}
                   >
-                    {active && <Check size={14} strokeWidth={2.4} />}
+                    {active && <Check size={17} strokeWidth={2.4} />}
                     {rsvpLabel(s, t)}
                   </button>
                 );

@@ -48,41 +48,45 @@ const SONG_INSTRUMENTS: Record<string, string[]> = {
   s22: ['cuatro', 'percusion'],
 };
 
-// Song id → tabs / sheet-music links (several per song). Streaming links
-// (YouTube / Apple Music / Spotify) are left null and synthesized in songVm.
-const SONG_CHARTS: Record<string, SongLink[]> = {
+// Song id → links (streaming + tabs/sheet music). Streaming links are
+// synthesized in songVm when a kind is missing, so only explicit links live here.
+const SONG_LINKS: Record<string, SongLink[]> = {
   s1: [
-    { label: { es: 'Partitura (Google Docs)', en: 'Chart (Google Docs)' }, url: 'https://docs.google.com/document/d/dtv-alma-llanera' },
-    { label: { es: 'Tabs de cuatro', en: 'Cuatro tabs' }, url: 'https://drive.google.com/file/d/dtv-alma-llanera-tabs' },
+    { kind: 'youtube', label: { es: 'Video oficial', en: 'Official video' }, url: 'https://www.youtube.com/watch?v=dtv-alma-llanera' },
+    { kind: 'youtube', label: { es: 'En vivo — Festival de Verano', en: 'Live — Summer Festival' }, url: 'https://www.youtube.com/watch?v=dtv-alma-llanera-live' },
+    { kind: 'chart', label: { es: 'Partitura (Google Docs)', en: 'Chart (Google Docs)' }, url: 'https://docs.google.com/document/d/dtv-alma-llanera' },
+    { kind: 'chart', label: { es: 'Tabs de cuatro', en: 'Cuatro tabs' }, url: 'https://drive.google.com/file/d/dtv-alma-llanera-tabs' },
   ],
   s2: [
-    { label: { es: 'Partitura (Google Docs)', en: 'Chart (Google Docs)' }, url: 'https://docs.google.com/document/d/dtv-pajarillo' },
+    { kind: 'chart', label: { es: 'Partitura (Google Docs)', en: 'Chart (Google Docs)' }, url: 'https://docs.google.com/document/d/dtv-pajarillo' },
   ],
   s9: [
-    { label: { es: 'Partitura (Google Docs)', en: 'Chart (Google Docs)' }, url: 'https://docs.google.com/document/d/dtv-caballo-viejo' },
-    { label: { es: 'Letra y acordes', en: 'Lyrics & chords' }, url: 'https://drive.google.com/file/d/dtv-caballo-viejo-chords' },
+    { kind: 'youtube', label: { es: 'Video oficial', en: 'Official video' }, url: 'https://www.youtube.com/watch?v=dtv-caballo-viejo' },
+    { kind: 'spotify', label: { es: 'Spotify', en: 'Spotify' }, url: 'https://open.spotify.com/track/dtv-caballo-viejo' },
+    { kind: 'apple', label: { es: 'Apple Music', en: 'Apple Music' }, url: 'https://music.apple.com/us/album/dtv-caballo-viejo' },
+    { kind: 'chart', label: { es: 'Partitura (Google Docs)', en: 'Chart (Google Docs)' }, url: 'https://docs.google.com/document/d/dtv-caballo-viejo' },
+    { kind: 'chart', label: { es: 'Letra y acordes', en: 'Lyrics & chords' }, url: 'https://drive.google.com/file/d/dtv-caballo-viejo-chords' },
   ],
   s11: [
-    { label: { es: 'Partitura (Google Docs)', en: 'Chart (Google Docs)' }, url: 'https://docs.google.com/document/d/dtv-sabana' },
-    { label: { es: 'Tabs de arpa', en: 'Harp tabs' }, url: 'https://drive.google.com/file/d/dtv-sabana-harp' },
+    { kind: 'youtube', label: { es: 'Video oficial', en: 'Official video' }, url: 'https://www.youtube.com/watch?v=dtv-sabana' },
+    { kind: 'spotify', label: { es: 'Spotify', en: 'Spotify' }, url: 'https://open.spotify.com/track/dtv-sabana' },
+    { kind: 'chart', label: { es: 'Partitura (Google Docs)', en: 'Chart (Google Docs)' }, url: 'https://docs.google.com/document/d/dtv-sabana' },
+    { kind: 'chart', label: { es: 'Tabs de arpa', en: 'Harp tabs' }, url: 'https://drive.google.com/file/d/dtv-sabana-harp' },
   ],
   s14: [
-    { label: { es: 'Partitura (Google Docs)', en: 'Chart (Google Docs)' }, url: 'https://docs.google.com/document/d/dtv-sentir-zuliano' },
+    { kind: 'chart', label: { es: 'Partitura (Google Docs)', en: 'Chart (Google Docs)' }, url: 'https://docs.google.com/document/d/dtv-sentir-zuliano' },
   ],
   s19: [
-    { label: { es: 'Partitura (Google Docs)', en: 'Chart (Google Docs)' }, url: 'https://docs.google.com/document/d/dtv-san-juan' },
-    { label: { es: 'Patrón de tambores', en: 'Drum pattern' }, url: 'https://drive.google.com/file/d/dtv-san-juan-drums' },
+    { kind: 'chart', label: { es: 'Partitura (Google Docs)', en: 'Chart (Google Docs)' }, url: 'https://docs.google.com/document/d/dtv-san-juan' },
+    { kind: 'chart', label: { es: 'Patrón de tambores', en: 'Drum pattern' }, url: 'https://drive.google.com/file/d/dtv-san-juan-drums' },
   ],
   s22: [
-    { label: { es: 'Partitura (Google Docs)', en: 'Chart (Google Docs)' }, url: 'https://docs.google.com/document/d/dtv-calipso-callao' },
+    { kind: 'chart', label: { es: 'Partitura (Google Docs)', en: 'Chart (Google Docs)' }, url: 'https://docs.google.com/document/d/dtv-calipso-callao' },
   ],
 };
 
 export const SONGS: Song[] = RAW.map(([id, title, genre, key, bpm, dur, last]) => ({
   id, title, genre, key, bpm, dur, last,
   instruments: SONG_INSTRUMENTS[id],
-  yt: null,
-  am: null,
-  sp: null,
-  charts: SONG_CHARTS[id] ?? [],
+  links: SONG_LINKS[id] ?? [],
 }));

@@ -9,8 +9,8 @@ import { useBandSync } from '@/store';
 import { Button, DatePicker, Field, Input, Modal, Select, Textarea } from '@/components/ui';
 import { GENRES, GENRE_IDS } from '@/data';
 import { isDemo } from '@/lib/data';
-import { InstrumentPicker, VocalsPicker } from './InstrumentPicker';
-import type { EventType, GearCondition, GenreId, ProofKind, Role, TxCategory, TxKind } from '@/types';
+import { InstrumentPicker } from './InstrumentPicker';
+import type { EventType, GearCondition, GenreId, LinkKind, ProofKind, TxCategory, TxKind } from '@/types';
 
 /* ------------------------------------------------------------ shared frame */
 function FormHeader({ title, onClose }: { title: string; onClose: () => void }) {
@@ -288,12 +288,57 @@ export function NewTxModal() {
   );
 }
 
+/* --------------------------------------------------------- song link editor */
+function SongLinksEditor() {
+  const { t, form, setForm } = useBandSync();
+  const links = form.songLinks || [];
+  const set = (next: { kind: LinkKind; label: string; url: string }[]) => setForm('songLinks', next);
+  const update = (i: number, patch: Partial<{ kind: LinkKind; label: string; url: string }>) =>
+    set(links.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
+  const remove = (i: number) => set(links.filter((_, idx) => idx !== i));
+  const add = () => set([...links, { kind: 'youtube', label: '', url: '' }]);
+
+  return (
+    <div>
+      <div className="font-display font-semibold text-[10.5px] leading-[normal] tracking-[.11em] uppercase text-[#64748b] mb-[9px]">{t.links}</div>
+      <div className="flex flex-col gap-[8px]">
+        {links.map((l, i) => (
+          <div key={i} className="flex flex-col gap-[6px] p-[10px] rounded-[10px] border border-[#172033] bg-[#0f172a]">
+            <div className="flex gap-2 items-center">
+              <Select value={l.kind} onChange={(e) => update(i, { kind: e.target.value as LinkKind })} className="flex-1">
+                <option value="youtube">{t.ytLink}</option>
+                <option value="apple">{t.amLink}</option>
+                <option value="spotify">{t.spLink}</option>
+                <option value="chart">{t.charts}</option>
+              </Select>
+              <button type="button" onClick={() => remove(i)} title={t.removeLink} aria-label={t.removeLink} className="grid place-items-center w-[28px] h-[28px] rounded-[8px] border border-[#1e293b] bg-[#0b1220] text-[#64748b] hover:text-[#cbd5e1] hover:border-[#f43f5e55] cursor-pointer flex-none">
+                <X size={13} strokeWidth={2.2} />
+              </button>
+            </div>
+            <Input value={l.label} onChange={(e) => update(i, { label: e.target.value })} placeholder={t.linkLabel} />
+            <Input mono value={l.url} onChange={(e) => update(i, { url: e.target.value })} placeholder="https://…" className="text-[13px]" />
+          </div>
+        ))}
+      </div>
+      <button
+        type="button"
+        onClick={add}
+        className="mt-[9px] inline-flex items-center gap-[6px] py-[8px] px-[12px] rounded-[9px] border border-[#34d39944] bg-[#34d3990f] text-[#6ee7b7] font-sans font-semibold text-[12.5px] leading-[normal] cursor-pointer hover:bg-[#34d39922]"
+      >
+        <Plus size={14} strokeWidth={2.2} />
+        {t.addLink}
+      </button>
+    </div>
+  );
+}
+
 /* --------------------------------------------------------------- new song */
 export function NewSongModal() {
-  const { t, L, form, setForm, closeModal, saveSong } = useBandSync();
+  const { t, L, form, setForm, closeModal, saveSong, modal } = useBandSync();
+  const editing = modal?.kind === 'newSong' && !!modal.id;
   return (
     <Modal onClose={closeModal} maxWidth={520}>
-      <FormHeader title={t.newSong} onClose={closeModal} />
+      <FormHeader title={editing ? t.editSong : t.newSong} onClose={closeModal} />
       <FormBody>
         <Field label={t.titleL}>
           <Input value={form.title} onChange={(e) => setForm('title', e.target.value)} placeholder="Fiesta en Elorza" />
@@ -318,15 +363,7 @@ export function NewSongModal() {
             <Input mono value={form.dur} onChange={(e) => setForm('dur', e.target.value)} placeholder="3:45" />
           </Field>
         </div>
-        <Field label={`${t.chart} (Google Doc)`}>
-          <Input
-            mono
-            value={form.chart}
-            onChange={(e) => setForm('chart', e.target.value)}
-            placeholder="https://docs.google.com/document/d/…"
-            className="text-[13px]"
-          />
-        </Field>
+        <SongLinksEditor />
         <Field label={t.requiredInstruments}>
           <InstrumentPicker
             selected={(form.songInstruments || []).map((id) => ({ id }))}
@@ -452,33 +489,3 @@ export function NewGearModal() {
   );
 }
 
-/* -------------------------------------------------------------- new member */
-export function NewMemberModal() {
-  const { t, form, setForm, closeModal, saveMember } = useBandSync();
-  return (
-    <Modal onClose={closeModal} maxWidth={520}>
-      <FormHeader title={t.newMember} onClose={closeModal} />
-      <FormBody>
-        <Field label={t.name}>
-          <Input value={form.memberName} onChange={(e) => setForm('memberName', e.target.value)} placeholder="María Pérez" />
-        </Field>
-        <Field label={t.email}>
-          <Input value={form.memberEmail} onChange={(e) => setForm('memberEmail', e.target.value)} placeholder="maria@dulcetricolor.org" />
-        </Field>
-        <Field label={t.roleL}>
-          <Select value={form.memberRole} onChange={(e) => setForm('memberRole', e.target.value as Role)}>
-            <option value="member">{t.member}</option>
-            <option value="admin">{t.admin}</option>
-          </Select>
-        </Field>
-        <Field label={t.instruments}>
-          <InstrumentPicker selected={form.memberInstruments || []} onChange={(next) => setForm('memberInstruments', next.map((p) => ({ id: p.id, lv: p.lv ?? 'inter' })))} withLevel />
-        </Field>
-        <Field label={t.vocalsL}>
-          <VocalsPicker selected={form.memberVocals || []} onChange={(next) => setForm('memberVocals', next)} />
-        </Field>
-      </FormBody>
-      <FormFooter cancel={t.cancel} save={t.save} onCancel={closeModal} onSave={saveMember} />
-    </Modal>
-  );
-}

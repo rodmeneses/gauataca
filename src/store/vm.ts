@@ -7,7 +7,7 @@ import type { Dict } from '../i18n';
 import { GENRES } from '../data';
 import { d, days, durationSeconds, fmt, money, money0, monthShort, rel } from '../lib/format';
 import type {
-  BandEvent, EventFeedback, Gear, GenreId, Instrument, Lang, LocalComment, Localized, Member, Proficiency, RatingKey, RsvpStatus, Song, Take, Thread, Transaction,
+  BandEvent, EventFeedback, Gear, GenreId, Instrument, Lang, LinkKind, LocalComment, Localized, Member, Proficiency, RatingKey, RsvpStatus, Song, Take, Thread, Transaction,
 } from '../types';
 
 export interface Ctx {
@@ -62,6 +62,16 @@ export interface RehearsalLog {
   typeLabel: string;
 }
 
+/** A song link with its label already localized. */
+export interface SongLinkVm {
+  kind: LinkKind;
+  label: string;
+  url: string;
+}
+
+/** Stable display order for streaming links (chart links keep their position). */
+const KIND_ORDER: Record<LinkKind, number> = { youtube: 0, apple: 1, spotify: 2, chart: 3 };
+
 export interface SongVm {
   id: string;
   title: string;
@@ -81,12 +91,11 @@ export interface SongVm {
   staleBg: string;
   isStale: boolean;
   open: boolean;
-  /** Real-version links (YouTube / Apple Music / Spotify), synthesized when unset. */
-  yt: string;
-  am: string;
-  sp: string;
+  /** Streaming links (YouTube / Apple Music / Spotify), synthesized when a kind is missing. */
+  streaming: SongLinkVm[];
+  hasStreaming: boolean;
   /** Tabs / sheet-music links (several possible). */
-  charts: { label: string; url: string }[];
+  charts: SongLinkVm[];
   hasCharts: boolean;
   logs: RehearsalLog[];
   logCount: number;
@@ -121,7 +130,13 @@ export function songVm(s: Song, allEvents: BandEvent[], openSong: string | null,
       const ev = allEvents.find((x) => x.id === tk.eventId);
       return takeVm(tk, s.title, ev ? fmt(ev.date, lang, true) : '', ctx);
     });
-  const charts = (s.charts ?? []).map((c) => ({ label: L(lang, c.label), url: c.url }));
+  const links: SongLinkVm[] = (s.links ?? []).map((l) => ({ kind: l.kind, label: L(lang, l.label), url: l.url }));
+  const hasKind = (k: LinkKind) => links.some((l) => l.kind === k);
+  if (!hasKind('youtube')) links.push({ kind: 'youtube', label: t.ytLink, url: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(s.title + ' venezuela') });
+  if (!hasKind('apple')) links.push({ kind: 'apple', label: t.amLink, url: 'https://music.apple.com/us/search?term=' + encodeURIComponent(s.title) });
+  if (!hasKind('spotify')) links.push({ kind: 'spotify', label: t.spLink, url: 'https://open.spotify.com/search/' + encodeURIComponent(s.title) });
+  const streaming = links.filter((l) => l.kind !== 'chart').sort((a, b) => KIND_ORDER[a.kind] - KIND_ORDER[b.kind]);
+  const charts = links.filter((l) => l.kind === 'chart');
   return {
     id: s.id,
     title: s.title,
@@ -139,9 +154,8 @@ export function songVm(s: Song, allEvents: BandEvent[], openSong: string | null,
     staleBg: veryStale ? '#f43f5e1c' : stale ? '#fbbf241c' : '#34d3991c',
     isStale: stale,
     open: openSong === s.id,
-    yt: s.yt ?? 'https://www.youtube.com/results?search_query=' + encodeURIComponent(s.title + ' venezuela'),
-    am: s.am ?? 'https://music.apple.com/us/search?term=' + encodeURIComponent(s.title),
-    sp: s.sp ?? 'https://open.spotify.com/search/' + encodeURIComponent(s.title),
+    streaming,
+    hasStreaming: streaming.length > 0,
     charts,
     hasCharts: charts.length > 0,
     logs,
@@ -426,24 +440,15 @@ export interface ContributionVm {
   totalStr: string;
   /** This month's contributions, formatted. */
   monthStr: string;
-  /** true when this month's contributions meet the cuota. */
-  paid: boolean;
-  /** "Debe $X" when pending, else ''. */
-  shortfallStr: string;
 }
 
-export function contributionVm(member: Member, totalCents: number, monthCents: number, cuotaCents: number, ctx: Ctx): ContributionVm {
-  const { t } = ctx;
-  const paid = monthCents >= cuotaCents;
-  const shortfall = Math.max(0, cuotaCents - monthCents);
+export function contributionVm(member: Member, totalCents: number, monthCents: number): ContributionVm {
   return {
     memberId: member.id,
     name: member.short,
     initial: member.initial,
     totalStr: money(totalCents / 100),
     monthStr: money(monthCents / 100),
-    paid,
-    shortfallStr: paid ? '' : t.owes.replace('%s', money(shortfall / 100)),
   };
 }
 

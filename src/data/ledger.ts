@@ -41,13 +41,13 @@ export const TRANSACTIONS: Transaction[] = [
     desc: { es: 'Saldo inicial — aportes de fundación (5 × $160)', en: 'Opening balance — founding contributions (5 × $160)' },
     proof: 'https://drive.google.com/file/d/dtv-seed/view', proofKind: 'zelle' },
   { id: 't13', kind: 'in', amt: 20, date: '2026-08-20', by: 'm3', category: 'contribution', contributor: 'm1',
-    desc: { es: 'Cuota agosto — Rodrigo', en: 'August cuota — Rodrigo' },
+    desc: { es: 'Aporte agosto — Rodrigo', en: 'August contribution — Rodrigo' },
     proof: null, proofKind: 'zelle' },
   { id: 't14', kind: 'in', amt: 20, date: '2026-08-22', by: 'm3', category: 'contribution', contributor: 'm2',
-    desc: { es: 'Cuota agosto — Caro', en: 'August cuota — Caro' },
+    desc: { es: 'Aporte agosto — Caro', en: 'August contribution — Caro' },
     proof: null, proofKind: 'zelle' },
   { id: 't15', kind: 'in', amt: 20, date: '2026-08-25', by: 'm3', category: 'contribution', contributor: 'm4',
-    desc: { es: 'Cuota agosto — Sofía', en: 'August cuota — Sofía' },
+    desc: { es: 'Aporte agosto — Sofía', en: 'August contribution — Sofía' },
     proof: null, proofKind: 'zelle' },
 ];
 

@@ -1,20 +1,29 @@
 /**
  * Repertoire view — a dashboard of songs. Each card shows the real-version
- * streaming links (YouTube / Apple Music / Spotify), the tabs/sheet-music links
- * (several possible) and every recorded take, plus a sort control (most recorded
- * by default, by name, or fewest takes).
+ * streaming links (YouTube / Apple Music / Spotify, any number of each), the
+ * tabs/sheet-music links (several possible) and every recorded take, plus a sort
+ * control (most recorded by default, by name, or fewest takes). The rehearsal
+ * log entries link to their event.
  */
-import { Clock, FileText, Mic, Plus, Search, Youtube } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clock, FileText, Mic, Pencil, Plus, Search, Youtube } from 'lucide-react';
 import { AppleMusicIcon, Pill, Segment, SpotifyIcon } from '@/components/ui';
 import { useBandSync } from '@/store';
+import type { LinkKind } from '@/types';
 
 /** Shared classes for the labeled resource links (streaming / chart / take). */
 const LINK =
   'flex items-center gap-[9px] p-[9px_12px] rounded-[10px] border border-[#1e293b] bg-[#0f172a] text-[#cbd5e1] hover:text-[#cbd5e1] no-underline font-sans font-medium text-[12.5px] leading-[normal] hover:border-[#334155]';
 const EYEBROW = 'font-display font-semibold text-[10.5px] tracking-[.12em] uppercase text-[#64748b] mb-[9px]';
 
+/** Icon for a streaming link kind (chart links use FileText in their own block). */
+function streamIcon(kind: LinkKind) {
+  if (kind === 'youtube') return <Youtube size={15} strokeWidth={1.9} className="flex-none" color="#f87171" />;
+  if (kind === 'apple') return <AppleMusicIcon size={15} strokeWidth={1.9} className="flex-none text-[#f472b6]" />;
+  return <SpotifyIcon size={15} strokeWidth={1.9} className="flex-none text-[#34d399]" />;
+}
+
 export function Repertoire() {
-  const { state, t, isAdmin, setQ, openNewSong, genreChips, setGenre, toggleStale, filteredSongs, statSongs, setSongSort, toggleSong } = useBandSync();
+  const { state, t, isAdmin, setQ, openNewSong, openEditSong, openEvent, genreChips, setGenre, toggleStale, filteredSongs, statSongs, setSongSort, toggleSong } = useBandSync();
 
   return (
     <div className="flex flex-col gap-4 animate-fade">
@@ -74,14 +83,14 @@ export function Repertoire() {
       <div className="flex flex-col gap-2">
         {filteredSongs.map((s) => (
           <div key={s.id} className="bg-[#0f172a] border border-[#1e293b] rounded-[13px] overflow-hidden">
-            {/* header (click toggles the rehearsal log) */}
-            <button
-              type="button"
-              onClick={() => toggleSong(s.id)}
-              className="flex items-center gap-x-[14px] gap-y-3 flex-wrap p-[14px_16px] w-full border-none bg-transparent cursor-pointer text-left text-inherit"
-            >
+            {/* header (title toggles the rehearsal log) */}
+            <div className="flex items-center gap-x-[14px] gap-y-3 flex-wrap p-[14px_16px]">
               <span className="w-1 h-10 rounded-[3px] flex-none opacity-[.85]" style={{ background: s.genreColor }} />
-              <span className="min-w-0 flex-1">
+              <button
+                type="button"
+                onClick={() => toggleSong(s.id)}
+                className="min-w-0 flex-1 border-none bg-transparent cursor-pointer text-left text-inherit"
+              >
                 <span className="block font-display font-semibold text-[16px] leading-[1.25] text-[#f1f5f9] tracking-[-.01em]">{s.title}</span>
                 <span className="flex items-center gap-[9px] mt-[6px] font-sans font-medium text-[11.5px] text-[#64748b] flex-nowrap whitespace-nowrap min-w-0 overflow-hidden">
                   <span className="flex-none" style={{ color: s.genreColor }}>{s.genreShort}</span>
@@ -92,7 +101,7 @@ export function Repertoire() {
                   <span className="divider-dot" />
                   <span className="font-mono flex-none">{s.dur}</span>
                 </span>
-              </span>
+              </button>
               {s.hasTakes && (
                 <span
                   className="flex items-center gap-[6px] font-mono font-semibold text-[11.5px] p-[3px_9px] rounded-[20px] whitespace-nowrap flex-none"
@@ -112,25 +121,41 @@ export function Repertoire() {
                   {s.lastLabel}
                 </span>
               </span>
-            </button>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => openEditSong(s.id)}
+                  title={t.editSong}
+                  aria-label={t.editSong}
+                  className="grid place-items-center w-[30px] h-[30px] rounded-[9px] border border-[#1e293b] bg-[#0b1220] text-[#64748b] hover:text-[#cbd5e1] hover:border-[#334155] cursor-pointer flex-none"
+                >
+                  <Pencil size={14} strokeWidth={2} />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => toggleSong(s.id)}
+                title={t.rehearsalLog}
+                aria-label={t.rehearsalLog}
+                className="grid place-items-center w-[30px] h-[30px] rounded-[9px] border border-[#1e293b] bg-[#0b1220] text-[#64748b] hover:text-[#cbd5e1] hover:border-[#334155] cursor-pointer flex-none"
+              >
+                <ChevronDown size={16} strokeWidth={2} className={s.open ? 'rotate-180' : ''} />
+              </button>
+            </div>
 
             {/* links + takes (always visible) */}
             <div className="border-t border-[#172033] bg-[#0b1220] p-[14px_16px] flex flex-col gap-[14px]">
               {/* real-version streaming links */}
-              <div className="flex gap-[7px] flex-wrap">
-                <a href={s.yt} target="_blank" rel="noreferrer" className={LINK}>
-                  <Youtube size={15} strokeWidth={1.9} className="flex-none" color="#f87171" />
-                  <span>{t.ytLink}</span>
-                </a>
-                <a href={s.am} target="_blank" rel="noreferrer" className={LINK}>
-                  <AppleMusicIcon size={15} strokeWidth={1.9} className="flex-none text-[#f472b6]" />
-                  <span>{t.amLink}</span>
-                </a>
-                <a href={s.sp} target="_blank" rel="noreferrer" className={LINK}>
-                  <SpotifyIcon size={15} strokeWidth={1.9} className="flex-none text-[#34d399]" />
-                  <span>{t.spLink}</span>
-                </a>
-              </div>
+              {s.hasStreaming && (
+                <div className="flex gap-[7px] flex-wrap">
+                  {s.streaming.map((l) => (
+                    <a key={l.kind + l.url} href={l.url} target="_blank" rel="noreferrer" className={LINK}>
+                      {streamIcon(l.kind)}
+                      <span>{l.label}</span>
+                    </a>
+                  ))}
+                </div>
+              )}
 
               {/* tabs / sheet-music links */}
               {s.hasCharts && (
@@ -164,17 +189,23 @@ export function Repertoire() {
               )}
             </div>
 
-            {/* rehearsal log (collapsible) */}
+            {/* rehearsal log (collapsible) — each entry links to its event */}
             {s.open && (
               <div className="border-t border-[#172033] bg-[#0b1220] p-[14px_16px]">
                 <div className={EYEBROW}>{t.rehearsalLog}</div>
                 <div className="flex flex-col gap-[7px]">
                   {s.logs.map((l) => (
-                    <div key={l.id} className="flex items-center gap-[11px] p-[10px_12px] rounded-[10px] border border-[#172033] bg-[#0f172a]">
+                    <button
+                      key={l.id}
+                      type="button"
+                      onClick={() => openEvent(l.id)}
+                      className="flex items-center gap-[11px] p-[10px_12px] rounded-[10px] border border-[#172033] bg-[#0f172a] text-left cursor-pointer hover:border-[#334155]"
+                    >
                       <span className="w-[6px] h-[6px] rounded-full bg-[#34d399] flex-none" />
                       <span className="flex-1 min-w-0 font-sans font-medium text-[12.5px] text-[#cbd5e1]">{l.title}</span>
                       <span className="font-mono font-medium text-[11px] text-[#64748b] whitespace-nowrap">{l.date}</span>
-                    </div>
+                      <ChevronRight size={14} strokeWidth={2} className="flex-none" color="#475569" />
+                    </button>
                   ))}
                   <div className="text-[11.5px] text-[#475569] p-[8px_2px]">
                     {t.lastRehearsed}: {s.lastDate}

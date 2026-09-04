@@ -67,7 +67,7 @@ const es = {
   commentPosted: 'Comentario publicado',
   eventCreated: 'Evento creado',
   txLogged: 'Movimiento registrado',
-  songAdded: 'Canción agregada al repertorio',
+  songAdded: 'Canción agregada al repertorio', songSaved: 'Canción guardada',
   fbSubmitted: 'Retrospectiva enviada',
   custodyTo: 'Custodia transferida a ',
   openingFlyer: 'Abriendo el flyer…',
@@ -83,7 +83,7 @@ const es = {
   allMovements: 'Todos', allTime: 'Todo el tiempo', last30: 'Últimos 30 días', last90: 'Últimos 90 días', last12m: 'Últimos 12 meses',
   tip: 'Propina', donation: 'Donación', contribution: 'Aporte',
   category: 'Categoría', contributor: 'Aporta',
-  contributions: 'Contribuciones', cuota: 'Cuota mensual', upToDate: 'Al día', owes: 'Debe %s', paidCount: '%d de %d al día', cuotaSaved: 'Cuota actualizada',
+  contributions: 'Contribuciones',
   thisMonth: 'Este mes', totalL: 'Total',
   reference: 'Referencia', streaming: 'Streaming',
   // attendance (RSVP) — added in code, not in the Claude Design file
@@ -100,7 +100,6 @@ const es = {
   // gear
   newGear: 'Nuevo equipo', boughtBy: 'Comprado por', gearCreated: 'Equipo registrado',
   // instruments / members / onboarding
-  newMember: 'Nuevo músico', memberSaved: 'Músico guardado',
   roleL: 'Rol', newInstrument: 'Nuevo instrumento', addInstrument: 'Agregar',
   requiredInstruments: 'Instrumentos requeridos',
   onboardingTitle: 'Cuéntanos qué tocas', onboardingSub: 'Elige tus instrumentos y nivel',
@@ -112,6 +111,8 @@ const es = {
   // repertoire dashboard: sort + song links
   sortRecorded: 'Más grabadas', sortName: 'Nombre', sortTakes: 'Menos grabadas',
   amLink: 'Apple Music', charts: 'Partituras y tabs', takesCount: '%d tomas',
+  // song link editor
+  links: 'Enlaces', addLink: 'Agregar enlace', linkLabel: 'Etiqueta', linkUrl: 'URL', removeLink: 'Quitar', editSong: 'Editar canción',
 };
 
 const en: typeof es = {
@@ -180,7 +181,7 @@ const en: typeof es = {
   commentPosted: 'Comment posted',
   eventCreated: 'Event created',
   txLogged: 'Movement logged',
-  songAdded: 'Song added to the repertoire',
+  songAdded: 'Song added to the repertoire', songSaved: 'Song saved',
   fbSubmitted: 'Retrospective submitted',
   custodyTo: 'Custody transferred to ',
   openingFlyer: 'Opening the flyer…',
@@ -196,7 +197,7 @@ const en: typeof es = {
   allMovements: 'All', allTime: 'All time', last30: 'Last 30 days', last90: 'Last 90 days', last12m: 'Last 12 months',
   tip: 'Tip', donation: 'Donation', contribution: 'Contribution',
   category: 'Category', contributor: 'Contributor',
-  contributions: 'Contributions', cuota: 'Monthly cuota', upToDate: 'Up to date', owes: 'Owes %s', paidCount: '%d of %d up to date', cuotaSaved: 'Cuota updated',
+  contributions: 'Contributions',
   thisMonth: 'This month', totalL: 'Total',
   reference: 'Reference', streaming: 'Streaming',
   rsvp: 'Attendance', rsvpHint: 'Are you going?',
@@ -212,7 +213,6 @@ const en: typeof es = {
   // gear
   newGear: 'New gear', boughtBy: 'Bought by', gearCreated: 'Gear added',
   // instruments / members / onboarding
-  newMember: 'New musician', memberSaved: 'Musician saved',
   roleL: 'Role', newInstrument: 'New instrument', addInstrument: 'Add',
   requiredInstruments: 'Required instruments',
   onboardingTitle: 'Tell us what you play', onboardingSub: 'Pick your instruments and level',
@@ -224,6 +224,8 @@ const en: typeof es = {
   // repertoire dashboard: sort + song links
   sortRecorded: 'Most recorded', sortName: 'Name', sortTakes: 'Fewest takes',
   amLink: 'Apple Music', charts: 'Charts & tabs', takesCount: '%d takes',
+  // song link editor
+  links: 'Links', addLink: 'Add link', linkLabel: 'Label', linkUrl: 'URL', removeLink: 'Remove', editSong: 'Edit song',
 };
 
 export type Dict = typeof es;

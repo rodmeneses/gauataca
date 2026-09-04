@@ -2,9 +2,16 @@
 import { FileText, Mic, Plus, Youtube } from 'lucide-react';
 import { useBandSync } from '../../store';
 import { AppleMusicIcon, SpotifyIcon } from '../ui';
+import type { LinkKind } from '../../types';
 
-const linkBox = 'grid place-items-center min-h-[48px] rounded-[12px] border no-underline';
 const rowLink = 'flex items-center gap-[8px] py-[8px] px-[11px] rounded-[10px] border border-[#1e293b] bg-[#0b1220] text-[#cbd5e1] no-underline font-sans font-medium text-[12px] leading-[normal]';
+const chipLink = 'flex items-center gap-[7px] py-[7px] px-[10px] rounded-[10px] border border-[#1e293b] bg-[#0b1220] text-[#cbd5e1] no-underline font-sans font-medium text-[12px] leading-[normal]';
+
+function streamIcon(kind: LinkKind) {
+  if (kind === 'youtube') return <Youtube size={15} strokeWidth={1.9} className="flex-none" color="#f87171" />;
+  if (kind === 'apple') return <AppleMusicIcon size={15} strokeWidth={1.9} className="flex-none text-[#f472b6]" />;
+  return <SpotifyIcon size={15} strokeWidth={1.9} className="flex-none text-[#34d399]" />;
+}
 
 export function MobileRepertoire() {
   const { t, isAdmin, state, setQ, filteredSongs, openNewSong } = useBandSync();
@@ -54,17 +61,16 @@ export function MobileRepertoire() {
               {s.lastLabel}
             </span>
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            <a href={s.yt} target="_blank" rel="noreferrer" className={`${linkBox} border-[#1e293b] bg-[#0b1220] text-[#f87171]`}>
-              <Youtube size={20} strokeWidth={1.8} />
-            </a>
-            <a href={s.am} target="_blank" rel="noreferrer" className={`${linkBox} border-[#1e293b] bg-[#0b1220] text-[#f472b6]`}>
-              <AppleMusicIcon size={20} strokeWidth={1.8} />
-            </a>
-            <a href={s.sp} target="_blank" rel="noreferrer" className={`${linkBox} border-[#1e293b] bg-[#0b1220] text-[#34d399]`}>
-              <SpotifyIcon size={20} strokeWidth={1.8} />
-            </a>
-          </div>
+          {s.hasStreaming && (
+            <div className="flex gap-[6px] flex-wrap">
+              {s.streaming.map((l) => (
+                <a key={l.kind + l.url} href={l.url} target="_blank" rel="noreferrer" className={chipLink}>
+                  {streamIcon(l.kind)}
+                  <span>{l.label}</span>
+                </a>
+              ))}
+            </div>
+          )}
           {s.hasCharts && (
             <div className="flex flex-col gap-[6px]">
               {s.charts.map((c) => (
