@@ -3,3 +3,4 @@ dist
 *.local
 *.tsbuildinfo
 .DS_Store
+flyway_setup.sh

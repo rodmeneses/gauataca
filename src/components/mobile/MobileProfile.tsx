@@ -1,10 +1,10 @@
-/** Mobile "Perfil" tab: language toggle, sign in/out, the signed-in member card + the full roster. */
-import { LogOut } from 'lucide-react';
+/** Mobile "Perfil" tab: language toggle, sign in/out, the signed-in member card + the full roster (tap a card for details, edit instruments as admin). */
+import { LogOut, Pencil } from 'lucide-react';
 import { useBandSync } from '../../store';
 import { Pill, Segment } from '../ui';
 
 export function MobileProfile() {
-  const { t, lang, setLang, signedIn, signOut, openSignIn, me, roleLabel, members } = useBandSync();
+  const { t, lang, setLang, signedIn, signOut, openSignIn, me, roleLabel, members, isAdmin, openMember } = useBandSync();
   return (
     <div className="flex flex-col gap-3.5">
       <div className="flex items-center gap-2">
@@ -35,7 +35,11 @@ export function MobileProfile() {
         </span>
       </div>
       {members.map((m) => (
-        <div key={m.id} className="bg-[#0f172a] border border-[#1e293b] rounded-[13px] p-3.5 flex items-center gap-3">
+        <div
+          key={m.id}
+          onClick={() => openMember(m.id)}
+          className="bg-[#0f172a] border border-[#1e293b] rounded-[13px] p-3.5 flex items-center gap-3 cursor-pointer"
+        >
           <span className="w-9 h-9 rounded-[11px] bg-[#1e293b] grid place-items-center font-display font-semibold text-[12px] text-[#94a3b8] flex-none">{m.initial}</span>
           <span className="min-w-0 flex-1">
             <span className="block font-sans font-semibold text-[14px] text-[#e2e8f0]">{m.short}</span>
@@ -47,6 +51,17 @@ export function MobileProfile() {
           >
             {m.roleLabel}
           </span>
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); openMember(m.id, true); }}
+              title={t.editInstruments}
+              aria-label={t.editInstruments}
+              className="grid place-items-center w-[30px] h-[30px] rounded-[9px] border border-[#1e293b] bg-[#0b1220] text-[#64748b] cursor-pointer flex-none"
+            >
+              <Pencil size={13} strokeWidth={2} />
+            </button>
+          )}
         </div>
       ))}
     </div>

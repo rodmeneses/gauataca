@@ -30,7 +30,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (!error && data) {
       setProfile(data as Profile);
+      return;
     }
+
+    // No profile row — recreate it (everyone is admin by default). Covers
+    // existing auth users after a DB wipe and any case where the sign-up
+    // trigger didn't fire.
+    const { data: { session } } = await supabase.auth.getSession();
+    const u = session?.user;
+    if (!u) return;
+    const name =
+      (u.user_metadata?.full_name as string | undefined) ||
+      (u.user_metadata?.name as string | undefined) ||
+      (u.email?.split('@')[0] ?? '');
+    const { data: created } = await supabase
+      .from('profiles')
+      .upsert({ id: userId, name, email: u.email ?? '', role: 'admin' }, { onConflict: 'id' })
+      .select('*')
+      .single();
+    if (created) setProfile(created as Profile);
   }, []);
 
   // Load session on mount

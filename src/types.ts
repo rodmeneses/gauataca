@@ -201,7 +201,7 @@ export interface Toast {
 export type Modal =
   | { kind: 'event'; id: string }
   | { kind: 'thread'; id: string }
-  | { kind: 'member'; id: string }
+  | { kind: 'member'; id: string; edit?: boolean }
   | { kind: 'newEvent' }
   | { kind: 'newSong'; id?: string }
   | { kind: 'newTx' }

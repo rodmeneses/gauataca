@@ -389,7 +389,7 @@ export async function createInstrument(name: string): Promise<string> {
 }
 
 /** Replace a member's instruments + vocals (delete then insert). */
-async function replaceMemberInstruments(
+export async function updateMemberInstruments(
   profileId: string,
   instruments: { id: string; lv: Proficiency }[],
   vocals: VocalFlag[],
@@ -412,7 +412,7 @@ export async function onboard(
   instruments: { id: string; lv: Proficiency }[],
   vocals: VocalFlag[],
 ): Promise<void> {
-  await replaceMemberInstruments(profileId, instruments, vocals);
+  await updateMemberInstruments(profileId, instruments, vocals);
   await supabase.from('profiles').update({ onboarded: true }).eq('id', profileId);
 }
 

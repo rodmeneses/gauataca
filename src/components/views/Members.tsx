@@ -3,11 +3,12 @@
  * Card: avatar + name/title + role badge, instruments with proficiency bars,
  * vocal chips, and a footer with the join date and "view details".
  */
+import { Pencil } from 'lucide-react';
 import { Badge } from '@/components/ui';
 import { useBandSync } from '@/store';
 
 export function Members() {
-  const { t, members, openMember } = useBandSync();
+  const { t, isAdmin, members, openMember } = useBandSync();
 
   return (
     <div className="flex flex-col gap-4 animate-fade">
@@ -60,13 +61,26 @@ export function Members() {
 
           <div className="flex items-center justify-between border-t border-line-soft pt-[14px] mt-auto">
             <span className="text-[11.5px] text-ink-dim whitespace-nowrap">{m.since}</span>
-            <button
-              type="button"
-              onClick={() => openMember(m.id)}
-              className="py-2 px-[13px] rounded-[9px] border border-line bg-raised text-ink-body font-sans font-semibold text-[12px] cursor-pointer whitespace-nowrap hover:border-ink-faint"
-            >
-              {t.viewDetails}
-            </button>
+            <div className="flex items-center gap-2">
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => openMember(m.id, true)}
+                  title={t.editInstruments}
+                  aria-label={t.editInstruments}
+                  className="grid place-items-center w-[34px] h-[34px] rounded-[9px] border border-line bg-raised text-ink-meta cursor-pointer hover:text-ink-body hover:border-ink-faint"
+                >
+                  <Pencil size={14} strokeWidth={2} />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => openMember(m.id)}
+                className="py-2 px-[13px] rounded-[9px] border border-line bg-raised text-ink-body font-sans font-semibold text-[12px] cursor-pointer whitespace-nowrap hover:border-ink-faint"
+              >
+                {t.viewDetails}
+              </button>
+            </div>
           </div>
         </article>
       ))}

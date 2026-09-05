@@ -104,6 +104,7 @@ const es = {
   requiredInstruments: 'Instrumentos requeridos',
   onboardingTitle: 'Cuéntanos qué tocas', onboardingSub: 'Elige tus instrumentos y nivel',
   skip: 'Omitir', finish: 'Listo', onboarded: 'Perfil completado',
+  editInstruments: 'Editar instrumentos', instrumentsSaved: 'Instrumentos guardados',
   // recordings ("takes") on practice events
   recordings: 'Grabaciones', addRecording: 'Agregar grabación', takeN: 'Toma %d',
   recordingUrl: 'Enlace de la grabación', recordingAdded: 'Grabación agregada',
@@ -217,6 +218,7 @@ const en: typeof es = {
   requiredInstruments: 'Required instruments',
   onboardingTitle: 'Tell us what you play', onboardingSub: 'Pick your instruments and level',
   skip: 'Skip', finish: 'Done', onboarded: 'Profile completed',
+  editInstruments: 'Edit instruments', instrumentsSaved: 'Instruments saved',
   // recordings ("takes") on practice events
   recordings: 'Recordings', addRecording: 'Add recording', takeN: 'Take %d',
   recordingUrl: 'Recording link', recordingAdded: 'Recording added',

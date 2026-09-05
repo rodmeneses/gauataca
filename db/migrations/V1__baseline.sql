@@ -1,7 +1,8 @@
 -- BandSync — baseline schema (Supabase / Postgres)
--- Flyway V1. Creates the tables with bilingual (_es/_en) columns, the is_admin()
--- helper, and RLS policies. Additive only — no drops (Flyway migrations are
--- versioned and applied once).
+-- Flyway V1. Single consolidated migration: the full final schema, the is_admin()
+-- helper, RLS policies, the auto-profile trigger, the receipts storage bucket and
+-- the basic instrument catalog. This replaces the earlier V1–V10 + R__seed chain
+-- (2026-09-04 fresh start). No demo data lives here — see db/demo_data.sql.
 
 -- ---------------------------------------------------------------------------
 -- Tables
@@ -16,15 +17,23 @@ create table profiles (
   role text not null default 'member' check (role in ('admin', 'member')),
   title_es text,
   title_en text,
-  joined_at timestamptz not null default now()
+  joined_at timestamptz not null default now(),
+  onboarded boolean not null default false
+);
+
+-- Shared instrument catalog (basic + custom).
+create table instruments (
+  id text primary key,
+  name_es text not null,
+  name_en text not null,
+  is_basic boolean not null default false
 );
 
 create table profile_instruments (
   profile_id uuid references profiles(id) on delete cascade,
-  instrument_es text not null,
-  instrument_en text not null,
+  instrument_id text references instruments(id) on delete cascade,
   proficiency text not null check (proficiency in ('expert', 'inter', 'beg')),
-  primary key (profile_id, instrument_es)
+  primary key (profile_id, instrument_id)
 );
 
 create table profile_vocals (
@@ -41,11 +50,24 @@ create table songs (
   key text not null,
   bpm int not null,
   duration text not null,
-  chart_url text,
-  youtube_url text,
-  spotify_url text,
-  recording_url text,
   last_rehearsed_at date
+);
+
+create table song_instruments (
+  song_id text references songs(id) on delete cascade,
+  instrument_id text references instruments(id) on delete cascade,
+  primary key (song_id, instrument_id)
+);
+
+-- Song links: any number of YouTube / Apple Music / Spotify / chart links per song.
+create table song_links (
+  id serial primary key,
+  song_id text references songs(id) on delete cascade,
+  kind text not null default 'chart' check (kind in ('youtube', 'apple', 'spotify', 'chart')),
+  label_es text not null,
+  label_en text not null,
+  url text not null,
+  position int not null default 0
 );
 
 create table events (
@@ -56,6 +78,8 @@ create table events (
   duration_hours numeric,
   venue text not null,
   fee_cents int not null default 0,
+  cost_cents int not null default 0,
+  settled boolean not null default false,
   attend int not null default 0,
   flyer_url text,
   title_es text not null,
@@ -133,7 +157,8 @@ create table gear (
   custodian_id uuid references profiles(id),
   condition text not null default 'good' check (condition in ('good', 'attention')),
   note_es text,
-  note_en text
+  note_en text,
+  purchased_by uuid references profiles(id)
 );
 
 create table gear_custody_log (
@@ -155,7 +180,9 @@ create table transactions (
   proof_kind text not null default 'receipt' check (proof_kind in ('zelle', 'invoice', 'photo', 'receipt')),
   created_by uuid references profiles(id),
   event_id text references events(id),
-  gear_id text references gear(id)
+  gear_id text references gear(id),
+  category text check (category is null or category in ('fee', 'tip', 'donation', 'contribution')),
+  contributor_id uuid references profiles(id)
 );
 
 create table threads (
@@ -182,6 +209,17 @@ create table thread_comments (
   body_en text not null
 );
 
+-- Song recordings ("takes") on practice events. `n` is the take number for that
+-- song (1-based, global across all practices).
+create table takes (
+  id text primary key,
+  event_id text not null references events(id) on delete cascade,
+  song_id text not null references songs(id) on delete cascade,
+  url text not null,
+  n int not null,
+  created_at timestamptz not null default now()
+);
+
 -- ---------------------------------------------------------------------------
 -- Helper: is the current auth user an admin?
 -- ---------------------------------------------------------------------------
@@ -202,9 +240,12 @@ $$;
 -- Row Level Security
 -- ---------------------------------------------------------------------------
 alter table profiles            enable row level security;
+alter table instruments         enable row level security;
 alter table profile_instruments  enable row level security;
 alter table profile_vocals       enable row level security;
 alter table songs                enable row level security;
+alter table song_instruments     enable row level security;
+alter table song_links           enable row level security;
 alter table events               enable row level security;
 alter table event_songs          enable row level security;
 alter table event_media          enable row level security;
@@ -219,12 +260,16 @@ alter table transactions         enable row level security;
 alter table threads              enable row level security;
 alter table thread_votes         enable row level security;
 alter table thread_comments      enable row level security;
+alter table takes                enable row level security;
 
 -- Everyone reads everything (ledger transparency is intentional).
 create policy "profiles_select" on profiles for select using (true);
+create policy "instruments_select" on instruments for select using (true);
 create policy "profile_instruments_select" on profile_instruments for select using (true);
 create policy "profile_vocals_select" on profile_vocals for select using (true);
 create policy "songs_select" on songs for select using (true);
+create policy "song_instruments_select" on song_instruments for select using (true);
+create policy "song_links_select" on song_links for select using (true);
 create policy "events_select" on events for select using (true);
 create policy "event_songs_select" on event_songs for select using (true);
 create policy "event_media_select" on event_media for select using (true);
@@ -239,6 +284,7 @@ create policy "transactions_select" on transactions for select using (true);
 create policy "threads_select" on threads for select using (true);
 create policy "thread_votes_select" on thread_votes for select using (true);
 create policy "thread_comments_select" on thread_comments for select using (true);
+create policy "takes_select" on takes for select using (true);
 
 -- Profiles: users manage their own row; admins manage any.
 create policy "profiles_insert" on profiles for insert with check (auth.uid() = id);
@@ -251,6 +297,8 @@ create policy "profile_vocals_write" on profile_vocals for all using (auth.uid()
 
 -- Admin-only writes.
 create policy "songs_write" on songs for all using (is_admin()) with check (is_admin());
+create policy "song_instruments_write" on song_instruments for all using (is_admin()) with check (is_admin());
+create policy "song_links_write" on song_links for all using (is_admin()) with check (is_admin());
 create policy "events_write" on events for all using (is_admin()) with check (is_admin());
 create policy "event_songs_write" on event_songs for all using (is_admin()) with check (is_admin());
 create policy "event_media_write" on event_media for all using (is_admin()) with check (is_admin());
@@ -259,6 +307,8 @@ create policy "gear_write" on gear for all using (is_admin()) with check (is_adm
 create policy "gear_custody_log_write" on gear_custody_log for all using (is_admin()) with check (is_admin());
 create policy "polls_write" on polls for all using (is_admin()) with check (is_admin());
 create policy "poll_options_write" on poll_options for all using (is_admin()) with check (is_admin());
+create policy "instruments_write" on instruments for all using (is_admin()) with check (is_admin());
+create policy "takes_write" on takes for all using (is_admin()) with check (is_admin());
 
 -- Attendance: each member writes their own row.
 create policy "event_attendance_write" on event_attendance for all using (auth.uid() = profile_id) with check (auth.uid() = profile_id);
@@ -281,3 +331,64 @@ create policy "thread_votes_write" on thread_votes for all using (auth.uid() = p
 create policy "thread_comments_insert" on thread_comments for insert with check (auth.uid() = author_id);
 create policy "thread_comments_update" on thread_comments for update using (auth.uid() = author_id or is_admin());
 create policy "thread_comments_delete" on thread_comments for delete using (auth.uid() = author_id or is_admin());
+
+-- ---------------------------------------------------------------------------
+-- Auto-create a profile for every new auth user (everyone is admin by default).
+-- ---------------------------------------------------------------------------
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.profiles (id, name, email, role)
+  values (
+    new.id,
+    coalesce(
+      nullif(new.raw_user_meta_data->>'full_name', ''),
+      nullif(new.raw_user_meta_data->>'name', ''),
+      split_part(coalesce(new.email, ''), '@', 1)
+    ),
+    new.email,
+    'admin'
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+
+-- ---------------------------------------------------------------------------
+-- Receipt / invoice image storage (Supabase Storage).
+-- ---------------------------------------------------------------------------
+insert into storage.buckets (id, name, public)
+values ('receipts', 'receipts', true)
+on conflict (id) do nothing;
+
+create policy "receipts_read" on storage.objects
+  for select using (bucket_id = 'receipts');
+
+create policy "receipts_insert" on storage.objects
+  for insert with check (bucket_id = 'receipts' and public.is_admin());
+
+create policy "receipts_update" on storage.objects
+  for update using (bucket_id = 'receipts' and public.is_admin());
+
+create policy "receipts_delete" on storage.objects
+  for delete using (bucket_id = 'receipts' and public.is_admin());
+
+-- ---------------------------------------------------------------------------
+-- Basic instrument catalog (required for onboarding — not demo data).
+-- ---------------------------------------------------------------------------
+insert into instruments (id, name_es, name_en, is_basic) values
+  ('cuatro', 'Cuatro', 'Cuatro', true),
+  ('guitarra', 'Guitarra', 'Guitar', true),
+  ('bajo', 'Bajo', 'Bass', true),
+  ('piano', 'Piano', 'Piano', true),
+  ('percusion', 'Percusión', 'Percussion', true)
+on conflict (id) do nothing;

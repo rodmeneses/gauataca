@@ -9,7 +9,7 @@ import {
   addComment as apiAddComment, addTake as apiAddTake, createEvent as apiCreateEvent, createGear as apiCreateGear, createInstrument as apiCreateInstrument,
   createSong as apiCreateSong, createTransaction as apiCreateTransaction, deleteTake as apiDeleteTake, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
   setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, setSongInstruments as apiSetSongInstruments, setSongLinks as apiSetSongLinks,
-  settleEvent as apiSettleEvent, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateSong as apiUpdateSong,
+  settleEvent as apiSettleEvent, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateMemberInstruments as apiUpdateMemberInstruments, updateSong as apiUpdateSong,
   uploadProof as apiUploadProof, voteThread as apiVoteThread, type DataSnapshot,
 } from './api';
 import { EVENTS, GEAR, INSTRUMENTS, MEMBERS, SONGS, TAKES, THREADS, TRANSACTIONS } from '../data';
@@ -35,6 +35,7 @@ interface DataValue extends DataSnapshot {
   createGear: (input: CreateGearInput) => Promise<void>;
   createInstrument: (name: string) => Promise<string | undefined>;
   onboard: (instruments: { id: string; lv: Proficiency }[], vocals: VocalFlag[]) => Promise<void>;
+  updateMemberInstruments: (profileId: string, instruments: { id: string; lv: Proficiency }[], vocals: VocalFlag[]) => Promise<void>;
   setSongInstruments: (songId: string, instrumentIds: string[]) => Promise<void>;
   addTake: (eventId: string, songId: string, url: string) => Promise<void>;
   deleteTake: (id: string) => Promise<void>;
@@ -135,6 +136,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       createGear: (input) => run(() => apiCreateGear(input, uid)),
       createInstrument: (name) => run(() => apiCreateInstrument(name)),
       onboard: (instruments, vocals) => run(() => apiOnboard(uid, instruments, vocals)),
+      updateMemberInstruments: (profileId, instruments, vocals) => run(() => apiUpdateMemberInstruments(profileId, instruments, vocals)),
       setSongInstruments: (songId, instrumentIds) => run(() => apiSetSongInstruments(songId, instrumentIds)),
       addTake: (eventId, songId, url) => run(() => apiAddTake(eventId, songId, url)),
       deleteTake: (id) => run(() => apiDeleteTake(id)),

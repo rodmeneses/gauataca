@@ -73,8 +73,11 @@ To compare with the original design side by side: `python3 -m http.server 5177 -
 Schema changes are versioned SQL files under [`db/migrations/`](./db/migrations/) and applied with
 [Flyway](https://flywaydb.org) — no more pasting SQL into the Supabase editor by hand.
 
-- `V<n>__description.sql` — versioned migration, applied once in order (e.g. `V1__baseline.sql`).
-- `R__description.sql` — repeatable migration, re-applied whenever its checksum changes (the seed).
+- `V<n>__description.sql` — versioned migration, applied once in order. `V1__baseline.sql` is the
+  single consolidated schema (the whole final schema in one file).
+- [`db/demo_data.sql`](./db/demo_data.sql) — optional demo dataset (NOT a migration); run it manually
+  only when you want fake sample data.
+- [`db/wipe.sql`](./db/wipe.sql) — drops everything for a fresh start (NOT a migration).
 
 **Setup (once):**
 
@@ -92,8 +95,9 @@ flyway info      # see pending/applied migrations
 flyway migrate   # apply them
 ```
 
-The first `migrate` against the existing database auto-baselines at V1 (it won't re-create the schema);
-a fresh database runs V1 then the seed. To add a change, create `db/migrations/V2__…sql` and run `flyway migrate`.
+A fresh (empty) database runs `V1__baseline.sql` and nothing else — no demo data. To add a change,
+create `db/migrations/V2__…sql` and run `flyway migrate`. To start over from scratch, run
+[`db/wipe.sql`](./db/wipe.sql) in the Supabase SQL editor, then `flyway migrate` again.
 
 ## Prototype knobs
 

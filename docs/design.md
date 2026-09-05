@@ -162,6 +162,13 @@ and the Phase 2 **handoff notes** (stack, suggested tables, derived logic, RLS p
 `Band member` keeps global read access to calendar and ledger, can vote, comment, submit feedback and share.
 The role toggle is a prototype affordance — Phase 2 replaces it with Supabase auth + RLS.
 
+> **Decision (2026-09-04):** every new sign-up is created as `admin` by default — the DB trigger
+> (`handle_new_user()` in `db/migrations/V1__baseline.sql`) and the client fallback (`src/lib/auth.tsx`)
+> both write `role = 'admin'`. In practice this means everyone has full write access and nobody is
+> restricted. The `admin`/`member` distinction is slated for removal ("everyone can do admin stuff");
+> until then the role column stays but is always `'admin'`. If we later want to restrict a specific
+> member, demote that one profile to `'member'`.
+
 ### 5.3 Bilingual
 Every string, date format (`vie 12 sep 2026` / `Fri Sep 12 2026`), relative label, caption and mock note exists in
 Spanish (default) and English. Song titles, venues and names are not translated.

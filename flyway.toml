@@ -5,8 +5,6 @@
 
 [flyway]
 locations = ["filesystem:db/migrations"]
-baselineOnMigrate = true
-baselineVersion = 1
 
 [environments.default]
 # url / user / password are read from the FLYWAY_* env vars.

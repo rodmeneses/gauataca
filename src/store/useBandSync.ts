@@ -157,6 +157,8 @@ export interface BandSync {
   fb: FeedbackVm | null;
   th: ThreadVm | null;
   mb: MemberVm | null;
+  /** Raw member for the open member modal (for pre-filling the instrument editor). */
+  mbRaw: Member | null;
   sheet: ShareSheet | null;
   custody: CustodyDialog | null;
   custodyTargets: Member[];
@@ -183,7 +185,7 @@ export interface BandSync {
   setSongSort: (s: SongSort) => void;
   openEvent: (id: string) => void;
   openThread: (id: string) => void;
-  openMember: (id: string) => void;
+  openMember: (id: string, edit?: boolean) => void;
   openNewEvent: () => void;
   openNewSong: () => void;
   openEditSong: (id: string) => void;
@@ -191,6 +193,8 @@ export interface BandSync {
   openNewGear: () => void;
   /** Complete sign-up onboarding (instruments + vocals). */
   onboard: (instruments: { id: string; lv: Proficiency }[], vocals: VocalFlag[]) => Promise<void>;
+  /** Replace a member's instruments + vocals (admin, or the member editing themselves). */
+  saveMemberInstruments: (profileId: string, instruments: { id: string; lv: Proficiency }[], vocals: VocalFlag[]) => Promise<void>;
   /** Open the sign-up onboarding modal. */
   openOnboard: () => void;
   /** Dismiss onboarding without saving (won't re-open this session). */
@@ -271,7 +275,7 @@ export function useBandSync(): BandSync {
     songs: dbSongs, events: dbEvents, transactions: dbTx, gear: dbGear, threads: dbThreads, members: dbMembers,
     instruments: dbInstruments, takes: dbTakes, myThreadVotes, myPollPicks, loading, error,
     createEvent, createSong, updateSong, setSongLinks: persistSongLinks, createTransaction, createGear: persistGear, createInstrument: persistInstrument,
-    onboard: persistOnboard, setSongInstruments: persistSongInstruments,
+    onboard: persistOnboard, updateMemberInstruments: persistMemberInstruments, setSongInstruments: persistSongInstruments,
     addTake: persistTake, deleteTake: persistDeleteTake,
     setRsvp: persistRsvp, voteThread: persistVote,
     addComment: persistComment, submitFeedback: persistFeedback, pickPoll: persistPoll, transferCustody: persistCustody,
@@ -465,7 +469,7 @@ export function useBandSync(): BandSync {
       statUpcoming: String(upcomingRaw.filter((e) => e.state === 'active').length),
       statStale: String(staleSongs.length), staleHint: t.staleHint.replace('%d', String(staleDays)),
 
-      modal, ev, fb, th, mb,
+      modal, ev, fb, th, mb, mbRaw: mbSel,
       sheet: st.sheet, custody: st.custody, custodyTargets: dbMembers, settle: st.settle, form, paletteResults, tour,
       toasts: st.toasts.map((x) => ({
         ...x,
@@ -494,7 +498,7 @@ export function useBandSync(): BandSync {
       setSongSort: (s) => set({ songSort: s }),
       openEvent: (id) => set({ modal: { kind: 'event', id } }),
       openThread: (id) => set({ modal: { kind: 'thread', id } }),
-      openMember: (id) => set({ modal: { kind: 'member', id } }),
+      openMember: (id, edit) => set({ modal: { kind: 'member', id, edit } }),
       openNewEvent: () => set({ modal: { kind: 'newEvent' }, form: {} }),
       openNewSong: () => set({ modal: { kind: 'newSong' }, form: {} }),
       openEditSong: (id) => {
@@ -519,6 +523,10 @@ export function useBandSync(): BandSync {
       },
       openOnboard: () => set({ modal: { kind: 'onboard' } }),
       skipOnboard: () => set({ modal: null, onboardDismissed: true }),
+      saveMemberInstruments: async (profileId, instruments, vocals) => {
+        await persistMemberInstruments(profileId, instruments, vocals);
+        toast(t.instrumentsSaved);
+      },
       createInstrument: async (name) => {
         const id = (await persistInstrument(name)) ?? 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
         set((s) => ({ customInstruments: [...s.customInstruments, { id, name: { es: name, en: name } }] }));
@@ -686,5 +694,5 @@ export function useBandSync(): BandSync {
       closeHandoff: () => set({ handoff: false }),
       toast,
     };
-  }, [st, props, set, toast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myThreadVotes, myPollPicks, loading, error, isMobileViewport, createEvent, createSong, updateSong, persistSongLinks, createTransaction, persistGear, persistInstrument, persistOnboard, persistSongInstruments, persistTake, persistDeleteTake, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
+  }, [st, props, set, toast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myThreadVotes, myPollPicks, loading, error, isMobileViewport, createEvent, createSong, updateSong, persistSongLinks, createTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
 }

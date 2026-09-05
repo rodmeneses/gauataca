@@ -1,7 +1,7 @@
-/** Mobile "Repertorio" tab: search + "New song" (admin) + first 14 filtered songs with streaming links, chart links and takes. */
-import { FileText, Mic, Plus, Youtube } from 'lucide-react';
+/** Mobile "Repertorio" tab: search + genre/sort filters + song cards with streaming links, chart links, takes and a collapsible rehearsal log. */
+import { ChevronDown, ChevronRight, Clock, FileText, Mic, Pencil, Plus, Youtube } from 'lucide-react';
 import { useBandSync } from '../../store';
-import { AppleMusicIcon, SpotifyIcon } from '../ui';
+import { AppleMusicIcon, Pill, Segment, SpotifyIcon } from '../ui';
 import type { LinkKind } from '../../types';
 
 const rowLink = 'flex items-center gap-[8px] py-[8px] px-[11px] rounded-[10px] border border-[#1e293b] bg-[#0b1220] text-[#cbd5e1] no-underline font-sans font-medium text-[12px] leading-[normal]';
@@ -14,7 +14,7 @@ function streamIcon(kind: LinkKind) {
 }
 
 export function MobileRepertoire() {
-  const { t, isAdmin, state, setQ, filteredSongs, openNewSong } = useBandSync();
+  const { t, isAdmin, state, setQ, filteredSongs, statSongs, openNewSong, openEditSong, openEvent, genreChips, setGenre, toggleStale, setSongSort, toggleSong } = useBandSync();
   const mobSongs = filteredSongs.slice(0, 14);
   return (
     <div className="flex flex-col gap-[11px]">
@@ -37,14 +37,43 @@ export function MobileRepertoire() {
           </button>
         )}
       </div>
+
+      {/* genre chips + stale toggle */}
+      <div className="flex gap-[6px] items-center overflow-x-auto pb-1 -mx-1 px-1">
+        {genreChips.map((g) => (
+          <Pill key={g.id} color={g.color} active={g.active} onClick={() => setGenre(g.id)} className="flex-none">
+            {g.label}
+          </Pill>
+        ))}
+        <Pill color="#fbbf24" active={state.staleOnly} onClick={toggleStale} className="flex-none">
+          ⚠ {t.onlyStale}
+        </Pill>
+      </div>
+
+      {/* sort */}
+      <div className="flex items-center gap-2">
+        <Segment className="flex-1">
+          <Pill active={state.songSort === 'recorded'} color="#a78bfa" className="flex-1" onClick={() => setSongSort('recorded')}>
+            {t.sortRecorded}
+          </Pill>
+          <Pill active={state.songSort === 'name'} color="#a78bfa" className="flex-1" onClick={() => setSongSort('name')}>
+            {t.sortName}
+          </Pill>
+          <Pill active={state.songSort === 'takes'} color="#a78bfa" className="flex-1" onClick={() => setSongSort('takes')}>
+            {t.sortTakes}
+          </Pill>
+        </Segment>
+        <span className="font-mono font-medium text-[11.5px] text-[#475569] flex-none">{filteredSongs.length} / {statSongs}</span>
+      </div>
+
       {mobSongs.map((s) => (
         <div key={s.id} className="bg-[#0f172a] border border-[#1e293b] rounded-[14px] py-[13px] px-[14px] flex flex-col gap-[11px]">
           <div className="flex items-start gap-[11px]">
             <span className="w-1 h-[34px] rounded-[3px] flex-none" style={{ background: s.genreColor }} />
-            <span className="min-w-0 flex-1">
+            <button type="button" onClick={() => toggleSong(s.id)} className="min-w-0 flex-1 border-none bg-transparent cursor-pointer text-left text-inherit">
               <span className="block font-display font-semibold text-[15.5px] leading-[1.25] text-[#f1f5f9]">{s.title}</span>
               <span className="block font-mono font-medium text-[11px] text-[#64748b] mt-[5px]">{s.key} · {s.bpm} BPM · {s.dur}</span>
-            </span>
+            </button>
             {s.hasTakes && (
               <span
                 className="flex items-center gap-[5px] font-mono font-semibold text-[10px] py-[3px] px-2 rounded-[20px] flex-none whitespace-nowrap"
@@ -60,6 +89,26 @@ export function MobileRepertoire() {
             >
               {s.lastLabel}
             </span>
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => openEditSong(s.id)}
+                title={t.editSong}
+                aria-label={t.editSong}
+                className="grid place-items-center w-[28px] h-[28px] rounded-[8px] border border-[#1e293b] bg-[#0b1220] text-[#64748b] cursor-pointer flex-none"
+              >
+                <Pencil size={13} strokeWidth={2} />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => toggleSong(s.id)}
+              title={t.rehearsalLog}
+              aria-label={t.rehearsalLog}
+              className="grid place-items-center w-[28px] h-[28px] rounded-[8px] border border-[#1e293b] bg-[#0b1220] text-[#64748b] cursor-pointer flex-none"
+            >
+              <ChevronDown size={15} strokeWidth={2} className={s.open ? 'rotate-180' : ''} />
+            </button>
           </div>
           {s.hasStreaming && (
             <div className="flex gap-[6px] flex-wrap">
@@ -90,6 +139,28 @@ export function MobileRepertoire() {
                   <span className="font-mono font-medium text-[10.5px] text-[#64748b] whitespace-nowrap">{tk.dateStr}</span>
                 </a>
               ))}
+            </div>
+          )}
+          {s.open && (
+            <div className="flex flex-col gap-[6px] border-t border-[#172033] pt-[10px]">
+              <div className="font-display font-semibold text-[10px] tracking-[.12em] uppercase text-[#64748b]">{t.rehearsalLog}</div>
+              {s.logs.map((l) => (
+                <button
+                  key={l.id}
+                  type="button"
+                  onClick={() => openEvent(l.id)}
+                  className="flex items-center gap-[10px] p-[10px_12px] rounded-[10px] border border-[#172033] bg-[#0b1220] text-left cursor-pointer"
+                >
+                  <span className="w-[6px] h-[6px] rounded-full bg-[#34d399] flex-none" />
+                  <span className="flex-1 min-w-0 font-sans font-medium text-[12.5px] text-[#cbd5e1]">{l.title}</span>
+                  <span className="font-mono font-medium text-[11px] text-[#64748b] whitespace-nowrap">{l.date}</span>
+                  <ChevronRight size={14} strokeWidth={2} className="flex-none" color="#475569" />
+                </button>
+              ))}
+              <div className="flex items-center gap-[6px] text-[11.5px] text-[#475569] p-[6px_2px]">
+                <Clock size={12} strokeWidth={2} color={s.staleColor} className="flex-none opacity-80" />
+                {t.lastRehearsed}: {s.lastDate}
+              </div>
             </div>
           )}
         </div>
