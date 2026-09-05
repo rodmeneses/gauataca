@@ -3,7 +3,7 @@
  * automated steps and the copy / flyer / share / cancel actions.
  */
 import { Copy, Image, Instagram, Share } from 'lucide-react';
-import { useBandSync } from '@/store';
+import { useGuataca } from '@/store';
 
 const STEP_NUM =
   'w-5 h-5 rounded-[6px] bg-[#34d3991f] text-emerald-light grid place-items-center font-mono font-semibold text-[10px] leading-[normal] flex-none mt-[1px]';
@@ -12,7 +12,7 @@ const ACTION_BTN =
   'flex items-center justify-center gap-[9px] w-full min-h-[50px] rounded-[14px] border font-sans font-semibold text-[14px] leading-[normal] cursor-pointer whitespace-nowrap';
 
 export function ShareSheet() {
-  const { t, sheet, closeSheet, copyCaption, openFlyer, shareNow } = useBandSync();
+  const { t, sheet, closeSheet, copyCaption, openFlyer, shareNow } = useGuataca();
   if (!sheet) return null;
 
   return (

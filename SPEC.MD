@@ -1,7 +1,7 @@
-# Specification: Cooperative Band Admin Dashboard (BandSync)
+# Specification: Cooperative Band Admin Dashboard (GUATACA)
 
 ## 1. Project Overview & Philosophy
-A lightweight, high-utility admin dashboard built for a collaborative musical group (supporting Dulce Tricolor Venezolano initiatives in the Bay Area). 
+A lightweight, high-utility admin dashboard built for a collaborative musical group (supporting GUATACA initiatives in the Bay Area). 
 * **Core Philosophy:** 100% Free Tech Stack. Media storage and financial transactions are link-based or intent-based to completely avoid hitting free database tier limits.
 * **Phase 1 UI Target:** Claude Artifacts (Single-file React prototype, Tailwind CSS, Lucide Icons).
 * **Phase 2 Backend Target:** Claude Code (Supabase Free Tier, Node.js, built-in Google/Apple Auth setup).
@@ -39,7 +39,7 @@ A lightweight, high-utility admin dashboard built for a collaborative musical gr
 * **Objective:** Allow admins or members to easily promote upcoming Gigs on Instagram from mobile devices without Meta API overhead or approvals.
 * **Workflow Loop:**
   1. User clicks the **"Prepare for Instagram"** button on an upcoming Gig card.
-  2. The app automatically copies a formatted caption to the user's clipboard (e.g., *"🎵 Live Music Alert! Catch us at [Venue] on [Date] at [Time]! See you there! #DulceTricolorVenezolano"*).
+  2. The app automatically copies a formatted caption to the user's clipboard (e.g., *"🎵 Live Music Alert! Catch us at [Venue] on [Date] at [Time]! See you there! #GUATACA"*).
   3. If a flyer image link is attached to the event, the app opens that link in a new tab or prompts a download so the user has the image ready in their device's camera roll.
   4. The app fires a browser-native Web Share intent (`navigator.share`) or deep link directly to the Instagram app (`instagram://camera` for mobile native apps), allowing the user to paste the caption and upload the asset seamlessly.
 

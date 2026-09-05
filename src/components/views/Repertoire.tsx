@@ -8,7 +8,7 @@
 import { useEffect } from 'react';
 import { ChevronDown, ChevronRight, Clock, FileText, Mic, Pencil, Plus, Search, Youtube } from 'lucide-react';
 import { AppleMusicIcon, Pill, Segment, SpotifyIcon } from '@/components/ui';
-import { useBandSync } from '@/store';
+import { useGuataca } from '@/store';
 import type { LinkKind } from '@/types';
 
 /** Shared classes for the labeled resource links (streaming / chart / take). */
@@ -24,7 +24,7 @@ function streamIcon(kind: LinkKind) {
 }
 
 export function Repertoire() {
-  const { state, t, isAdmin, setQ, openNewSong, openEditSong, openEvent, genreChips, setGenre, toggleStale, filteredSongs, statSongs, setSongSort, toggleSong, clearScrollToSong } = useBandSync();
+  const { state, t, isAdmin, setQ, openNewSong, openEditSong, openEvent, genreChips, setGenre, toggleStale, filteredSongs, statSongs, setSongSort, toggleSong, clearScrollToSong } = useGuataca();
 
   // After a cross-view jump (goToSong), scroll the target song card into view.
   useEffect(() => {

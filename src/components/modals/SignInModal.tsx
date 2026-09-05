@@ -1,9 +1,9 @@
-import { useBandSync } from '../../store';
+import { useGuataca } from '../../store';
 import { Modal } from '../ui';
 import { SignInForm } from '../auth/SignInForm';
 
 export function SignInModal() {
-  const { state, closeModal } = useBandSync();
+  const { state, closeModal } = useGuataca();
 
   if (state.modal?.kind !== 'signin') return null;
 

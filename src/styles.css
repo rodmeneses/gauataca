@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 /* ---------------------------------------------------------------------------
-   BandSync design tokens (mirrors the "Sistema de diseño" view).
+   GUATACA design tokens (mirrors the "Sistema de diseño" view).
    Colors map 1:1 to Tailwind slate / emerald / violet / amber / rose / sky.
 --------------------------------------------------------------------------- */
 @theme {

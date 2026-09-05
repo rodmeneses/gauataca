@@ -3,11 +3,11 @@
  * listing the "for Claude Code — Phase 2" notes, grouped by heading.
  */
 import { BookOpen } from 'lucide-react';
-import { useBandSync } from '@/store';
+import { useGuataca } from '@/store';
 import { CloseButton } from '@/components/ui';
 
 export function HandoffPanel() {
-  const { state, t, handoffNotes, closeHandoff } = useBandSync();
+  const { state, t, handoffNotes, closeHandoff } = useGuataca();
   if (!state.handoff) return null;
 
   return (

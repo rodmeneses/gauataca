@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useBandSync } from '../../store';
+import { useGuataca } from '../../store';
 import { useAuth } from '../../lib/auth';
 import { isDemo } from '../../lib/data';
 import { LoginPage } from '../auth/LoginPage';
@@ -21,7 +21,7 @@ import { Toasts } from '../modals/Toasts';
 
 /** Root layout: desktop or phone-preview shell, plus every overlay layer. */
 export function Shell() {
-  const bs = useBandSync();
+  const bs = useGuataca();
   const { user, profile, loading: authLoading } = useAuth();
   const { modal } = bs;
 

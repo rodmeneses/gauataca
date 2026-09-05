@@ -1,11 +1,11 @@
-# BandSync — UI design reference
+# GUATACA — UI design reference
 
-This document describes the Phase 1 user interface of BandSync, the cooperative admin dashboard for
-**Dulce Tricolor Venezolano** specified in [`SPEC.MD`](../SPEC.MD). It is the written counterpart of the Claude Design
+This document describes the Phase 1 user interface of GUATACA, the cooperative admin dashboard for
+**GUATACA** specified in [`SPEC.MD`](../SPEC.MD). It is the written counterpart of the Claude Design
 prototype the app is ported from:
 
-> **Design source of truth:** Claude Design project *Guataca UX/UI Prototype*, file `BandSync.dc.html`
-> — https://claude.ai/design/p/d7a06c72-dd08-48b8-a34d-cc51a3ff6930?file=BandSync.dc.html
+> **Design source of truth:** Claude Design project *Guataca UX/UI Prototype*, file `Guataca.dc.html`
+> — https://claude.ai/design/p/d7a06c72-dd08-48b8-a34d-cc51a3ff6930?file=Guataca.dc.html
 
 When the design and the code disagree, the design wins unless the deviation is listed in
 [implementation.md → Known deviations](./implementation.md#known-deviations).
@@ -216,7 +216,7 @@ The design exposes six "tweaks"; the app reads them from the URL:
 
 | Knob | Param | Default |
 | --- | --- | --- |
-| Band name | `band` | Dulce Tricolor Venezolano |
+| Band name | `band` | GUATACA |
 | Initial language | `lang=es\|en` | es |
 | Initial role | `role=admin\|member` | admin |
 | Start view | `view=dashboard\|calendar\|repertoire\|ledger\|brainstorm\|members\|system` | dashboard |

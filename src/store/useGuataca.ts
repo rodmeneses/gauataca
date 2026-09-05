@@ -83,7 +83,7 @@ export interface FormVm {
   songInstruments: string[];
 }
 
-export interface BandSync {
+export interface Guataca {
   // ---- raw state & props
   state: State;
   props: AppProps;
@@ -272,7 +272,7 @@ function profileToMember(p: Profile): Member {
   };
 }
 
-export function useBandSync(): BandSync {
+export function useGuataca(): Guataca {
   const { state: st, props, set, toast } = useStore();
   const { user, profile, signOut, refreshProfile } = useAuth();
   const {
@@ -287,7 +287,7 @@ export function useBandSync(): BandSync {
   } = useData();
   const isMobileViewport = useMediaQuery('(max-width: 768px)');
 
-  return useMemo<BandSync>(() => {
+  return useMemo<Guataca>(() => {
     const lang = st.lang;
     const t = T[lang];
     const isAdmin = profile?.role === 'admin' || (!user && st.role === 'admin');
@@ -457,7 +457,7 @@ export function useBandSync(): BandSync {
     return {
       state: st, props, t, lang, L: Lx, isAdmin, isMember: !isAdmin, role: st.role,
       roleLabel: isAdmin ? t.admin : t.member, me, signedIn: !!user,
-      bandName: props.bandName || 'Dulce Tricolor Venezolano',
+      bandName: props.bandName || 'GUATACA',
       view: st.view, viewTitle: t[st.view] || t.dashboard, viewSub: t[viewSubKey] || '',
       isDesktop, isMobile, isMobileViewport, staleDays, loading, error,
 

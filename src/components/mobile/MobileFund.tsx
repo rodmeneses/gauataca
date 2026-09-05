@@ -1,10 +1,10 @@
 /** Mobile "Fondo" tab: pool balance hero + "New movement" (admin) + in/out & date filters + transactions, contributions and the gear inventory. */
 import { ArrowLeftRight, ExternalLink, Package, Plus } from 'lucide-react';
-import { useBandSync } from '../../store';
+import { useGuataca } from '../../store';
 import type { TxDate, TxFilter } from '../../types';
 
 export function MobileFund() {
-  const { t, isAdmin, balanceStr, incomeStr, expenseStr, tx, txFilter, txDate, setTxFilter, setTxDate, contributions, gear, gearValue, openNewTx, openNewGear, openCustody } = useBandSync();
+  const { t, isAdmin, balanceStr, incomeStr, expenseStr, tx, txFilter, txDate, setTxFilter, setTxDate, contributions, gear, gearValue, openNewTx, openNewGear, openCustody } = useGuataca();
   return (
     <div className="flex flex-col gap-3">
       <div className="border border-[#34d39933] rounded-[16px] p-[19px]" style={{ background: 'linear-gradient(150deg,#0f172a,#0b1220)' }}>

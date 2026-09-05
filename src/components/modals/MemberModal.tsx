@@ -6,13 +6,13 @@
  */
 import { useState } from 'react';
 import { Pencil } from 'lucide-react';
-import { useBandSync } from '@/store';
+import { useGuataca } from '@/store';
 import { Avatar, Button, CloseButton, Field, Modal } from '@/components/ui';
 import { InstrumentPicker, VocalsPicker, type PickedInstrument } from './InstrumentPicker';
 import type { VocalFlag } from '@/types';
 
 export function MemberModal() {
-  const { mb, mbRaw, me, isAdmin, t, closeModal, saveMemberInstruments, state } = useBandSync();
+  const { mb, mbRaw, me, isAdmin, t, closeModal, saveMemberInstruments, state } = useGuataca();
   const [editing, setEditing] = useState(() => state.modal?.kind === 'member' && !!state.modal.edit);
   const [instruments, setInstruments] = useState<PickedInstrument[]>(() => (mbRaw?.instruments ?? []).map((i) => ({ id: i.id, lv: i.lv })));
   const [vocals, setVocals] = useState<VocalFlag[]>(() => mbRaw?.vocals ?? []);

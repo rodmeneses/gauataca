@@ -7,7 +7,7 @@
 import { useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import { Button, Input, Select } from '@/components/ui';
-import { useBandSync } from '@/store';
+import { useGuataca } from '@/store';
 import type { Proficiency, VocalFlag } from '@/types';
 
 export interface PickedInstrument {
@@ -20,7 +20,7 @@ export function InstrumentPicker({ selected, onChange, withLevel }: {
   onChange: (next: PickedInstrument[]) => void;
   withLevel: boolean;
 }) {
-  const { t, L, instruments, createInstrument } = useBandSync();
+  const { t, L, instruments, createInstrument } = useGuataca();
   const [draft, setDraft] = useState('');
 
   const nameOf = (id: string) => {
@@ -92,7 +92,7 @@ export function InstrumentPicker({ selected, onChange, withLevel }: {
 }
 
 export function VocalsPicker({ selected, onChange }: { selected: VocalFlag[]; onChange: (next: VocalFlag[]) => void }) {
-  const { t } = useBandSync();
+  const { t } = useGuataca();
   const toggle = (flag: VocalFlag) => {
     if (flag === 'none') {
       onChange(selected.includes('none') ? [] : ['none']);

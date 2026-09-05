@@ -1,4 +1,4 @@
--- BandSync — baseline schema (Supabase / Postgres)
+-- GUATACA — baseline schema (Supabase / Postgres)
 -- Flyway V1. Single consolidated migration: the full final schema, the is_admin()
 -- helper, RLS policies, the auto-profile trigger, the receipts storage bucket and
 -- the basic instrument catalog. This replaces the earlier V1–V10 + R__seed chain

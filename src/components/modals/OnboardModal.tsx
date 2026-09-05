@@ -4,13 +4,13 @@
  * the profile `onboarded`. "Skip" closes without saving.
  */
 import { useState } from 'react';
-import { useBandSync } from '@/store';
+import { useGuataca } from '@/store';
 import { Button, Field, Modal } from '@/components/ui';
 import { InstrumentPicker, VocalsPicker, type PickedInstrument } from './InstrumentPicker';
 import type { VocalFlag } from '@/types';
 
 export function OnboardModal() {
-  const { t, closeModal, onboard, skipOnboard } = useBandSync();
+  const { t, closeModal, onboard, skipOnboard } = useGuataca();
   const [instruments, setInstruments] = useState<PickedInstrument[]>([]);
   const [vocals, setVocals] = useState<VocalFlag[]>([]);
 

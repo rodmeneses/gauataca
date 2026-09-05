@@ -5,7 +5,7 @@
  */
 import type { ReactNode } from 'react';
 import { Calendar, Lightbulb, Monitor, Music, Receipt, Smartphone, User, WifiHigh } from 'lucide-react';
-import { useBandSync } from '../../store';
+import { useGuataca } from '../../store';
 import { BrandMark, Pill, Segment } from '../ui';
 import type { MobileTab } from '../../types';
 import { MobileAgenda } from './MobileAgenda';
@@ -37,7 +37,7 @@ function TabButton({ active, onClick, icon, label }: { active: boolean; onClick:
 
 /** The actual mobile app: header + scroll area + bottom tab bar. */
 function MobileApp() {
-  const { t, bandName, balanceStr, state, setMobileTab } = useBandSync();
+  const { t, bandName, balanceStr, state, setMobileTab } = useGuataca();
   const tab: MobileTab = state.mobileTab;
 
   return (
@@ -46,7 +46,7 @@ function MobileApp() {
       <div className="pt-[calc(env(safe-area-inset-top)+6px)] px-5 pb-3.5 flex items-center gap-[11px] flex-none border-b border-[#131c2e]">
         <BrandMark size={32} radius={10} icon={17} />
         <span className="min-w-0 flex-1">
-          <span className="block font-display font-bold text-[15px] leading-none text-[#f1f5f9]">BandSync</span>
+          <span className="block font-display font-bold text-[15px] leading-none text-[#f1f5f9]">GUATACA</span>
           <span className="block text-[10.5px] text-[#64748b] mt-[3px] truncate-1">{bandName}</span>
         </span>
         <span className="font-mono font-semibold text-[12px] text-[#34d399] bg-[#34d3991c] py-[5px] px-2.5 rounded-[20px] flex-none">{balanceStr}</span>
@@ -74,7 +74,7 @@ function MobileApp() {
 }
 
 export function MobileShell() {
-  const { lang, setLang, isAdmin, roleLabel, toggleRole, isDesktop, isMobile, setDevice, isMobileViewport } = useBandSync();
+  const { lang, setLang, isAdmin, roleLabel, toggleRole, isDesktop, isMobile, setDevice, isMobileViewport } = useGuataca();
 
   /* Real phone: full-screen app, no frame or dev controls. */
   if (isMobileViewport) {

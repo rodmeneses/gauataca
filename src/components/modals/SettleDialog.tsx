@@ -4,11 +4,11 @@
  * CustodyDialog — the scrim does not close on click.
  */
 import { useState } from 'react';
-import { useBandSync } from '@/store';
+import { useGuataca } from '@/store';
 import { Button, Field, Input } from '@/components/ui';
 
 export function SettleDialog() {
-  const { t, settle, settleEvent, closeSettle } = useBandSync();
+  const { t, settle, settleEvent, closeSettle } = useGuataca();
   const [happened, setHappened] = useState(true);
   const [fee, setFee] = useState(() => (settle ? String(settle.fee || '') : ''));
   const [cost, setCost] = useState(() => (settle ? String(settle.cost || '') : ''));

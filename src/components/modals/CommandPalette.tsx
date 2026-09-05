@@ -3,10 +3,10 @@
  * results with group chip + numeric kbd, and an empty state.
  */
 import { Search } from 'lucide-react';
-import { useBandSync } from '@/store';
+import { useGuataca } from '@/store';
 
 export function CommandPalette() {
-  const { t, state, setPq, closePalette, paletteResults } = useBandSync();
+  const { t, state, setPq, closePalette, paletteResults } = useGuataca();
 
   return (
     <div

@@ -2,10 +2,10 @@
  * Gear custody transfer dialog (design lines 1411–1427): pick the member who
  * now holds the item. The scrim does not close on click (as in the design).
  */
-import { useBandSync } from '@/store';
+import { useGuataca } from '@/store';
 
 export function CustodyDialog() {
-  const { t, custody, custodyTargets, transferCustody, closeCustody } = useBandSync();
+  const { t, custody, custodyTargets, transferCustody, closeCustody } = useGuataca();
   if (!custody) return null;
 
   return (

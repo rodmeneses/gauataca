@@ -3,10 +3,10 @@
  * centered violet card stepping through TOUR_STEPS. Skip / Next / Got it.
  */
 import { Sparkle } from 'lucide-react';
-import { useBandSync } from '@/store';
+import { useGuataca } from '@/store';
 
 export function TourOverlay() {
-  const { t, tour, tourNext, tourEnd } = useBandSync();
+  const { t, tour, tourNext, tourEnd } = useGuataca();
   if (!tour.on) return null;
 
   return (

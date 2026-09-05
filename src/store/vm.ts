@@ -1,7 +1,7 @@
 /**
  * Pure view-model builders. They turn raw domain records into the exact strings,
  * colors and flags the UI renders — the same shapes the design's renderVals()
- * produced, minus the closures (actions live in useBandSync).
+ * produced, minus the closures (actions live in useGuataca).
  */
 import type { Dict } from '../i18n';
 import { GENRES } from '../data';
@@ -625,6 +625,6 @@ export function feedbackVm(f: EventFeedback, pollPick: number | null, ctx: Ctx):
 export function igCaption(e: BandEvent, lang: Lang): string {
   const date = fmt(e.date, lang, true);
   return lang === 'es'
-    ? '🎵 ¡Música en vivo! Nos presentamos en ' + e.venue + ' el ' + date + ' a las ' + e.time + '. ¡Los esperamos!\n\n#DulceTricolorVenezolano #MúsicaVenezolana #Joropo #BayArea'
-    : '🎵 Live music alert! Catch us at ' + e.venue + ' on ' + date + ' at ' + e.time + '. See you there!\n\n#DulceTricolorVenezolano #VenezuelanMusic #Joropo #BayArea';
+    ? '🎵 ¡Música en vivo! Nos presentamos en ' + e.venue + ' el ' + date + ' a las ' + e.time + '. ¡Los esperamos!\n\n#GUATACA #MúsicaVenezolana #Joropo #BayArea'
+    : '🎵 Live music alert! Catch us at ' + e.venue + ' on ' + date + ' at ' + e.time + '. See you there!\n\n#GUATACA #VenezuelanMusic #Joropo #BayArea';
 }

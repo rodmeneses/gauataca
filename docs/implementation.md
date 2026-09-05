@@ -1,4 +1,4 @@
-# BandSync — implementation notes
+# GUATACA — implementation notes
 
 How the Phase 1 UI in this repo was built from the Claude Design prototype, the conventions it follows, how it was
 verified, and what to know before Phase 2. Read [design.md](./design.md) first for *what* the UI is.
@@ -17,7 +17,7 @@ verified, and what to know before Phase 2. Read [design.md](./design.md) first f
 
 ```
 src/
-  App.tsx                 reads URL knobs → <BandSyncProvider><Shell/>
+  App.tsx                 reads URL knobs → <GuatacaProvider><Shell/>
   types.ts                domain types; field names anticipate the Phase 2 tables
   i18n.ts                 T.es / T.en dictionaries (every UI string, incl. toasts)
   lib/format.ts           TODAY (fixed), d(), days(), fmt(), rel(), money(), money0(), slug()
@@ -25,7 +25,7 @@ src/
   store/
     store.tsx             State interface, initialState(props), provider, set(), toast(), ⌘K / Esc listener
     vm.ts                 pure view-model builders: songVm, eventVm, txVm, gearVm, threadVm, memberVm, feedbackVm, igCaption
-    useBandSync.ts        THE hook: state + all derived collections/numbers + all actions (typed renderVals())
+    useGuataca.ts        THE hook: state + all derived collections/numbers + all actions (typed renderVals())
   components/
     ui/index.tsx          Badge, Eyebrow, Card, Button, Avatar, IconLink, CloseButton, Field/Input/Select/Textarea,
                           Modal, SpotifyIcon, BrandMark, Segment, Pill, cx
@@ -41,7 +41,7 @@ src/
 The design is a `.dc.html` template (`{{ bindings }}`, `<sc-if>`, `<sc-for>`, `style-hover`) driven by a
 `renderVals()` method. The port keeps a 1:1 correspondence so future design changes are easy to carry over:
 
-- **Bindings → `useBandSync()` fields.** `balanceStr`, `dashUpcoming`, `staleTop → staleSongs`, `songs → filteredSongs`,
+- **Bindings → `useGuataca()` fields.** `balanceStr`, `dashUpcoming`, `staleTop → staleSongs`, `songs → filteredSongs`,
   `transactions → tx`, `ev`, `fb`, `th`, `mb`, `sheet`, `custody`, `tour`, `toasts`, `form`, `paletteResults`, …
 - **Closures → actions.** The design attached `onOpen`/`onShare`/`onToggle`/`fSet.title` to each row; the port exposes
   `openEvent(id)`, `openShare(id)`, `toggleSong(id)`, `setForm('title', v)`, `voteThread(id)`, `pickPoll(i)`,
@@ -70,7 +70,7 @@ The design is a `.dc.html` template (`{{ bindings }}`, `<sc-if>`, `<sc-for>`, `s
 
 ## 4. Verification
 
-- **Visual:** the original `BandSync.dc.html` renders standalone (serve its folder; `support.js` loads React from a CDN),
+- **Visual:** the original `Guataca.dc.html` renders standalone (serve its folder; `support.js` loads React from a CDN),
   so every view was screenshotted at 1440 × 900 next to the app: dashboard, calendar, repertoire, ledger, ideas,
   musicians, design system, and the mobile preview — structurally identical.
 - **Functional (Chrome, no console errors):** role toggle removes write controls for members; ES/EN re-renders
@@ -91,7 +91,7 @@ Intentional, small, and listed so nobody "fixes" them back by accident:
 | Genre `<select>` options are localized via `GENRES` instead of hard-coded Spanish | consistency with the ES/EN switch |
 | `font:` shorthand in the design resets line-height to `normal`; the port inherits `1.5` on some small labels | sub-pixel to ~2 px; invisible in side-by-side screenshots. Add `leading-[normal]` where it matters |
 | `CloseButton` has a hover state everywhere (design: only on the event modal) | shared primitive |
-| **Attendance / RSVP exists in code but not in `design/BandSync.dc.html`** (event modal section, card chips, dashboard counts, derived "Confirmados") | added code-first after the port (see `docs/iterating.md`); built from the documented vocabulary — tiles, badges, poll-style option buttons, avatars |
+| **Attendance / RSVP exists in code but not in `design/Guataca.dc.html`** (event modal section, card chips, dashboard counts, derived "Confirmados") | added code-first after the port (see `docs/iterating.md`); built from the documented vocabulary — tiles, badges, poll-style option buttons, avatars |
 
 Everything the design mocks is still mocked: placeholder Drive/iCloud/Docs/YouTube/Spotify links,
 `navigator.share` with a desktop toast fallback, in-memory forms/votes/comments/ratings, no auth.
@@ -115,6 +115,6 @@ derived-vs-stored rules and RLS policies. The code is arranged so that swap is m
 - Replace the `data/*.ts` arrays with queries and keep `vm.ts` untouched — the view-models are pure functions over
   domain records whose field names already match the proposed tables.
 - Replace `extraEvents / extraTx / extraSongs / extraComments / votes / custodyOverrides` in `store.tsx` with mutations;
-  the actions in `useBandSync.ts` are the only writers.
+  the actions in `useGuataca.ts` are the only writers.
 - Replace the role toggle with the authenticated profile's role; the `isAdmin` gating is already centralized.
 - Turn the mobile preview into real responsive layouts (`MobileShell` already isolates the four tab bodies).

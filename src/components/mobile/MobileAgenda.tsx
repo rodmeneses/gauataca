@@ -1,10 +1,10 @@
 /** Mobile "Agenda" tab: upcoming/history toggle, "New event" (admin), and event cards. */
 import { Instagram, Plus } from 'lucide-react';
-import { useBandSync } from '../../store';
+import { useGuataca } from '../../store';
 import { Pill, Segment } from '../ui';
 
 export function MobileAgenda() {
-  const { t, isAdmin, state, calList, setCalTab, openNewEvent, openShare, openEvent } = useBandSync();
+  const { t, isAdmin, state, calList, setCalTab, openNewEvent, openShare, openEvent } = useGuataca();
   const tab = state.calTab;
 
   return (

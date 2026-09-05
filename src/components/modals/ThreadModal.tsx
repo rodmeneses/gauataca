@@ -2,11 +2,11 @@
  * Brainstorm thread modal (design lines 1267–1307): title + author meta + vote pill,
  * body paragraph, comment list and the comment composer footer.
  */
-import { useBandSync } from '@/store';
+import { useGuataca } from '@/store';
 import { Avatar, Button, CloseButton, Modal } from '@/components/ui';
 
 export function ThreadModal() {
-  const { th, t, isAdmin, state, closeModal, setCommentDraft, sendComment, convertThread } = useBandSync();
+  const { th, t, isAdmin, state, closeModal, setCommentDraft, sendComment, convertThread } = useGuataca();
   if (!th) return null;
 
   return (

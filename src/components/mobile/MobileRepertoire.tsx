@@ -1,7 +1,7 @@
 /** Mobile "Repertorio" tab: search + genre/sort filters + song cards with streaming links, chart links, takes and a collapsible rehearsal log. */
 import { useEffect } from 'react';
 import { ChevronDown, ChevronRight, Clock, FileText, Mic, Pencil, Plus, Youtube } from 'lucide-react';
-import { useBandSync } from '../../store';
+import { useGuataca } from '../../store';
 import { AppleMusicIcon, Pill, Segment, SpotifyIcon } from '../ui';
 import type { LinkKind } from '../../types';
 
@@ -15,7 +15,7 @@ function streamIcon(kind: LinkKind) {
 }
 
 export function MobileRepertoire() {
-  const { t, isAdmin, state, setQ, filteredSongs, statSongs, openNewSong, openEditSong, openEvent, genreChips, setGenre, toggleStale, setSongSort, toggleSong, clearScrollToSong } = useBandSync();
+  const { t, isAdmin, state, setQ, filteredSongs, statSongs, openNewSong, openEditSong, openEvent, genreChips, setGenre, toggleStale, setSongSort, toggleSong, clearScrollToSong } = useGuataca();
   const mobSongs = filteredSongs.slice(0, 14);
 
   // After a cross-view jump (goToSong), scroll the target song card into view.

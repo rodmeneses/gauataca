@@ -1,9 +1,9 @@
 /**
  * Dashboard view — stat cards, upcoming events, stale songs and recent ledger movements.
- * Markup mirrors the design's `isDash` block (BandSync.dc.html lines 140–251).
+ * Markup mirrors the design's `isDash` block (Guataca.dc.html lines 140–251).
  */
 import { ExternalLink, Instagram, TriangleAlert } from 'lucide-react';
-import { useBandSync } from '@/store';
+import { useGuataca } from '@/store';
 import { Badge, Eyebrow } from '@/components/ui';
 
 export function Dashboard() {
@@ -14,7 +14,7 @@ export function Dashboard() {
     statSongs, statStale, staleHint,
     dashUpcoming, staleSongs, recentTx, txCount,
     go, openEvent, openShare, toggleSong,
-  } = useBandSync();
+  } = useGuataca();
 
   const staleTop = staleSongs.slice(0, 5);
 

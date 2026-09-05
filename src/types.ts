@@ -1,4 +1,4 @@
-// Domain types for BandSync (Phase 1 prototype — mock data, no persistence).
+// Domain types for GUATACA (Phase 1 prototype — mock data, no persistence).
 // Field names mirror the suggested Phase 2 tables (see data/system.ts → handoff notes).
 
 export type Lang = 'es' | 'en';

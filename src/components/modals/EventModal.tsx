@@ -3,7 +3,7 @@
  * media gallery, retrospective (ratings, well/improve, poll, my ratings) and footer.
  */
 import { ChartColumn, Check, EyeOff, ExternalLink, Image, Instagram, Star } from 'lucide-react';
-import { RSVP_COLOR, RSVP_ORDER, RSVP_PENDING_COLOR, rsvpLabel, useBandSync } from '@/store';
+import { RSVP_COLOR, RSVP_ORDER, RSVP_PENDING_COLOR, rsvpLabel, useGuataca } from '@/store';
 import { Avatar, Badge, Button, CloseButton, Modal } from '@/components/ui';
 import { SetlistEditor } from './SetlistEditor';
 import { RecordingsSection } from './RecordingsSection';
@@ -18,7 +18,7 @@ const textareaCls =
   'w-full py-[11px] px-[13px] rounded-[10px] border border-[#1e293b] bg-[#020617] text-[#e2e8f0] font-sans font-normal text-[13px] leading-[normal] outline-none resize-y';
 
 export function EventModal() {
-  const { t, ev, fb, state, songs, isAdmin, closeModal, openShare, openSettle, pickPoll, setRating, toggleAnon, setFbWell, setFbImprove, submitFb, setRsvp, setEventSetlist, addTake, deleteTake, goToSong } = useBandSync();
+  const { t, ev, fb, state, songs, isAdmin, closeModal, openShare, openSettle, pickPoll, setRating, toggleAnon, setFbWell, setFbImprove, submitFb, setRsvp, setEventSetlist, addTake, deleteTake, goToSong } = useGuataca();
   if (!ev) return null;
 
   const ratingLabel: Record<RatingKey, string> = { sound: t.sound, perf: t.perf, log: t.logistics, energy: t.energy };

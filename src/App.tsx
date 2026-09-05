@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { BandSyncProvider } from './store';
+import { GuatacaProvider } from './store';
 import { AuthProvider } from './lib/auth';
 import { DataProvider } from './lib/data';
 import type { AppProps, Lang, Role, View } from './types';
@@ -18,7 +18,7 @@ function readProps(): AppProps {
   const view = q.get('view');
   const stale = Number(q.get('stale'));
   return {
-    bandName: q.get('band') || 'Dulce Tricolor Venezolano',
+    bandName: q.get('band') || 'GUATACA',
     initialLang: (lang === 'en' ? 'en' : 'es') as Lang,
     initialRole: (role === 'member' ? 'member' : 'admin') as Role,
     startView: VIEWS.includes(view as View) ? (view as View) : 'dashboard',
@@ -32,9 +32,9 @@ export default function App() {
   return (
     <AuthProvider>
       <DataProvider>
-        <BandSyncProvider props={props}>
+        <GuatacaProvider props={props}>
           <Shell />
-        </BandSyncProvider>
+        </GuatacaProvider>
       </DataProvider>
     </AuthProvider>
   );

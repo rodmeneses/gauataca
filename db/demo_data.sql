@@ -1,4 +1,4 @@
--- BandSync — demo data (manual, NOT a Flyway migration)
+-- GUATACA — demo data (manual, NOT a Flyway migration)
 -- Run this only when you want to populate an empty database with the fake
 -- sample dataset (5 demo members, 24 songs, 11 events, …). It is idempotent
 -- (on conflict do nothing). Money is in cents; localized fields are _es/_en
@@ -9,11 +9,11 @@
 -- Profiles (5 demo members)
 -- ---------------------------------------------------------------------------
 insert into profiles (id, name, email, role, title_es, title_en, joined_at) values
-  ('11111111-1111-1111-1111-111111111111', 'Rodrigo Alcántara', 'rodrigo@dulcetricolor.org', 'admin', 'Director musical', 'Musical director', '2023-04-11T00:00:00Z'),
-  ('22222222-2222-2222-2222-222222222222', 'Caro Betancourt', 'caro@dulcetricolor.org', 'member', 'Voz principal', 'Lead voice', '2023-04-11T00:00:00Z'),
-  ('33333333-3333-3333-3333-333333333333', 'Diego Salazar', 'diego@dulcetricolor.org', 'admin', 'Tesorero', 'Treasurer', '2023-06-02T00:00:00Z'),
-  ('44444444-4444-4444-4444-444444444444', 'Sofía Uzcátegui', 'sofia@dulcetricolor.org', 'member', 'Percusión', 'Percussion', '2024-01-19T00:00:00Z'),
-  ('55555555-5555-5555-5555-555555555555', 'Abi Contreras', 'abi@dulcetricolor.org', 'member', 'Guitarra', 'Guitar', '2024-09-07T00:00:00Z')
+  ('11111111-1111-1111-1111-111111111111', 'Rodrigo Alcántara', 'rodrigo@guataca.org', 'admin', 'Director musical', 'Musical director', '2023-04-11T00:00:00Z'),
+  ('22222222-2222-2222-2222-222222222222', 'Caro Betancourt', 'caro@guataca.org', 'member', 'Voz principal', 'Lead voice', '2023-04-11T00:00:00Z'),
+  ('33333333-3333-3333-3333-333333333333', 'Diego Salazar', 'diego@guataca.org', 'admin', 'Tesorero', 'Treasurer', '2023-06-02T00:00:00Z'),
+  ('44444444-4444-4444-4444-444444444444', 'Sofía Uzcátegui', 'sofia@guataca.org', 'member', 'Percusión', 'Percussion', '2024-01-19T00:00:00Z'),
+  ('55555555-5555-5555-5555-555555555555', 'Abi Contreras', 'abi@guataca.org', 'member', 'Guitarra', 'Guitar', '2024-09-07T00:00:00Z')
 on conflict (id) do nothing;
 
 -- ---------------------------------------------------------------------------

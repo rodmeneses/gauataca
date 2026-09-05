@@ -3,11 +3,11 @@
  * (member), and the grid of event cards. Mirrors design lines 253–339.
  */
 import { Clock, Instagram, Lock, MapPin, Mic, Music, Plus, RefreshCcw } from 'lucide-react';
-import { useBandSync } from '@/store';
+import { useGuataca } from '@/store';
 import { Badge, Button, Card, Pill, Segment } from '@/components/ui';
 
 export function CalendarView() {
-  const { t, state, isAdmin, isMember, calList, setCalTab, openNewEvent, openEvent, openShare } = useBandSync();
+  const { t, state, isAdmin, isMember, calList, setCalTab, openNewEvent, openEvent, openShare } = useGuataca();
   const tab = state.calTab;
 
   return (

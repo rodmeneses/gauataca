@@ -72,7 +72,7 @@ export const HANDOFF_NOTES: { h: Localized; items: Localized[] }[] = [
 ];
 
 export const TOUR_STEPS: { title: Localized; body: Localized }[] = [
-  { title: { es: 'Bienvenido a BandSync', en: 'Welcome to BandSync' }, body: { es: 'Prototipo de Fase 1 con datos ficticios pero realistas: 24 canciones, 11 eventos, 13 movimientos del fondo y 6 equipos.', en: 'Phase 1 prototype with fictional but realistic data: 24 songs, 11 events, 13 ledger movements and 6 pieces of gear.' } },
+  { title: { es: 'Bienvenido a GUATACA', en: 'Welcome to GUATACA' }, body: { es: 'Prototipo de Fase 1 con datos ficticios pero realistas: 24 canciones, 11 eventos, 13 movimientos del fondo y 6 equipos.', en: 'Phase 1 prototype with fictional but realistic data: 24 songs, 11 events, 13 ledger movements and 6 pieces of gear.' } },
   { title: { es: 'Cambia de rol en vivo', en: 'Flip roles live' }, body: { es: 'El botón de rol en la barra superior alterna Admin y Músico. Los controles de escritura desaparecen para el músico.', en: 'The role button in the top bar toggles Admin and Band member. Write controls disappear for members.' } },
   { title: { es: 'Todo en dos idiomas', en: 'Everything in two languages' }, body: { es: 'ES / EN cambia la interfaz completa, incluidas fechas, leyendas de Instagram y notas de eventos.', en: 'ES / EN switches the whole interface, including dates, Instagram captions and event notes.' } },
   { title: { es: 'Vista móvil y ⌘K', en: 'Mobile view and ⌘K' }, body: { es: 'El icono de teléfono abre la vista móvil con el flujo de Instagram. ⌘K abre la paleta de comandos.', en: 'The phone icon opens the mobile view with the Instagram flow. ⌘K opens the command palette.' } },

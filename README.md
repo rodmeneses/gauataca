@@ -1,11 +1,11 @@
-# BandSync — Dulce Tricolor Venezolano
+# GUATACA — GUATACA
 
 Phase 1 prototype of the cooperative band admin dashboard described in [SPEC.MD](./SPEC.MD): a bilingual (ES/EN),
 dark-mode React app over realistic mock data covering the repertoire, calendar + history, transparent ledger + gear
 inventory, brainstorm threads, member profiles, post-event retrospectives and the semi-automated Instagram share flow.
 
-The UI is a faithful port of the Claude Design prototype `BandSync.dc.html`
-([design project](https://claude.ai/design/p/d7a06c72-dd08-48b8-a34d-cc51a3ff6930?file=BandSync.dc.html);
+The UI is a faithful port of the Claude Design prototype `Guataca.dc.html`
+([design project](https://claude.ai/design/p/d7a06c72-dd08-48b8-a34d-cc51a3ff6930?file=Guataca.dc.html);
 snapshot in [`design/`](./design/README.md)).
 
 ## Quick start (play with the mock locally)
@@ -47,7 +47,7 @@ npm run preview    # serve the production build on http://localhost:4173
 ```
 
 Troubleshooting: `node: command not found` → install Node 20+ (or `nvm install 24 && nvm use`). Port 5173 busy → `npm run dev -- --port 5174`.
-To compare with the original design side by side: `python3 -m http.server 5177 --directory design` → http://localhost:5177/BandSync.dc.html.
+To compare with the original design side by side: `python3 -m http.server 5177 --directory design` → http://localhost:5177/Guataca.dc.html.
 
 ## Documentation
 
@@ -57,7 +57,7 @@ To compare with the original design side by side: `python3 -m http.server 5177 -
 | [docs/design.md](./docs/design.md) | The UI itself: design language (tokens, type, spacing), information architecture, every view and overlay, the Instagram and retrospective flows, roles, bilingual behaviour, mobile preview, data model, prototype knobs |
 | [docs/implementation.md](./docs/implementation.md) | How the port is built: stack, folder layout, design→code conventions, how it was produced and verified, known deviations, and the path to Phase 2 |
 | [docs/iterating.md](./docs/iterating.md) | How to add features incrementally with Claude Design + Claude Code (delta workflow and ready-to-paste prompts; RSVP as the worked example) |
-| [design/README.md](./design/README.md) | The committed design source (`BandSync.dc.html` + runtime), how to view and diff it |
+| [design/README.md](./design/README.md) | The committed design source (`Guataca.dc.html` + runtime), how to view and diff it |
 | [SPEC.MD](./SPEC.MD) | Product specification |
 | [prompt-ui-design.md](./prompt-ui-design.md) | The prompt that produced the design prototype |
 
@@ -110,14 +110,14 @@ The design's "tweaks" are exposed as URL query params:
 | `view`  | `dashboard` `calendar` `repertoire` `ledger` `brainstorm` `members` `system` | `dashboard`                 |
 | `tour`  | `0` to skip the welcome tour                                                | shown                       |
 | `stale` | 14–120 — days before a song counts as "not rehearsed"                       | `30`                        |
-| `band`  | band name shown in the sidebar                                              | `Dulce Tricolor Venezolano` |
+| `band`  | band name shown in the sidebar                                              | `GUATACA` |
 
 Example: `http://localhost:5173/?lang=en&role=member&view=ledger&tour=0`
 
 ## Layout
 
 ```
-design/                 committed Claude Design source (BandSync.dc.html + support.js)
+design/                 committed Claude Design source (Guataca.dc.html + support.js)
 docs/                   design reference, implementation notes, iteration workflow
 src/
   App.tsx                 reads the knobs, mounts the store
@@ -128,7 +128,7 @@ src/
   store/
     store.tsx             single state object + provider (⌘K / Esc)
     vm.ts                 pure view-model builders (song / event / tx / gear / thread / member / feedback)
-    useBandSync.ts        the one hook: state + derived view-models + actions
+    useGuataca.ts        the one hook: state + derived view-models + actions
   components/
     ui/                   Badge, Card, Button, Avatar, IconLink, Modal, Field/Input/Select/Textarea, Segment/Pill…
     shell/                desktop shell (sidebar, top bar)

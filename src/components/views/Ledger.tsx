@@ -4,13 +4,13 @@
  */
 import { ArrowLeftRight, ExternalLink, Package, Plus } from 'lucide-react';
 import { Badge, Button, Select } from '@/components/ui';
-import { useBandSync } from '@/store';
+import { useGuataca } from '@/store';
 import type { TxDate, TxFilter } from '@/types';
 
 const TX_GRID = 'min-w-[800px] grid grid-cols-[120px_1fr_130px_150px_120px] gap-3';
 
 export function Ledger() {
-  const { t, isAdmin, balanceStr, incomeStr, expenseStr, txCount, tx, txFilter, txDate, setTxFilter, setTxDate, gear, gearValue, openNewTx, openNewGear, openCustody, contributions } = useBandSync();
+  const { t, isAdmin, balanceStr, incomeStr, expenseStr, txCount, tx, txFilter, txDate, setTxFilter, setTxDate, gear, gearValue, openNewTx, openNewGear, openCustody, contributions } = useGuataca();
 
   return (
     <div className="flex flex-col gap-5 animate-fade">

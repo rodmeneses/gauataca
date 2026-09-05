@@ -1,9 +1,9 @@
 {
-  "name": "bandsync",
+  "name": "guataca",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "BandSync — cooperative band admin dashboard (Phase 1 prototype, mock data)",
+  "description": "GUATACA — cooperative band admin dashboard (Phase 1 prototype, mock data)",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

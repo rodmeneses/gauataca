@@ -1,10 +1,10 @@
 /** Mobile "Perfil" tab: language toggle, sign in/out, the signed-in member card + the full roster (tap a card for details, edit instruments as admin). */
 import { LogOut, Pencil } from 'lucide-react';
-import { useBandSync } from '../../store';
+import { useGuataca } from '../../store';
 import { Pill, Segment } from '../ui';
 
 export function MobileProfile() {
-  const { t, lang, setLang, signedIn, signOut, openSignIn, me, roleLabel, members, isAdmin, openMember } = useBandSync();
+  const { t, lang, setLang, signedIn, signOut, openSignIn, me, roleLabel, members, isAdmin, openMember } = useGuataca();
   return (
     <div className="flex flex-col gap-3.5">
       <div className="flex items-center gap-2">

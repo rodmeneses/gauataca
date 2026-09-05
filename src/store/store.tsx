@@ -95,7 +95,7 @@ export function initialState(props: AppProps): State {
   };
 }
 
-export function BandSyncProvider({ props, children }: { props: AppProps; children: ReactNode }) {
+export function GuatacaProvider({ props, children }: { props: AppProps; children: ReactNode }) {
   const [state, setState] = useState<State>(() => initialState(props));
   const seqRef = useRef(0);
 
@@ -133,6 +133,6 @@ export function BandSyncProvider({ props, children }: { props: AppProps; childre
 
 export function useStore(): StoreApi {
   const ctx = useContext(StoreContext);
-  if (!ctx) throw new Error('useStore must be used inside <BandSyncProvider>');
+  if (!ctx) throw new Error('useStore must be used inside <GuatacaProvider>');
   return ctx;
 }

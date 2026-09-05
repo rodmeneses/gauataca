@@ -3,7 +3,7 @@
  * the Phase 2 handoff notes. Mirrors design lines 637–747.
  */
 import { File, Mic, Youtube } from 'lucide-react';
-import { useBandSync } from '@/store';
+import { useGuataca } from '@/store';
 import { Badge } from '@/components/ui';
 
 const H2 = 'm-0 mb-[14px] font-display font-semibold text-[15px] leading-none text-[#f1f5f9]';
@@ -13,7 +13,7 @@ const SAMPLE_BTN = 'py-[9px] px-[14px] rounded-[10px] border font-sans font-semi
 const ROW = 'flex justify-between';
 
 export function DesignSystem() {
-  const { t, tokens, typeScale, handoffNotes } = useBandSync();
+  const { t, tokens, typeScale, handoffNotes } = useGuataca();
 
   return (
     <div className="flex flex-col gap-[26px] max-w-[1080px] animate-fade">

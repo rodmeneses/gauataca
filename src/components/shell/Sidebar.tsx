@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Calendar, LayoutDashboard, Lightbulb, Music, Palette, Receipt, Users } from 'lucide-react';
-import { useBandSync } from '../../store';
+import { useGuataca } from '../../store';
 import type { View } from '../../types';
 import { BrandMark, cx } from '../ui';
 
@@ -25,7 +25,7 @@ function NavItem({ active, onClick, icon, children }: { active: boolean; onClick
 
 /** 252px sticky sidebar: brand, nav groups, pool balance and the signed-in member (design lines 39–99). */
 export function Sidebar() {
-  const { t, view, bandName, statUpcoming, statSongs, balanceStr, me, roleLabel, go } = useBandSync();
+  const { t, view, bandName, statUpcoming, statSongs, balanceStr, me, roleLabel, go } = useGuataca();
   const is = (v: View) => view === v;
 
   return (
@@ -33,7 +33,7 @@ export function Sidebar() {
       <div className="p-[22px_20px_18px] border-b border-line-soft flex gap-3 items-center">
         <BrandMark />
         <div className="min-w-0">
-          <div className="font-display font-bold text-[16px] leading-[1.1] text-ink tracking-[-.01em]">BandSync</div>
+          <div className="font-display font-bold text-[16px] leading-[1.1] text-ink tracking-[-.01em]">GUATACA</div>
           <div className="text-[11px] text-ink-muted truncate-1 mt-[3px]">{bandName}</div>
         </div>
       </div>

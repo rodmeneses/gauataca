@@ -5,10 +5,10 @@
  */
 import { Pencil } from 'lucide-react';
 import { Badge } from '@/components/ui';
-import { useBandSync } from '@/store';
+import { useGuataca } from '@/store';
 
 export function Members() {
-  const { t, isAdmin, members, openMember } = useBandSync();
+  const { t, isAdmin, members, openMember } = useGuataca();
 
   return (
     <div className="flex flex-col gap-4 animate-fade">

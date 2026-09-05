@@ -11,13 +11,13 @@ templates — swap in the next feature (e.g. the setlist builder or "new idea" f
 | Uses existing components and fits an existing screen (a button, a chip, a small section — e.g. RSVP on the event card/modal) | **Code-first:** prompt Claude Code directly, referencing `docs/design.md` for the vocabulary | Faster; the design system is documented and the primitives exist; the design file then lags by a small, well-described delta |
 | New layout or new screen (setlist builder, poll authoring, profile editor) | **Design-first:** iterate in Claude Design, re-export, implement the diff | Layout exploration is what the design tool is good at; the exported diff is the handoff |
 
-Either way keep `design/BandSync.dc.html` current, so `git diff` stays the source of truth for what changed.
+Either way keep `design/Guataca.dc.html` current, so `git diff` stays the source of truth for what changed.
 
 ## 2. Design-first workflow (delta, not everything)
 
-1. In the Claude Design project, send the prompt in §3. It edits the existing `BandSync.dc.html` in place and appends a
+1. In the Claude Design project, send the prompt in §3. It edits the existing `Guataca.dc.html` in place and appends a
    **"Delta for Claude Code"** section to the in-app handoff notes.
-2. Re-export the file over `design/BandSync.dc.html` (through the DesignSync MCP `get_file`, or download) and commit it
+2. Re-export the file over `design/Guataca.dc.html` (through the DesignSync MCP `get_file`, or download) and commit it
    on a branch. `git diff` now shows exactly which template regions and `renderVals()` bindings changed.
 3. Prompt Claude Code with §4. It reads the diff + the delta notes and changes only the affected components, store
    fields, view-models and i18n keys.
@@ -28,10 +28,10 @@ template, the diff becomes noise and the port turns into a re-port. The prompt b
 
 ## 3. Prompt for Claude Design (RSVP / attendance)
 
-Paste into the *Guataca UX/UI Prototype* project, with `BandSync.dc.html` open:
+Paste into the *Guataca UX/UI Prototype* project, with `Guataca.dc.html` open:
 
 ```
-Update BandSync.dc.html IN PLACE to add event attendance (RSVP). This file has already been ported to code,
+Update Guataca.dc.html IN PLACE to add event attendance (RSVP). This file has already been ported to code,
 so make the smallest possible edit and keep every existing binding, state field, id, string key and template
 structure unchanged — only add. Do not restructure or re-style existing markup.
 
@@ -71,12 +71,12 @@ Handoff
 ## 4. Prompt for Claude Code after the re-export
 
 ```
-The design in design/BandSync.dc.html was updated in Claude Design (commit <sha> vs the previous snapshot).
+The design in design/Guataca.dc.html was updated in Claude Design (commit <sha> vs the previous snapshot).
 Implement ONLY the delta:
-1. Run `git diff <previous-sha> -- design/BandSync.dc.html` and read the "DELTA" comment at the end of
+1. Run `git diff <previous-sha> -- design/Guataca.dc.html` and read the "DELTA" comment at the end of
    renderVals() plus the new handoff group.
 2. Map the changes onto the existing code by the conventions in docs/implementation.md §2: new mock fields →
-   src/data + src/types, new state → src/store/store.tsx, new bindings → src/store/vm.ts / useBandSync.ts, new
+   src/data + src/types, new state → src/store/store.tsx, new bindings → src/store/vm.ts / useGuataca.ts, new
    strings → src/i18n.ts (both languages), template changes → the matching component under src/components.
 3. Do not touch components whose design region did not change. Keep px/colors exact.
 4. Typecheck + build, then verify in the browser against the served design (python3 -m http.server 5177
@@ -88,8 +88,8 @@ Implement ONLY the delta:
 ## 5. Code-first prompt (if you skip the design step)
 
 ```
-Add RSVP / attendance confirmation to the BandSync prototype following docs/design.md and the existing primitives
+Add RSVP / attendance confirmation to the GUATACA prototype following docs/design.md and the existing primitives
 (Badge, Pill/Segment, Avatar, toast). Requirements: <paste the "Functionality" and "Data / state" blocks from §3>.
-Keep design/BandSync.dc.html untouched but document the delta in docs/design.md §5 and note in
+Keep design/Guataca.dc.html untouched but document the delta in docs/design.md §5 and note in
 docs/implementation.md §5 that the design file lags on this feature. Verify ES/EN, admin/member, desktop/mobile.
 ```

@@ -1,9 +1,9 @@
 /** Mobile "Ideas" tab: the brainstorm thread list (vote, open, convert-to-event). */
 import { ArrowUp, CalendarPlus, MessageSquare } from 'lucide-react';
-import { useBandSync } from '../../store';
+import { useGuataca } from '../../store';
 
 export function MobileBrainstorm() {
-  const { t, isAdmin, threads, voteThread, openThread, convertThread } = useBandSync();
+  const { t, isAdmin, threads, voteThread, openThread, convertThread } = useGuataca();
 
   return (
     <div className="flex flex-col gap-3">

@@ -3,10 +3,10 @@
  * emerald ("ok") or violet per toast tone.
  */
 import { AlertTriangle, Check } from 'lucide-react';
-import { useBandSync } from '@/store';
+import { useGuataca } from '@/store';
 
 export function Toasts() {
-  const { toasts } = useBandSync();
+  const { toasts } = useGuataca();
   if (toasts.length === 0) return null;
 
   return (

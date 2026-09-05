@@ -1,6 +1,6 @@
--- BandSync — wipe the database for a fresh start (manual, NOT a Flyway migration)
+-- GUATACA — wipe the database for a fresh start (manual, NOT a Flyway migration)
 -- Run this in the Supabase SQL editor (or psql) BEFORE `flyway migrate` to drop
--- every BandSync table, the Flyway history, the receipts storage policies and
+-- every GUATACA table, the Flyway history, the receipts storage policies and
 -- the auto-profile trigger. After this the schema is empty, so `flyway migrate`
 -- applies V1 from scratch.
 
@@ -21,7 +21,7 @@ drop function if exists public.handle_new_user();
 -- Flyway history.
 drop table if exists flyway_schema_history cascade;
 
--- BandSync tables (children first).
+-- GUATACA tables (children first).
 drop table if exists takes cascade;
 drop table if exists song_links cascade;
 drop table if exists song_instruments cascade;

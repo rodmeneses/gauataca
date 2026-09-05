@@ -1,4 +1,4 @@
-# HANDOFF — BandSync, from Phase 1 (UI) to Phase 2 (backend)
+# HANDOFF — GUATACA, from Phase 1 (UI) to Phase 2 (backend)
 
 Written 2026-08-25 for the next agent/engineer. Read this first, then the docs it points to. It says what exists,
 what is deliberately fake, what the spec asks for that the UI still lacks, and a concrete plan for Phase 2.
@@ -22,7 +22,7 @@ what is deliberately fake, what the spec asks for that the UI still lacks, and a
 | [`docs/implementation.md`](./docs/implementation.md) | code layout, design→code conventions, how it was verified, known deviations, Phase 2 seams |
 | In-app **Notas de entrega** (view *Sistema de diseño*, or ⌘K → "Notas de entrega") | the suggested tables, derived-vs-stored rules and RLS policies, written by the designer |
 | `src/data/system.ts` → `HANDOFF_NOTES` | same notes as data, so you can grep them |
-| Design source | Claude Design project `d7a06c72-dd08-48b8-a34d-cc51a3ff6930`, file `BandSync.dc.html` — snapshot committed in [`design/`](./design/README.md). Ground truth for any UI change |
+| Design source | Claude Design project `d7a06c72-dd08-48b8-a34d-cc51a3ff6930`, file `Guataca.dc.html` — snapshot committed in [`design/`](./design/README.md). Ground truth for any UI change |
 | [`docs/iterating.md`](./docs/iterating.md) | how to add features as **deltas** (design-first vs code-first), with ready prompts — RSVP is the worked example |
 
 Run it: `npm install && npm run dev` → http://localhost:5173/?tour=0 (Node ≥ 20; `.nvmrc` pins 24).
@@ -39,7 +39,7 @@ Everything below is exercised and works in the browser; see `docs/implementation
 - Instagram flow: caption generation (ES/EN) → clipboard → open flyer link → `navigator.share` (toast fallback on desktop).
 - Role toggle Admin ↔ Músico (write controls disappear for members), ES/EN, desktop ↔ phone-frame preview, ⌘K palette, tour.
 
-Where the writes live: **`src/store/useBandSync.ts` is the only place that mutates state**; `src/store/vm.ts` is pure
+Where the writes live: **`src/store/useGuataca.ts` is the only place that mutates state**; `src/store/vm.ts` is pure
 (records → strings/colors). That separation is the seam for Phase 2.
 
 ## 3. Gaps against the SPEC (not in the design, therefore not in the UI)
@@ -100,7 +100,7 @@ Recommended order: auth → persistence of what already exists (including RSVP a
 - In `src/store/store.tsx`, the session-only fields `extraEvents / extraTx / extraSongs / extraComments / votes /
   pollPick / myRatings / fbSent / custodyOverrides / rsvpOverrides` become mutations + refetch (or optimistic updates). Everything else
   in `State` is genuine UI state and stays.
-- Replace the role toggle with the authenticated profile's role; `isAdmin` gating is already centralized in `useBandSync`.
+- Replace the role toggle with the authenticated profile's role; `isAdmin` gating is already centralized in `useGuataca`.
   Keep the toggle behind a dev flag if useful for demos.
 - Keep every user-visible string in `src/i18n.ts` (ES default, EN complete).
 - Mobile: today's phone-frame preview (`src/components/mobile/`) is a demo inside the desktop page. For real phones,
@@ -117,7 +117,7 @@ Recommended order: auth → persistence of what already exists (including RSVP a
 - The Claude Design file is the visual source of truth; deviations are listed in `docs/implementation.md` §5 — add to
   that table rather than silently diverging.
 - Values from the design are exact (px, hex incl. alpha tints); use Tailwind arbitrary values, tokens in `src/styles.css`.
-- Actions only in `useBandSync.ts`; view-models only in `vm.ts`; components never compute domain logic.
+- Actions only in `useGuataca.ts`; view-models only in `vm.ts`; components never compute domain logic.
 - Mock data is the seed — extend it rather than replacing it, so screenshots stay comparable with the design.
 - Tooling quirk on the original machine: Node lives under nvm and may not be on the tool's PATH; `.nvmrc` = 24.
 

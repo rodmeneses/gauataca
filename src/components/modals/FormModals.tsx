@@ -5,7 +5,7 @@
  */
 import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { ExternalLink, Plus, Search, Upload, X } from 'lucide-react';
-import { useBandSync } from '@/store';
+import { useGuataca } from '@/store';
 import { Button, DatePicker, Field, Input, Modal, Select, Textarea } from '@/components/ui';
 import { GENRES, GENRE_IDS } from '@/data';
 import { isDemo } from '@/lib/data';
@@ -45,7 +45,7 @@ function FormFooter({ cancel, save, onCancel, onSave }: { cancel: string; save: 
 
 /* -------------------------------------------------------------- new event */
 export function NewEventModal() {
-  const { t, lang, form, setForm, closeModal, saveEvent, songs } = useBandSync();
+  const { t, lang, form, setForm, closeModal, saveEvent, songs } = useGuataca();
   const [query, setQuery] = useState('');
 
   const byId = useMemo(() => new Map(songs.map((s) => [s.id, s])), [songs]);
@@ -153,7 +153,7 @@ export function NewEventModal() {
 
 /* ---------------------------------------------------------- new movement */
 export function NewTxModal() {
-  const { t, lang, form, setForm, closeModal, saveTx, events, gear, members, uploadProof, toast } = useBandSync();
+  const { t, lang, form, setForm, closeModal, saveTx, events, gear, members, uploadProof, toast } = useGuataca();
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -290,7 +290,7 @@ export function NewTxModal() {
 
 /* --------------------------------------------------------- song link editor */
 function SongLinksEditor() {
-  const { t, form, setForm } = useBandSync();
+  const { t, form, setForm } = useGuataca();
   const links = form.songLinks || [];
   const set = (next: { kind: LinkKind; label: string; url: string }[]) => setForm('songLinks', next);
   const update = (i: number, patch: Partial<{ kind: LinkKind; label: string; url: string }>) =>
@@ -334,7 +334,7 @@ function SongLinksEditor() {
 
 /* --------------------------------------------------------------- new song */
 export function NewSongModal() {
-  const { t, L, form, setForm, closeModal, saveSong, modal } = useBandSync();
+  const { t, L, form, setForm, closeModal, saveSong, modal } = useGuataca();
   const editing = modal?.kind === 'newSong' && !!modal.id;
   return (
     <Modal onClose={closeModal} maxWidth={520}>
@@ -379,7 +379,7 @@ export function NewSongModal() {
 
 /* --------------------------------------------------------------- new gear */
 export function NewGearModal() {
-  const { t, lang, form, setForm, closeModal, saveGear, members, uploadProof, toast } = useBandSync();
+  const { t, lang, form, setForm, closeModal, saveGear, members, uploadProof, toast } = useGuataca();
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 

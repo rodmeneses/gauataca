@@ -1,4 +1,4 @@
-import { useBandSync } from '../../store';
+import { useGuataca } from '../../store';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { Dashboard } from '../views/Dashboard';
@@ -11,7 +11,7 @@ import { DesignSystem } from '../views/DesignSystem';
 
 /** 252px sticky sidebar + sticky header + padded main (design lines 37–139, 748–751). */
 export function DesktopShell() {
-  const { view } = useBandSync();
+  const { view } = useGuataca();
   return (
     <div className="grid min-h-screen" style={{ gridTemplateColumns: '252px minmax(0,1fr)' }}>
       <Sidebar />
