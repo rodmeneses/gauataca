@@ -131,10 +131,6 @@ export function songVm(s: Song, allEvents: BandEvent[], openSong: string | null,
       return takeVm(tk, s.title, ev ? fmt(ev.date, lang, true) : '', ctx);
     });
   const links: SongLinkVm[] = (s.links ?? []).map((l) => ({ kind: l.kind, label: L(lang, l.label), url: l.url }));
-  const hasKind = (k: LinkKind) => links.some((l) => l.kind === k);
-  if (!hasKind('youtube')) links.push({ kind: 'youtube', label: t.ytLink, url: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(s.title + ' venezuela') });
-  if (!hasKind('apple')) links.push({ kind: 'apple', label: t.amLink, url: 'https://music.apple.com/us/search?term=' + encodeURIComponent(s.title) });
-  if (!hasKind('spotify')) links.push({ kind: 'spotify', label: t.spLink, url: 'https://open.spotify.com/search/' + encodeURIComponent(s.title) });
   const streaming = links.filter((l) => l.kind !== 'chart').sort((a, b) => KIND_ORDER[a.kind] - KIND_ORDER[b.kind]);
   const charts = links.filter((l) => l.kind === 'chart');
   return {
