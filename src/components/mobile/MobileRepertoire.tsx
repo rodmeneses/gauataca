@@ -1,4 +1,5 @@
 /** Mobile "Repertorio" tab: search + genre/sort filters + song cards with streaming links, chart links, takes and a collapsible rehearsal log. */
+import { useEffect } from 'react';
 import { ChevronDown, ChevronRight, Clock, FileText, Mic, Pencil, Plus, Youtube } from 'lucide-react';
 import { useBandSync } from '../../store';
 import { AppleMusicIcon, Pill, Segment, SpotifyIcon } from '../ui';
@@ -14,8 +15,17 @@ function streamIcon(kind: LinkKind) {
 }
 
 export function MobileRepertoire() {
-  const { t, isAdmin, state, setQ, filteredSongs, statSongs, openNewSong, openEditSong, openEvent, genreChips, setGenre, toggleStale, setSongSort, toggleSong } = useBandSync();
+  const { t, isAdmin, state, setQ, filteredSongs, statSongs, openNewSong, openEditSong, openEvent, genreChips, setGenre, toggleStale, setSongSort, toggleSong, clearScrollToSong } = useBandSync();
   const mobSongs = filteredSongs.slice(0, 14);
+
+  // After a cross-view jump (goToSong), scroll the target song card into view.
+  useEffect(() => {
+    if (!state.scrollToSong) return;
+    const el = document.getElementById(`song-${state.scrollToSong}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    clearScrollToSong();
+  }, [state.scrollToSong, clearScrollToSong]);
+
   return (
     <div className="flex flex-col gap-[11px]">
       <div className="flex items-center gap-2">
@@ -67,7 +77,7 @@ export function MobileRepertoire() {
       </div>
 
       {mobSongs.map((s) => (
-        <div key={s.id} className="bg-[#0f172a] border border-[#1e293b] rounded-[14px] py-[13px] px-[14px] flex flex-col gap-[11px]">
+        <div key={s.id} id={`song-${s.id}`} className="bg-[#0f172a] border border-[#1e293b] rounded-[14px] py-[13px] px-[14px] flex flex-col gap-[11px]">
           <div className="flex items-start gap-[11px]">
             <span className="w-1 h-[34px] rounded-[3px] flex-none" style={{ background: s.genreColor }} />
             <button type="button" onClick={() => toggleSong(s.id)} className="min-w-0 flex-1 border-none bg-transparent cursor-pointer text-left text-inherit">

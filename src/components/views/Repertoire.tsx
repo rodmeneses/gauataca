@@ -5,6 +5,7 @@
  * control (most recorded by default, by name, or fewest takes). The rehearsal
  * log entries link to their event.
  */
+import { useEffect } from 'react';
 import { ChevronDown, ChevronRight, Clock, FileText, Mic, Pencil, Plus, Search, Youtube } from 'lucide-react';
 import { AppleMusicIcon, Pill, Segment, SpotifyIcon } from '@/components/ui';
 import { useBandSync } from '@/store';
@@ -23,7 +24,15 @@ function streamIcon(kind: LinkKind) {
 }
 
 export function Repertoire() {
-  const { state, t, isAdmin, setQ, openNewSong, openEditSong, openEvent, genreChips, setGenre, toggleStale, filteredSongs, statSongs, setSongSort, toggleSong } = useBandSync();
+  const { state, t, isAdmin, setQ, openNewSong, openEditSong, openEvent, genreChips, setGenre, toggleStale, filteredSongs, statSongs, setSongSort, toggleSong, clearScrollToSong } = useBandSync();
+
+  // After a cross-view jump (goToSong), scroll the target song card into view.
+  useEffect(() => {
+    if (!state.scrollToSong) return;
+    const el = document.getElementById(`song-${state.scrollToSong}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    clearScrollToSong();
+  }, [state.scrollToSong, clearScrollToSong]);
 
   return (
     <div className="flex flex-col gap-4 animate-fade">
@@ -82,7 +91,7 @@ export function Repertoire() {
       {/* ---- song cards */}
       <div className="flex flex-col gap-2">
         {filteredSongs.map((s) => (
-          <div key={s.id} className="bg-[#0f172a] border border-[#1e293b] rounded-[13px] overflow-hidden">
+          <div key={s.id} id={`song-${s.id}`} className="bg-[#0f172a] border border-[#1e293b] rounded-[13px] overflow-hidden">
             {/* header (title toggles the rehearsal log) */}
             <div className="flex items-center gap-x-[14px] gap-y-3 flex-wrap p-[14px_16px]">
               <span className="w-1 h-10 rounded-[3px] flex-none opacity-[.85]" style={{ background: s.genreColor }} />

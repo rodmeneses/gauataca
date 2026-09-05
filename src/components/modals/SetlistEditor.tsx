@@ -16,13 +16,14 @@ interface SetlistEditorProps {
   setlistLabel: string;
   isAdmin: boolean;
   onSave: (songIds: string[]) => Promise<void>;
+  onOpenSong: (id: string) => void;
   t: Dict;
 }
 
 const rowCls = 'flex items-center gap-[12px] py-[10px] px-[12px] rounded-[10px] bg-[#0f172a] border border-[#172033]';
 const iconBtn = 'grid place-items-center w-[26px] h-[26px] rounded-[7px] border border-[#1e293b] bg-[#0b1220] text-[#64748b] hover:text-[#cbd5e1] hover:border-[#34d39955] cursor-pointer flex-none disabled:opacity-30 disabled:cursor-default';
 
-export function SetlistEditor({ currentIds, songs, setlistLabel, isAdmin, onSave, t }: SetlistEditorProps) {
+export function SetlistEditor({ currentIds, songs, setlistLabel, isAdmin, onSave, onOpenSong, t }: SetlistEditorProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<string[]>(currentIds);
   const [query, setQuery] = useState('');
@@ -86,7 +87,14 @@ export function SetlistEditor({ currentIds, songs, setlistLabel, isAdmin, onSave
               <div key={s.id} className={rowCls}>
                 <span className="font-mono font-semibold text-[12px] leading-[normal] text-[#475569] flex-none">{String(i + 1).padStart(2, '0')}</span>
                 <span className="w-[3px] h-[22px] rounded-[2px] flex-none" style={{ background: s.genreColor }} />
-                <span className="flex-1 min-w-0 font-sans font-semibold text-[14px] leading-[normal] text-[#e2e8f0]">{s.title}</span>
+                <button
+                  type="button"
+                  onClick={() => onOpenSong(s.id)}
+                  title={t.openSong}
+                  className="flex-1 min-w-0 font-sans font-semibold text-[14px] leading-[normal] text-[#e2e8f0] text-left border-none bg-transparent cursor-pointer hover:text-[#6ee7b7] hover:underline"
+                >
+                  {s.title}
+                </button>
                 <span className="font-mono font-medium text-[11.5px] leading-[normal] text-[#64748b] flex-none">{s.key}</span>
                 <span className="font-mono font-medium text-[11.5px] leading-[normal] text-[#94a3b8] flex-none min-w-[38px] text-right">{s.dur}</span>
               </div>

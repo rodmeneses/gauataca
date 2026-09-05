@@ -114,6 +114,7 @@ const es = {
   amLink: 'Apple Music', charts: 'Partituras y tabs', takesCount: '%d tomas',
   // song link editor
   links: 'Enlaces', addLink: 'Agregar enlace', linkLabel: 'Etiqueta', linkUrl: 'URL', removeLink: 'Quitar', editSong: 'Editar canción',
+  openSong: 'Abrir canción',
 };
 
 const en: typeof es = {
@@ -228,6 +229,7 @@ const en: typeof es = {
   amLink: 'Apple Music', charts: 'Charts & tabs', takesCount: '%d takes',
   // song link editor
   links: 'Links', addLink: 'Add link', linkLabel: 'Label', linkUrl: 'URL', removeLink: 'Remove', editSong: 'Edit song',
+  openSong: 'Open song',
 };
 
 export type Dict = typeof es;

@@ -179,6 +179,10 @@ export interface BandSync {
   setCalTab: (tab: State['calTab']) => void;
   setMobileTab: (tab: MobileTab) => void;
   toggleSong: (id: string) => void;
+  /** Navigate to the repertoire and open a specific song (from a setlist, etc.). */
+  goToSong: (id: string) => void;
+  /** Clear the pending scroll-to-song request (called by the repertoire views after scrolling). */
+  clearScrollToSong: () => void;
   setQ: (q: string) => void;
   setGenre: (g: GenreId | 'all') => void;
   toggleStale: () => void;
@@ -492,6 +496,8 @@ export function useBandSync(): BandSync {
       setCalTab: (tab) => set({ calTab: tab }),
       setMobileTab: (tab) => set({ mobileTab: tab }),
       toggleSong: (id) => set((s) => ({ openSong: s.openSong === id ? null : id })),
+      goToSong: (id) => set({ view: 'repertoire', mobileTab: 'repertoire', openSong: id, scrollToSong: id, q: '', genre: 'all', staleOnly: false, modal: null, palette: false }),
+      clearScrollToSong: () => set({ scrollToSong: null }),
       setQ: (v) => set({ q: v }),
       setGenre: (g) => set({ genre: g }),
       toggleStale: () => set((s) => ({ staleOnly: !s.staleOnly })),

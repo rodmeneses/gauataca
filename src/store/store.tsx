@@ -16,6 +16,8 @@ export interface State {
   device: Device;
   calTab: CalTab;
   openSong: string | null;
+  /** Song id to scroll into view after a cross-view jump (set by goToSong, cleared after scroll). */
+  scrollToSong: string | null;
   q: string;
   genre: GenreId | 'all';
   staleOnly: boolean;
@@ -65,6 +67,7 @@ export function initialState(props: AppProps): State {
     device: 'desktop',
     calTab: 'upcoming',
     openSong: null,
+    scrollToSong: null,
     q: '',
     genre: 'all',
     staleOnly: false,
