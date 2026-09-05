@@ -19,7 +19,7 @@ export function ThreadModal() {
             <Avatar initial={th.initial} size={23} radius={7} style={{ fontSize: 9.5 }} />
             <span className="text-[12px] text-ink-meta">{th.author}</span>
             <span className="text-[12px] text-ink-dim">{th.dateStr}</span>
-            <span className="font-mono font-semibold text-[11.5px] text-emerald-light bg-[#34d3991c] py-[3px] px-[9px] rounded-[20px]">▲ {th.votes}</span>
+            <span className="font-mono font-semibold text-[11.5px] text-emerald-light bg-[var(--color-tint-emerald)] py-[3px] px-[9px] rounded-[20px]">▲ {th.votes}</span>
           </div>
         </div>
         <CloseButton onClick={closeModal} size={34} />

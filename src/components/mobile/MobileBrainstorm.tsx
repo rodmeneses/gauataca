@@ -8,46 +8,50 @@ export function MobileBrainstorm() {
   return (
     <div className="flex flex-col gap-3">
       {threads.map((b) => (
-        <article key={b.id} className="bg-[#0f172a] border border-[#1e293b] rounded-[14px] p-[15px] flex gap-3">
+        <article key={b.id} className="bg-surface border border-line rounded-2xl p-4 flex gap-3">
           <button
             type="button"
             onClick={() => voteThread(b.id)}
-            className="flex flex-col items-center gap-[3px] py-2 px-[10px] rounded-[10px] cursor-pointer flex-none"
+            aria-pressed={b.voted}
+            aria-label={`${t.upvote} — ${b.votes}`}
+            className="flex flex-col items-center justify-center gap-0.5 min-w-[44px] min-h-[44px] px-2.5 rounded-xl cursor-pointer flex-none transition-colors"
             style={{
-              border: '1px solid ' + (b.voted ? '#34d39966' : '#1e293b'),
-              background: b.voted ? '#34d3991a' : '#0b1220',
-              color: b.voted ? '#6ee7b7' : '#94a3b8',
+              border: '1px solid ' + (b.voted ? 'color-mix(in srgb, var(--color-emerald) 40%, transparent)' : 'var(--color-line)'),
+              background: b.voted ? 'var(--color-tint-emerald)' : 'var(--color-raised)',
+              color: b.voted ? 'var(--color-emerald)' : 'var(--color-ink-meta)',
             }}
           >
-            <ArrowUp size={16} strokeWidth={2.2} />
+            <ArrowUp size={17} strokeWidth={2.2} />
             <span className="font-mono font-semibold text-[13px]">{b.votes}</span>
           </button>
           <div className="min-w-0 flex-1">
             <button type="button" onClick={() => openThread(b.id)} className="border-none bg-transparent p-0 text-left cursor-pointer block w-full">
-              <h3 className="m-0 font-display font-semibold text-[15.5px] leading-[1.3] text-[#f1f5f9]">{b.title}</h3>
+              <h3 className="m-0 font-display font-semibold text-[17px] leading-snug text-ink">{b.title}</h3>
             </button>
-            <p className="mt-[7px] mb-0 text-[13px] text-[#64748b] leading-[1.6]">{b.body}</p>
-            <div className="flex items-center gap-[12px] mt-[11px] flex-wrap">
+            <p className="mt-2 mb-0 text-[15px] text-ink-body leading-relaxed line-clamp-3">{b.body}</p>
+            <div className="flex items-center gap-3 mt-3 flex-wrap">
               <span className="flex items-center gap-2">
-                <span className="w-[22px] h-[22px] rounded-[7px] bg-[#1e293b] grid place-items-center font-display font-semibold text-[9.5px] text-[#94a3b8]">{b.initial}</span>
-                <span className="text-[11.5px] text-[#64748b]">{b.author}</span>
+                <span className="w-7 h-7 rounded-lg bg-line grid place-items-center font-display font-semibold text-[12px] text-ink-meta">{b.initial}</span>
+                <span className="text-[13px] text-ink-muted">{b.author}</span>
               </span>
-              <span className="text-[11.5px] text-[#475569]">{b.dateStr}</span>
+              <span className="text-[13px] text-ink-dim">{b.dateStr}</span>
+            </div>
+            <div className="flex items-center gap-2 mt-3 flex-wrap">
               <button
                 type="button"
                 onClick={() => openThread(b.id)}
-                className="flex items-center gap-[6px] border-none bg-transparent text-[#94a3b8] font-sans font-medium text-[11.5px] cursor-pointer p-0"
+                className="flex items-center gap-1.5 min-h-[44px] px-3 rounded-lg border border-line bg-raised text-ink-body font-sans font-semibold text-[13px] cursor-pointer"
               >
-                <MessageSquare size={13} strokeWidth={1.9} />
+                <MessageSquare size={15} strokeWidth={1.9} />
                 {b.commentCount} {t.comments}
               </button>
               {isAdmin && (
                 <button
                   type="button"
                   onClick={() => convertThread(b.id)}
-                  className="ml-auto flex items-center gap-[6px] py-1.5 px-2.5 rounded-[8px] border border-[#7c3aed4d] bg-[#7c3aed14] text-[#c4b5fd] font-sans font-semibold text-[11.5px] cursor-pointer"
+                  className="ml-auto flex items-center gap-1.5 min-h-[44px] px-3 rounded-lg border border-violet/40 bg-[var(--color-tint-violet)] text-violet font-sans font-semibold text-[13px] cursor-pointer"
                 >
-                  <CalendarPlus size={12} strokeWidth={2} />
+                  <CalendarPlus size={14} strokeWidth={2} />
                   {t.convert}
                 </button>
               )}

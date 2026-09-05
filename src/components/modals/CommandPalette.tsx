@@ -11,16 +11,16 @@ export function CommandPalette() {
   return (
     <div
       onClick={closePalette}
-      className="fixed inset-0 z-[95] bg-[#020617d9] backdrop-blur-[8px] flex items-start justify-center p-[90px_20px] animate-fade-fast [animation-duration:.14s]"
+      className="fixed inset-0 z-[95] bg-[color-mix(in_srgb,var(--color-base)_85%,transparent)] backdrop-blur-[8px] flex items-start justify-center p-[90px_20px] animate-fade-fast [animation-duration:.14s]"
     >
       <div
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        className="w-full max-w-[580px] bg-raised border border-line-strong rounded-2xl overflow-hidden shadow-[0_40px_80px_-20px_#000] animate-rise [animation-duration:.2s]"
+        className="w-full max-w-[580px] bg-raised border border-line-strong rounded-2xl overflow-hidden shadow-pop animate-rise [animation-duration:.2s]"
       >
         <div className="flex items-center gap-3 p-[16px_18px] border-b border-line-soft">
-          <Search size={18} strokeWidth={2} color="#475569" className="flex-none" />
+          <Search size={18} strokeWidth={2} color="var(--color-ink-dim)" className="flex-none" />
           <input
             value={state.pq}
             onChange={(e) => setPq(e.target.value)}
@@ -40,7 +40,7 @@ export function CommandPalette() {
               onClick={r.run}
               className="flex items-center gap-[13px] w-full p-[11px_12px] rounded-[10px] border-none bg-transparent text-ink-body cursor-pointer text-left hover:bg-line-soft"
             >
-              <span className="font-display font-semibold text-[9.5px] leading-[normal] tracking-[.09em] uppercase text-violet-deep bg-[#7c3aed1f] p-[3px_7px] rounded-[5px] flex-none min-w-[74px] text-center">
+              <span className="font-display font-semibold text-[9.5px] leading-[normal] tracking-[.09em] uppercase text-violet-deep bg-[var(--color-tint-violet)] p-[3px_7px] rounded-[5px] flex-none min-w-[74px] text-center">
                 {r.group}
               </span>
               <span className="min-w-0 flex-1">
@@ -54,7 +54,7 @@ export function CommandPalette() {
           ))}
           {paletteResults.length === 0 && (
             <div className="flex flex-col items-center gap-[9px] p-[34px_20px] text-center">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#334155" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink-faint)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.3-4.3" />
                 <path d="M8 11h6" />

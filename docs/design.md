@@ -27,7 +27,20 @@ When the design and the code disagree, the design wins unless the deviation is l
 
 ### 2.1 Theme
 
-Dark mode only. Deep slate surfaces with neon accents; one accent per semantic meaning so color alone is readable:
+**Light and dark**, switchable in the mobile Profile tab and the desktop top bar (Light / Dark /
+System). The choice is stored in `localStorage` (`guataca.theme`); `System` follows the OS
+`prefers-color-scheme`. An inline script in `index.html` stamps `data-theme` on `<html>` before
+first paint so there is no flash. Colour is expressed as semantic tokens in `src/styles.css` — a
+`--g-*` palette redefined per theme, mapped through `@theme` to `--color-*` utilities (`bg-surface`,
+`text-ink`, `border-line`, …). Components reference tokens or `var(--color-*)`, never raw hex.
+
+Accents keep their hue across themes but not their lightness: the dark palette's neon
+emerald/amber/sky are unreadable on white, so each token resolves to a deeper value in light mode.
+The muted-text tokens were also darkened/lightened to meet WCAG AA (the old `#64748b` / `#475569`
+failed at 3.8:1 / 2.4:1). Targets: body text ≥ 4.5:1, large/UI text and borders ≥ 3:1, in **both**
+themes.
+
+Historical dark palette (still the dark theme's values):
 
 | Token            | Hex       | Tailwind name | Used for                                   |
 | ---------------- | --------- | ------------- | ------------------------------------------ |

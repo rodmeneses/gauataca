@@ -16,7 +16,7 @@ export function Members() {
       {members.map((m) => (
         <article key={m.id} className="bg-surface border border-line rounded-[14px] p-[19px] flex flex-col gap-4">
           <div className="flex gap-[13px] items-center">
-            <span className="w-[46px] h-[46px] rounded-[13px] bg-[linear-gradient(145deg,#1e293b,#0b1220)] border border-line-strong grid place-items-center font-display font-semibold text-[15px] text-violet-lighter flex-none">
+            <span className="w-[46px] h-[46px] rounded-[13px] bg-[linear-gradient(145deg,var(--color-line),var(--color-raised))] border border-line-strong grid place-items-center font-display font-semibold text-[15px] text-violet-lighter flex-none">
               {m.initial}
             </span>
             <div className="min-w-0 flex-1">

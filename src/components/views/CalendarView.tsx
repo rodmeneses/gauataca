@@ -15,10 +15,10 @@ export function CalendarView() {
       {/* ---- toolbar: tabs + admin action / member note */}
       <div className="flex items-center gap-3">
         <Segment>
-          <Pill active={tab === 'upcoming'} color="#34d399" onClick={() => setCalTab('upcoming')}>
+          <Pill active={tab === 'upcoming'} color="var(--color-emerald)" onClick={() => setCalTab('upcoming')}>
             {t.upcoming}
           </Pill>
-          <Pill active={tab === 'history'} color="#34d399" onClick={() => setCalTab('history')}>
+          <Pill active={tab === 'history'} color="var(--color-emerald)" onClick={() => setCalTab('history')}>
             {t.history}
           </Pill>
         </Segment>
@@ -30,7 +30,7 @@ export function CalendarView() {
         )}
         {isMember && (
           <span className="ml-auto text-[12px] text-ink-muted flex items-center gap-[7px]">
-            <Lock size={14} strokeWidth={1.9} color="#64748b" />
+            <Lock size={14} strokeWidth={1.9} color="var(--color-ink-muted)" />
             {t.adminOnly}
           </span>
         )}
@@ -53,7 +53,7 @@ export function CalendarView() {
                   <div className="flex gap-[6px] flex-wrap mt-2">
                     <Badge color={e.typeColor}>{e.typeLabel}</Badge>
                     {e.showState && <Badge color={e.stateColor}>{e.stateLabel}</Badge>}
-                    <Badge color="#64748b">{e.rel}</Badge>
+                    <Badge color="var(--color-ink-muted)">{e.rel}</Badge>
                     {e.canRsvp && e.rsvpLabel && <Badge color={e.rsvpColor}>✓ {e.rsvpLabel}</Badge>}
                   </div>
                 </div>
@@ -62,11 +62,11 @@ export function CalendarView() {
               {/* venue / date / moved-from */}
               <div className="flex flex-col gap-[7px] text-[12.5px] text-ink-meta">
                 <div className="flex items-center gap-2">
-                  <MapPin size={14} strokeWidth={1.9} color="#64748b" className="flex-none" />
+                  <MapPin size={14} strokeWidth={1.9} color="var(--color-ink-muted)" className="flex-none" />
                   <span>{e.venue}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock size={14} strokeWidth={1.9} color="#64748b" className="flex-none" />
+                  <Clock size={14} strokeWidth={1.9} color="var(--color-ink-muted)" className="flex-none" />
                   <span className="whitespace-nowrap">{e.dateStr} · {e.timeStr}{e.hoursStr ? ' · ' + e.hoursStr : ''}</span>
                 </div>
                 {e.movedFrom && (
@@ -86,12 +86,12 @@ export function CalendarView() {
                   </span>
                 )}
                 {e.feeStr && (
-                  <span className="font-mono font-semibold text-[11px] bg-raised border border-line-soft py-[6px] px-[9px] rounded-[8px]" style={{ color: '#34d399' }}>
+                  <span className="font-mono font-semibold text-[11px] bg-raised border border-line-soft py-[6px] px-[9px] rounded-[8px]" style={{ color: 'var(--color-emerald)' }}>
                     {t.fee} {e.feeStr}
                   </span>
                 )}
                 {e.costStr && (
-                  <span className="font-mono font-semibold text-[11px] bg-raised border border-line-soft py-[6px] px-[9px] rounded-[8px]" style={{ color: '#f87171' }}>
+                  <span className="font-mono font-semibold text-[11px] bg-raised border border-line-soft py-[6px] px-[9px] rounded-[8px]" style={{ color: 'var(--color-red)' }}>
                     {t.costLabel} {e.costStr}
                   </span>
                 )}
@@ -109,7 +109,7 @@ export function CalendarView() {
                       rel="noreferrer"
                       className="flex items-center gap-[7px] font-sans font-medium text-[12px] text-ink-body no-underline hover:text-ink-bright"
                     >
-                      <Mic size={12} strokeWidth={2} className="flex-none" style={{ color: '#6ee7b7' }} />
+                      <Mic size={12} strokeWidth={2} className="flex-none" style={{ color: 'var(--color-emerald-light)' }} />
                       <span className="truncate">{tk.label} · {tk.songTitle}</span>
                     </a>
                   ))}
@@ -121,7 +121,7 @@ export function CalendarView() {
                 <button
                   type="button"
                   onClick={() => openEvent(e.id)}
-                  className="flex-1 p-[9px] rounded-[9px] border border-line bg-raised text-ink-body font-sans font-semibold text-[12.5px] cursor-pointer hover:border-[#334155] hover:bg-hover"
+                  className="flex-1 p-[9px] rounded-[9px] border border-line bg-raised text-ink-body font-sans font-semibold text-[12.5px] cursor-pointer hover:border-line-hover hover:bg-hover"
                 >
                   {t.viewDetails}
                 </button>
@@ -129,7 +129,7 @@ export function CalendarView() {
                   <button
                     type="button"
                     onClick={() => openShare(e.id)}
-                    className="flex items-center gap-[7px] py-[9px] px-3 rounded-[9px] border border-[#7c3aed4d] bg-[#7c3aed1a] text-violet-lighter font-sans font-semibold text-[12.5px] cursor-pointer hover:bg-[#7c3aed33]"
+                    className="flex items-center gap-[7px] py-[9px] px-3 rounded-[9px] border border-violet/40 bg-[var(--color-tint-violet)] text-violet-lighter font-sans font-semibold text-[12.5px] cursor-pointer hover:bg-[var(--color-tint-violet)]"
                   >
                     <Instagram size={14} strokeWidth={1.9} />
                     Instagram

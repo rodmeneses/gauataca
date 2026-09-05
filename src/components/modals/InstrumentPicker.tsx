@@ -48,8 +48,8 @@ export function InstrumentPicker({ selected, onChange, withLevel }: {
       {selected.length > 0 && (
         <div className="flex flex-col gap-[6px]">
           {selected.map((s) => (
-            <div key={s.id} className="flex items-center gap-[10px] py-[8px] px-[12px] rounded-[10px] bg-[#0f172a] border border-[#172033]">
-              <span className="flex-1 min-w-0 font-sans font-semibold text-[13px] text-[#e2e8f0]">{nameOf(s.id)}</span>
+            <div key={s.id} className="flex items-center gap-[10px] py-[8px] px-[12px] rounded-[10px] bg-surface border border-line-soft">
+              <span className="flex-1 min-w-0 font-sans font-semibold text-[13px] text-ink-base">{nameOf(s.id)}</span>
               {withLevel && (
                 <Select value={s.lv ?? 'inter'} onChange={(e) => setLevel(s.id, e.target.value as Proficiency)} className="w-auto py-[5px] px-[8px] text-[12px]">
                   <option value="beg">{t.beg}</option>
@@ -57,7 +57,7 @@ export function InstrumentPicker({ selected, onChange, withLevel }: {
                   <option value="expert">{t.expert}</option>
                 </Select>
               )}
-              <button type="button" onClick={() => remove(s.id)} aria-label={t.removeSong} className="grid place-items-center w-[24px] h-[24px] rounded-[7px] border border-[#1e293b] bg-[#0b1220] text-[#64748b] hover:text-[#cbd5e1] cursor-pointer flex-none">
+              <button type="button" onClick={() => remove(s.id)} aria-label={t.removeSong} className="grid place-items-center w-[24px] h-[24px] rounded-[7px] border border-line bg-raised text-ink-muted hover:text-ink-body cursor-pointer flex-none">
                 <X size={13} strokeWidth={2.2} />
               </button>
             </div>
@@ -72,9 +72,9 @@ export function InstrumentPicker({ selected, onChange, withLevel }: {
               key={i.id}
               type="button"
               onClick={() => add(i.id)}
-              className="inline-flex items-center gap-[6px] py-[6px] px-[11px] rounded-[9px] border border-[#1e293b] bg-[#0b1220] text-[#cbd5e1] font-sans font-medium text-[12.5px] cursor-pointer hover:border-[#34d39955]"
+              className="inline-flex items-center gap-[6px] py-[6px] px-[11px] rounded-[9px] border border-line bg-raised text-ink-body font-sans font-medium text-[12.5px] cursor-pointer hover:border-emerald/40"
             >
-              <Plus size={13} strokeWidth={2.2} style={{ color: '#34d399' }} />
+              <Plus size={13} strokeWidth={2.2} style={{ color: 'var(--color-emerald)' }} />
               {nameOf(i.id)}
             </button>
           ))}
@@ -113,7 +113,7 @@ export function VocalsPicker({ selected, onChange }: { selected: VocalFlag[]; on
             type="button"
             onClick={() => toggle(f)}
             className={`py-[6px] px-[12px] rounded-[9px] border font-sans font-semibold text-[12.5px] cursor-pointer ${
-              active ? 'border-[#34d39955] bg-[#34d3991c] text-[#6ee7b7]' : 'border-[#1e293b] bg-[#0b1220] text-[#64748b] hover:text-[#cbd5e1]'
+              active ? 'border-emerald/40 bg-[var(--color-tint-emerald)] text-emerald-light' : 'border-line bg-raised text-ink-muted hover:text-ink-body'
             }`}
           >
             {labels[f]}

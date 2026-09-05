@@ -31,32 +31,32 @@ export function RecordingsSection({ setlist, takes, isAdmin, t, onAdd, onDelete 
   };
 
   return (
-    <div className="py-5 px-6 border-b border-[#172033]">
+    <div className="py-5 px-6 border-b border-line-soft">
       <div className="flex items-baseline gap-[11px] mb-[13px]">
-        <h3 className="m-0 font-display font-semibold text-[13px] leading-[normal] tracking-[.02em] text-[#cbd5e1]">{t.recordings}</h3>
-        <span className="font-mono font-medium text-[11.5px] leading-[normal] text-[#64748b] whitespace-nowrap">{takes.length}</span>
+        <h3 className="m-0 font-display font-semibold text-[13px] leading-[normal] tracking-[.02em] text-ink-body">{t.recordings}</h3>
+        <span className="font-mono font-medium text-[11.5px] leading-[normal] text-ink-muted whitespace-nowrap">{takes.length}</span>
       </div>
 
       {takes.length > 0 && (
         <div className="flex flex-col gap-[6px] mb-[13px]">
           {takes.map((tk) => (
-            <div key={tk.id} className="flex items-center gap-3 py-[9px] px-[12px] rounded-[10px] border border-[#1e293b] bg-[#0f172a]">
-              <Mic size={14} strokeWidth={1.9} className="flex-none" style={{ color: '#6ee7b7' }} />
+            <div key={tk.id} className="flex items-center gap-3 py-[9px] px-[12px] rounded-[10px] border border-line bg-surface">
+              <Mic size={14} strokeWidth={1.9} className="flex-none" style={{ color: 'var(--color-emerald-light)' }} />
               <a
                 href={tk.url}
                 target="_blank"
                 rel="noreferrer"
-                className="flex-1 min-w-0 text-[#cbd5e1] hover:text-[#cbd5e1] no-underline font-sans font-medium text-[13px] leading-[normal] truncate"
+                className="flex-1 min-w-0 text-ink-body hover:text-ink-body no-underline font-sans font-medium text-[13px] leading-[normal] truncate"
               >
                 {tk.label} · {tk.songTitle}
               </a>
-              <ExternalLink size={14} strokeWidth={2.1} className="flex-none" style={{ color: '#475569' }} />
+              <ExternalLink size={14} strokeWidth={2.1} className="flex-none" style={{ color: 'var(--color-ink-dim)' }} />
               {isAdmin && (
                 <button
                   type="button"
                   onClick={() => onDelete(tk.id)}
                   aria-label={t.removeSong}
-                  className="grid place-items-center w-[24px] h-[24px] rounded-[7px] border border-[#1e293b] bg-[#0b1220] text-[#64748b] hover:text-[#cbd5e1] cursor-pointer flex-none"
+                  className="grid place-items-center w-[24px] h-[24px] rounded-[7px] border border-line bg-raised text-ink-muted hover:text-ink-body cursor-pointer flex-none"
                 >
                   <X size={13} strokeWidth={2.2} />
                 </button>

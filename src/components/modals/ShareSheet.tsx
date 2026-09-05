@@ -6,7 +6,7 @@ import { Copy, Image, Instagram, Share } from 'lucide-react';
 import { useGuataca } from '@/store';
 
 const STEP_NUM =
-  'w-5 h-5 rounded-[6px] bg-[#34d3991f] text-emerald-light grid place-items-center font-mono font-semibold text-[10px] leading-[normal] flex-none mt-[1px]';
+  'w-5 h-5 rounded-[6px] bg-[var(--color-tint-emerald)] text-emerald-light grid place-items-center font-mono font-semibold text-[10px] leading-[normal] flex-none mt-[1px]';
 const STEP_ROW = 'flex gap-[11px] items-start text-[12px] leading-[1.55] text-ink-meta';
 const ACTION_BTN =
   'flex items-center justify-center gap-[9px] w-full min-h-[50px] rounded-[14px] border font-sans font-semibold text-[14px] leading-[normal] cursor-pointer whitespace-nowrap';
@@ -18,7 +18,7 @@ export function ShareSheet() {
   return (
     <div
       onClick={closeSheet}
-      className="fixed inset-0 z-[90] bg-[#020617d9] backdrop-blur-[8px] flex items-end justify-center animate-fade-fast"
+      className="fixed inset-0 z-[90] bg-[color-mix(in_srgb,var(--color-base)_85%,transparent)] backdrop-blur-[8px] flex items-end justify-center animate-fade-fast"
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -31,7 +31,7 @@ export function ShareSheet() {
         <div className="flex items-center gap-3 mb-[18px]">
           <span
             className="w-10 h-10 rounded-xl grid place-items-center flex-none"
-            style={{ background: 'linear-gradient(135deg,#8b5cf6,#d946ef)' }}
+            style={{ background: 'linear-gradient(135deg,var(--color-violet),var(--color-fuchsia))' }}
           >
             <Instagram size={20} strokeWidth={2} color="#fff" />
           </span>
@@ -62,7 +62,7 @@ export function ShareSheet() {
         </div>
 
         <div className="flex flex-col gap-[9px]">
-          <button type="button" onClick={copyCaption} className={`${ACTION_BTN} border-[#34d39955] bg-[#34d39918] text-emerald-light`}>
+          <button type="button" onClick={copyCaption} className={`${ACTION_BTN} border-emerald/40 bg-[var(--color-tint-emerald)] text-emerald-light`}>
             <Copy size={17} strokeWidth={1.9} />
             {t.copy}
           </button>
@@ -76,7 +76,7 @@ export function ShareSheet() {
             type="button"
             onClick={shareNow}
             className="flex items-center justify-center gap-[9px] w-full min-h-[52px] rounded-[14px] border-none text-white font-sans font-semibold text-[15px] leading-[normal] cursor-pointer whitespace-nowrap"
-            style={{ background: 'linear-gradient(100deg,#8b5cf6,#d946ef)' }}
+            style={{ background: 'linear-gradient(100deg,var(--color-violet),var(--color-fuchsia))' }}
           >
             <Share size={18} strokeWidth={2} />
             {t.shareIg}

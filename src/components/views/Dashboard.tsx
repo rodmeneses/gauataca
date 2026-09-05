@@ -45,7 +45,7 @@ export function Dashboard() {
           <div className="font-mono font-semibold text-[clamp(19px,2.1vw,26px)] leading-none text-ink mt-[11px] whitespace-nowrap">{statSongs}</div>
           <div className="text-[11.5px] text-ink-muted mt-[11px]">{t.genresHint}</div>
         </div>
-        <div className="card border-[#fbbf2433] p-[17px_18px]">
+        <div className="card border-amber/40 p-[17px_18px]">
           <Eyebrow className="text-amber">{t.staleSongs}</Eyebrow>
           <div className="font-mono font-semibold text-[clamp(19px,2.1vw,26px)] leading-none text-amber mt-[11px] whitespace-nowrap">{statStale}</div>
           <div className="text-[11.5px] text-ink-muted mt-[11px]">{staleHint}</div>
@@ -53,7 +53,7 @@ export function Dashboard() {
       </div>
 
       {/* ---- upcoming + stale */}
-      <div className="grid grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-[18px]">
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-[18px]">
         <section className="card p-[18px]">
           <div className="flex items-center justify-between mb-[14px]">
             <h2 className="m-0 font-display font-semibold text-[13.5px] leading-none tracking-[.02em] text-ink-body">{t.upcoming}</h2>
@@ -94,7 +94,7 @@ export function Dashboard() {
                     type="button"
                     onClick={(ev) => { ev.stopPropagation(); openShare(e.id); }}
                     title={t.prepIg}
-                    className="grid place-items-center w-[34px] h-[34px] rounded-[10px] border border-[#7c3aed4d] bg-[#7c3aed1a] text-violet-lighter cursor-pointer flex-none hover:bg-[#7c3aed33]"
+                    className="grid place-items-center w-[34px] h-[34px] rounded-[10px] border border-violet/40 bg-[var(--color-tint-violet)] text-violet-lighter cursor-pointer flex-none hover:bg-[var(--color-tint-violet)]"
                   >
                     <Instagram size={16} strokeWidth={1.9} />
                   </button>
@@ -108,7 +108,7 @@ export function Dashboard() {
           <div className="flex items-center gap-[9px] mb-[14px]">
             <TriangleAlert size={16} strokeWidth={1.9} className="text-amber" />
             <h2 className="m-0 font-display font-semibold text-[13.5px] leading-none text-ink-body whitespace-nowrap">{t.staleSongs}</h2>
-            <span className="ml-auto font-mono font-semibold text-[11px] text-amber bg-[#fbbf241c] p-[3px_8px] rounded-[20px]">{statStale}</span>
+            <span className="ml-auto font-mono font-semibold text-[11px] text-amber bg-[var(--color-tint-amber)] p-[3px_8px] rounded-[20px]">{statStale}</span>
           </div>
           <div className="flex flex-col gap-[7px]">
             {staleTop.map((s) => (
@@ -116,7 +116,7 @@ export function Dashboard() {
                 key={s.id}
                 type="button"
                 onClick={() => toggleSong(s.id)}
-                className="flex items-center gap-[11px] w-full p-[11px_12px] rounded-[10px] border border-line-soft bg-raised cursor-pointer text-left hover:border-[#fbbf2444]"
+                className="flex items-center gap-[11px] w-full p-[11px_12px] rounded-[10px] border border-line-soft bg-raised cursor-pointer text-left hover:border-amber/40"
               >
                 <span className="w-[7px] h-[7px] rounded-full flex-none" style={{ background: s.staleColor }} />
                 <span className="min-w-0 flex-1">
@@ -165,14 +165,14 @@ export function Dashboard() {
               {x.hasProof && x.proof && (
                 x.proofIsImage ? (
                   <a href={x.proof} target="_blank" rel="noreferrer" className="flex-none no-underline">
-                    <img src={x.proof} alt={x.proofKind} className="h-[34px] w-[34px] object-cover rounded-[8px] border border-line hover:border-[#34d39955]" />
+                    <img src={x.proof} alt={x.proofKind} className="h-[34px] w-[34px] object-cover rounded-[8px] border border-line hover:border-emerald/40" />
                   </a>
                 ) : (
                   <a
                     href={x.proof}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-[6px] font-sans font-semibold text-[11px] text-ink-meta border border-line p-[5px_9px] rounded-[8px] no-underline whitespace-nowrap hover:border-[#34d39955] hover:text-emerald-light"
+                    className="flex items-center gap-[6px] font-sans font-semibold text-[11px] text-ink-meta border border-line p-[5px_9px] rounded-[8px] no-underline whitespace-nowrap hover:border-emerald/40 hover:text-emerald-light"
                   >
                     <ExternalLink size={12} strokeWidth={2.1} />
                     {x.proofKind}
