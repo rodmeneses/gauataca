@@ -57,10 +57,10 @@ export function MemberModal() {
       {editing ? (
         <>
           <div className="p-[22px_24px] flex flex-col gap-[14px]">
-            <Field label={t.instruments}>
+            <Field as="div" label={t.instruments}>
               <InstrumentPicker selected={instruments} onChange={setInstruments} withLevel />
             </Field>
-            <Field label={t.vocalsL}>
+            <Field as="div" label={t.vocalsL}>
               <VocalsPicker selected={vocals} onChange={setVocals} />
             </Field>
           </div>

@@ -299,8 +299,8 @@ export function eventVm(e: BandEvent, allSongs: Song[], ctx: Ctx): EventVm {
   const stateColor = STATE_COLOR[e.state];
   const typeColor = TYPE_COLOR[e.type];
 
-  /* ---- attendance: from the fetched map */
-  const hasAttendance = !!e.attendance;
+  /* ---- attendance: upcoming events always track RSVPs (a fresh event has no rows yet) */
+  const hasAttendance = !past && e.state !== 'cancelled';
   const statusOf = (id: string): RsvpStatus | null => e.attendance?.[id] ?? null;
   const groups: Record<RsvpStatus | 'pending', RsvpPerson[]> = { going: [], maybe: [], no: [], pending: [] };
   if (hasAttendance) {

@@ -6,6 +6,11 @@ export const GENRES: Record<GenreId, Genre> = {
   gaita: { id: 'gaita', label: { es: 'Gaita zuliana', en: 'Gaita zuliana' }, short: 'Gaita', color: '#a78bfa' },
   tambor: { id: 'tambor', label: { es: 'Tambores de la costa', en: 'Coastal drums' }, short: 'Tambores', color: '#fb923c' },
   calipso: { id: 'calipso', label: { es: 'Calipso de El Callao', en: 'Calipso de El Callao' }, short: 'Calipso', color: '#fbbf24' },
+  balada: { id: 'balada', label: { es: 'Balada', en: 'Ballad' }, short: 'Balada', color: '#f472b6' },
+  merengue: { id: 'merengue', label: { es: 'Merengue', en: 'Merengue' }, short: 'Merengue', color: '#f87171' },
+  guacharaca: { id: 'guacharaca', label: { es: 'Guacharaca', en: 'Guacharaca' }, short: 'Guacharaca', color: '#2dd4bf' },
+  vals: { id: 'vals', label: { es: 'Vals', en: 'Waltz' }, short: 'Vals', color: '#60a5fa' },
+  lirica: { id: 'lirica', label: { es: 'Lírica', en: 'Lyrical' }, short: 'Lírica', color: '#e879f9' },
 };
 
 export const GENRE_IDS = Object.keys(GENRES) as GenreId[];

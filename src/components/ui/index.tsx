@@ -93,12 +93,12 @@ export function CloseButton({ onClick, size = 34, className }: { onClick: () => 
 }
 
 /* ------------------------------------------------------------------ Field */
-export function Field({ label, children, className, labelClassName, labelStyle }: { label: ReactNode; children: ReactNode; className?: string; labelClassName?: string; labelStyle?: CSSProperties }) {
+export function Field({ label, children, className, labelClassName, labelStyle, as: Tag = 'label' }: { label: ReactNode; children: ReactNode; className?: string; labelClassName?: string; labelStyle?: CSSProperties; as?: 'label' | 'div' }) {
   return (
-    <label className={cx('block', className)}>
+    <Tag className={cx('block', className)}>
       <span className={cx('field-label', labelClassName)} style={labelStyle}>{label}</span>
       {children}
-    </label>
+    </Tag>
   );
 }
 

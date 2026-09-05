@@ -35,7 +35,7 @@ export interface Member {
   vocals: VocalFlag[];
 }
 
-export type GenreId = 'joropo' | 'llanera' | 'gaita' | 'tambor' | 'calipso';
+export type GenreId = 'joropo' | 'llanera' | 'gaita' | 'tambor' | 'calipso' | 'balada' | 'merengue' | 'guacharaca' | 'vals' | 'lirica';
 
 export interface Genre {
   id: GenreId;

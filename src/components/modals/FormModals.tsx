@@ -364,7 +364,7 @@ export function NewSongModal() {
           </Field>
         </div>
         <SongLinksEditor />
-        <Field label={t.requiredInstruments}>
+        <Field as="div" label={t.requiredInstruments}>
           <InstrumentPicker
             selected={(form.songInstruments || []).map((id) => ({ id }))}
             onChange={(next) => setForm('songInstruments', next.map((p) => p.id))}
