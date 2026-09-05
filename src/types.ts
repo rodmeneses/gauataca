@@ -4,7 +4,9 @@
 export type Lang = 'es' | 'en';
 export type Role = 'admin' | 'member';
 export type View = 'dashboard' | 'calendar' | 'repertoire' | 'ledger' | 'brainstorm' | 'members' | 'system';
-export type Device = 'desktop' | 'mobile';
+/** Dev preview override for the layout tier. 'auto' follows the viewport. */
+export type Device = 'auto' | 'desktop' | 'tablet' | 'mobile';
+export type Layout = 'phone' | 'tablet' | 'desktop';
 export type MobileTab = 'agenda' | 'repertoire' | 'fund' | 'brainstorm' | 'profile';
 export type CalTab = 'upcoming' | 'history';
 

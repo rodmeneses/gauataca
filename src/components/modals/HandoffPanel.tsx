@@ -11,9 +11,9 @@ export function HandoffPanel() {
   if (!state.handoff) return null;
 
   return (
-    <div className="fixed top-0 right-0 bottom-0 w-[480px] max-w-[92vw] z-[88] bg-raised border-l border-line-strong shadow-[-30px_0_70px_-20px_#000] flex flex-col animate-slide">
+    <div className="fixed top-0 right-0 bottom-0 w-[480px] max-w-[92vw] z-[88] bg-raised border-l border-line-strong shadow-panel flex flex-col animate-slide">
       <div className="p-[20px_22px] border-b border-line-soft flex items-center gap-[14px]">
-        <span className="w-[34px] h-[34px] rounded-[10px] bg-[#7c3aed1f] border border-[#7c3aed4d] grid place-items-center text-violet-lighter flex-none">
+        <span className="w-[34px] h-[34px] rounded-[10px] bg-[var(--color-tint-violet)] border border-violet/40 grid place-items-center text-violet-lighter flex-none">
           <BookOpen size={17} strokeWidth={1.9} />
         </span>
         <div className="min-w-0 flex-1">

@@ -1,16 +1,16 @@
 import type { Genre, GenreId, Song, SongLink } from '../types';
 
 export const GENRES: Record<GenreId, Genre> = {
-  joropo: { id: 'joropo', label: { es: 'Joropo llanero', en: 'Joropo llanero' }, short: 'Joropo', color: '#34d399' },
-  llanera: { id: 'llanera', label: { es: 'Llanera contemporánea', en: 'Contemporary llanera' }, short: 'Llanera', color: '#38bdf8' },
-  gaita: { id: 'gaita', label: { es: 'Gaita zuliana', en: 'Gaita zuliana' }, short: 'Gaita', color: '#a78bfa' },
-  tambor: { id: 'tambor', label: { es: 'Tambores de la costa', en: 'Coastal drums' }, short: 'Tambores', color: '#fb923c' },
-  calipso: { id: 'calipso', label: { es: 'Calipso de El Callao', en: 'Calipso de El Callao' }, short: 'Calipso', color: '#fbbf24' },
-  balada: { id: 'balada', label: { es: 'Balada', en: 'Ballad' }, short: 'Balada', color: '#f472b6' },
-  merengue: { id: 'merengue', label: { es: 'Merengue', en: 'Merengue' }, short: 'Merengue', color: '#f87171' },
-  guacharaca: { id: 'guacharaca', label: { es: 'Guacharaca', en: 'Guacharaca' }, short: 'Guacharaca', color: '#2dd4bf' },
-  vals: { id: 'vals', label: { es: 'Vals', en: 'Waltz' }, short: 'Vals', color: '#60a5fa' },
-  lirica: { id: 'lirica', label: { es: 'Lírica', en: 'Lyrical' }, short: 'Lírica', color: '#e879f9' },
+  joropo: { id: 'joropo', label: { es: 'Joropo llanero', en: 'Joropo llanero' }, short: 'Joropo', color: 'var(--color-emerald)' },
+  llanera: { id: 'llanera', label: { es: 'Llanera contemporánea', en: 'Contemporary llanera' }, short: 'Llanera', color: 'var(--color-sky)' },
+  gaita: { id: 'gaita', label: { es: 'Gaita zuliana', en: 'Gaita zuliana' }, short: 'Gaita', color: 'var(--color-violet-light)' },
+  tambor: { id: 'tambor', label: { es: 'Tambores de la costa', en: 'Coastal drums' }, short: 'Tambores', color: 'var(--color-orange)' },
+  calipso: { id: 'calipso', label: { es: 'Calipso de El Callao', en: 'Calipso de El Callao' }, short: 'Calipso', color: 'var(--color-amber)' },
+  balada: { id: 'balada', label: { es: 'Balada', en: 'Ballad' }, short: 'Balada', color: 'var(--color-pink)' },
+  merengue: { id: 'merengue', label: { es: 'Merengue', en: 'Merengue' }, short: 'Merengue', color: 'var(--color-red)' },
+  guacharaca: { id: 'guacharaca', label: { es: 'Guacharaca', en: 'Guacharaca' }, short: 'Guacharaca', color: 'var(--color-teal)' },
+  vals: { id: 'vals', label: { es: 'Vals', en: 'Waltz' }, short: 'Vals', color: 'var(--color-blue)' },
+  lirica: { id: 'lirica', label: { es: 'Lírica', en: 'Lyrical' }, short: 'Lírica', color: 'var(--color-fuchsia)' },
 };
 
 export const GENRE_IDS = Object.keys(GENRES) as GenreId[];

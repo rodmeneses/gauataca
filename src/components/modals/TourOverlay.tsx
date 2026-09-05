@@ -10,10 +10,10 @@ export function TourOverlay() {
   if (!tour.on) return null;
 
   return (
-    <div className="fixed inset-0 z-[99] bg-[#020617e6] backdrop-blur-[10px] flex items-center justify-center p-[32px] animate-fade [animation-duration:.22s]">
-      <div className="w-full max-w-[470px] bg-[linear-gradient(160deg,#101a2e,#0b1220)] border border-[#7c3aed40] rounded-[20px] p-[28px] animate-rise [animation-duration:.3s]">
+    <div className="fixed inset-0 z-[99] bg-[color-mix(in_srgb,var(--color-base)_90%,transparent)] backdrop-blur-[10px] flex items-center justify-center p-[32px] animate-fade [animation-duration:.22s]">
+      <div className="w-full max-w-[470px] bg-[linear-gradient(160deg,var(--color-hover),var(--color-raised))] border border-violet/40 rounded-[20px] p-[28px] animate-rise [animation-duration:.3s]">
         <div className="flex items-center gap-[12px] mb-[18px]">
-          <span className="w-[36px] h-[36px] rounded-[11px] bg-[linear-gradient(145deg,#8b5cf6,#6d28d9)] grid place-items-center flex-none">
+          <span className="w-[36px] h-[36px] rounded-[11px] bg-[linear-gradient(145deg,var(--color-violet),var(--color-violet-deeper))] grid place-items-center flex-none">
             <Sparkle size={18} strokeWidth={2} color="#f5f3ff" />
           </span>
           <span className="font-mono font-semibold text-[11px] leading-[normal] text-violet-light ml-auto whitespace-nowrap">
@@ -34,7 +34,7 @@ export function TourOverlay() {
             <button
               type="button"
               onClick={tourEnd}
-              className="flex-1 p-[11px_16px] rounded-[11px] border border-[#34d39955] bg-[#34d39918] text-emerald-light font-sans font-semibold text-[13px] leading-[normal] cursor-pointer"
+              className="flex-1 p-[11px_16px] rounded-[11px] border border-emerald/40 bg-[var(--color-tint-emerald)] text-emerald-light font-sans font-semibold text-[13px] leading-[normal] cursor-pointer"
             >
               {t.tourDone}
             </button>
@@ -42,7 +42,7 @@ export function TourOverlay() {
             <button
               type="button"
               onClick={tourNext}
-              className="flex-1 p-[11px_16px] rounded-[11px] border border-[#7c3aed66] bg-[#7c3aed24] text-violet-lighter font-sans font-semibold text-[13px] leading-[normal] cursor-pointer"
+              className="flex-1 p-[11px_16px] rounded-[11px] border border-violet/40 bg-[var(--color-tint-violet)] text-violet-lighter font-sans font-semibold text-[13px] leading-[normal] cursor-pointer"
             >
               {t.tourNext} →
             </button>

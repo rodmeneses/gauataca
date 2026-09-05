@@ -105,7 +105,7 @@ export function DatePicker({ value, onChange, lang, placeholder }: {
         createPortal(
           <div
             ref={popRef}
-            className="fixed z-[90] w-[280px] rounded-[14px] border border-line-strong bg-raised p-3 shadow-[0_20px_50px_-12px_#000] animate-rise"
+            className="fixed z-[90] w-[280px] rounded-[14px] border border-line-strong bg-raised p-3 shadow-pop animate-rise"
             style={{ top: pos.top, left: pos.left }}
           >
             <div className="flex items-center justify-between mb-2">
@@ -139,8 +139,8 @@ export function DatePicker({ value, onChange, lang, placeholder }: {
                     onClick={() => pick(d)}
                     className="grid place-items-center h-8 rounded-[8px] font-mono font-semibold text-[12px] cursor-pointer border-none"
                     style={{
-                      background: selected ? 'linear-gradient(100deg,#8b5cf6,#d946ef)' : isToday ? '#34d3991c' : 'transparent',
-                      color: selected ? '#fff' : isToday ? '#6ee7b7' : '#cbd5e1',
+                      background: selected ? 'linear-gradient(100deg,var(--color-violet),var(--color-fuchsia))' : isToday ? 'var(--color-tint-emerald)' : 'transparent',
+                      color: selected ? '#fff' : isToday ? 'var(--color-emerald)' : 'var(--color-ink-body)',
                     }}
                   >
                     {d}

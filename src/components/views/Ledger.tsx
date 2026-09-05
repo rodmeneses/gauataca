@@ -16,8 +16,8 @@ export function Ledger() {
     <div className="flex flex-col gap-5 animate-fade">
       {/* ---------------------------------------------------- headline cards */}
       <div className="grid grid-cols-[repeat(auto-fit,minmax(210px,1fr))] gap-[14px]">
-        <div className="bg-[linear-gradient(150deg,#0f172a,#0b1220)] border border-[#34d39933] rounded-2xl p-[22px]">
-          <div className="font-display font-semibold text-[10.5px] tracking-[.12em] uppercase text-[#6ee7b7]">{t.poolBalance}</div>
+        <div className="bg-[linear-gradient(150deg,var(--color-surface),var(--color-raised))] border border-emerald/40 rounded-2xl p-[22px]">
+          <div className="font-display font-semibold text-[10.5px] tracking-[.12em] uppercase text-emerald-light">{t.poolBalance}</div>
           <div className="font-mono font-semibold text-[clamp(26px,3.4vw,38px)] leading-none text-emerald mt-[14px] tracking-[-.02em] whitespace-nowrap">{balanceStr}</div>
           <div className="text-[12px] text-ink-muted mt-[14px] leading-[1.6]">
             {t.treasurer}: Diego Salazar · {txCount} {t.movements}
@@ -78,7 +78,7 @@ export function Ledger() {
             <span className="text-right">{t.amount}</span>
           </div>
           {tx.map((x) => (
-            <div key={x.id} className={`${TX_GRID} py-[14px] px-[18px] border-b border-line-faint items-center hover:bg-[#0d1526]`}>
+            <div key={x.id} className={`${TX_GRID} py-[14px] px-[18px] border-b border-line-faint items-center hover:bg-hover-soft`}>
               <span className="font-mono font-medium text-[12px] text-ink-muted">{x.dateStr}</span>
               <span className="flex items-center gap-[10px] min-w-0">
                 <span className="w-[22px] h-[22px] rounded-[7px] grid place-items-center flex-none font-mono font-semibold text-[12px]" style={{ background: x.bg, color: x.color }}>
@@ -89,10 +89,10 @@ export function Ledger() {
                   {(x.eventLabel || x.gearLabel) && (
                     <span className="flex items-center gap-[6px] mt-[3px]">
                       {x.eventLabel && (
-                        <span className="inline-flex items-center font-sans font-semibold text-[10.5px] leading-[normal] text-[#a78bfa] bg-[#7c3aed1f] border border-[#7c3aed33] py-[2px] px-[7px] rounded-md">{x.eventLabel}</span>
+                        <span className="inline-flex items-center font-sans font-semibold text-[10.5px] leading-[normal] text-violet-light bg-[var(--color-tint-violet)] border border-violet/40 py-[2px] px-[7px] rounded-md">{x.eventLabel}</span>
                       )}
                       {x.gearLabel && (
-                        <span className="inline-flex items-center font-sans font-semibold text-[10.5px] leading-[normal] text-[#38bdf8] bg-[#0ea5e91f] border border-[#0ea5e933] py-[2px] px-[7px] rounded-md">{x.gearLabel}</span>
+                        <span className="inline-flex items-center font-sans font-semibold text-[10.5px] leading-[normal] text-sky bg-[var(--color-tint-sky)] border border-sky/40 py-[2px] px-[7px] rounded-md">{x.gearLabel}</span>
                       )}
                     </span>
                   )}
@@ -106,15 +106,15 @@ export function Ledger() {
                 {x.hasProof && x.proof && (
                   x.proofIsImage ? (
                     <a href={x.proof} target="_blank" rel="noreferrer" className="inline-flex items-center gap-[7px] no-underline group">
-                      <img src={x.proof} alt={x.proofKind} className="h-[40px] w-[40px] object-cover rounded-[8px] border border-[#1e293b] group-hover:border-[#34d39955]" />
-                      <span className="font-sans font-semibold text-[11px] text-[#6ee7b7]">{x.proofKind}</span>
+                      <img src={x.proof} alt={x.proofKind} className="h-[40px] w-[40px] object-cover rounded-[8px] border border-line group-hover:border-emerald/40" />
+                      <span className="font-sans font-semibold text-[11px] text-emerald-light">{x.proofKind}</span>
                     </a>
                   ) : (
                     <a
                       href={x.proof}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-[7px] font-sans font-semibold text-[11.5px] text-[#6ee7b7] border border-[#34d39944] bg-[#34d3990f] py-[6px] px-[10px] rounded-lg no-underline hover:bg-[#34d39922]"
+                      className="inline-flex items-center gap-[7px] font-sans font-semibold text-[11.5px] text-emerald-light border border-emerald/40 bg-[var(--color-tint-emerald)] py-[6px] px-[10px] rounded-lg no-underline hover:bg-[var(--color-tint-emerald)]"
                     >
                       <ExternalLink size={12} strokeWidth={2.1} />
                       {x.proofKind}
@@ -180,12 +180,12 @@ export function Ledger() {
               <p className="m-0 text-[12.5px] text-ink-meta leading-[1.6]">{g.note}</p>
               {g.boughtBy && (
                 <div className="flex items-center gap-[7px]">
-                  <span className="w-[20px] h-[20px] rounded-md bg-[#0ea5e91f] grid place-items-center font-display font-semibold text-[9px] text-[#7dd3fc] flex-none">{g.boughtByInitial}</span>
+                  <span className="w-[20px] h-[20px] rounded-md bg-[var(--color-tint-sky)] grid place-items-center font-display font-semibold text-[9px] text-sky flex-none">{g.boughtByInitial}</span>
                   <span className="font-sans font-medium text-[11.5px] text-ink-meta">{t.boughtBy}: {g.boughtBy}</span>
                 </div>
               )}
               <div className="flex items-center gap-[10px] border-t border-line-soft pt-[13px]">
-                <span className="w-[26px] h-[26px] rounded-lg bg-[#7c3aed24] grid place-items-center font-display font-semibold text-[10.5px] text-[#c4b5fd] flex-none">{g.holderInitial}</span>
+                <span className="w-[26px] h-[26px] rounded-lg bg-[var(--color-tint-violet)] grid place-items-center font-display font-semibold text-[10.5px] text-violet-lighter flex-none">{g.holderInitial}</span>
                 <span className="min-w-0 flex-1">
                   <span className="block font-display font-semibold text-[9.5px] tracking-[.1em] uppercase text-ink-dim">{t.custodian}</span>
                   <span className="block font-sans font-semibold text-[12.5px] text-ink-body mt-[3px]">{g.holder}</span>
@@ -194,7 +194,7 @@ export function Ledger() {
                   <button
                     type="button"
                     onClick={() => openCustody(g.id)}
-                    className="flex items-center gap-[7px] py-2 px-[11px] rounded-[9px] border border-line bg-raised text-ink-meta font-sans font-semibold text-[11.5px] cursor-pointer hover:border-[#a78bfa55] hover:text-[#c4b5fd]"
+                    className="flex items-center gap-[7px] py-2 px-[11px] rounded-[9px] border border-line bg-raised text-ink-meta font-sans font-semibold text-[11.5px] cursor-pointer hover:border-violet-light/40 hover:text-violet-lighter"
                   >
                     <ArrowLeftRight size={13} strokeWidth={2} />
                     {t.transfer}

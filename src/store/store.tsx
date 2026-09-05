@@ -3,6 +3,7 @@ import type {
   AppProps, CalTab, CustodyDialog, Device, FormState, GenreId, Lang, Localized, MobileTab, Modal,
   RatingKey, Role, SettleDialog, ShareSheet, SongSort, Toast, TxDate, TxFilter, View,
 } from '../types';
+import { applyTheme, readThemePref, type ThemePref } from '../lib/prefs';
 
 /**
  * Whole-app state. Mirrors the design's single state object so the view models
@@ -12,6 +13,8 @@ import type {
 export interface State {
   lang: Lang;
   role: Role;
+  /** 'light' | 'dark' | 'system' — persisted in localStorage (see src/lib/prefs.ts). */
+  theme: ThemePref;
   view: View;
   device: Device;
   calTab: CalTab;
@@ -63,8 +66,9 @@ export function initialState(props: AppProps): State {
   return {
     lang: props.initialLang === 'en' ? 'en' : 'es',
     role: props.initialRole === 'member' ? 'member' : 'admin',
+    theme: readThemePref(),
     view: props.startView || 'dashboard',
-    device: 'desktop',
+    device: 'auto',
     calTab: 'upcoming',
     openSong: null,
     scrollToSong: null,
@@ -111,6 +115,17 @@ export function GuatacaProvider({ props, children }: { props: AppProps; children
     },
     [],
   );
+
+  // Keep <html data-theme> and the address-bar colour in sync with the choice,
+  // and react to OS changes while the preference is 'system'.
+  useEffect(() => {
+    applyTheme(state.theme);
+    if (state.theme !== 'system') return;
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange = () => applyTheme('system');
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, [state.theme]);
 
   // ⌘K → command palette · Esc → close everything
   useEffect(() => {

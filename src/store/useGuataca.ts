@@ -12,6 +12,7 @@ import type {
   AppProps, BandEvent, CustodyDialog, FormState, GearCondition, GenreId, Instrument, Lang, LinkKind, Member, MobileTab, Modal, Profile, Proficiency, ProofKind, RatingKey, RsvpStatus, SettleDialog, ShareSheet, Song, SongSort, Toast, Transaction, TxCategory, TxDate, TxFilter, View, VocalFlag,
 } from '../types';
 import { useStore, type State } from './store';
+import { writeLangPref, writeThemePref, type ThemePref } from '../lib/prefs';
 import { useAuth } from '../lib/auth';
 import { useData } from '../lib/data';
 import { useMediaQuery } from '../lib/useMediaQuery';
@@ -105,6 +106,12 @@ export interface Guataca {
   viewSub: string;
   isDesktop: boolean;
   isMobile: boolean;
+  /** Resolved layout tier (viewport or the dev `device` override). */
+  layout: 'phone' | 'tablet' | 'desktop';
+  isPhone: boolean;
+  isTablet: boolean;
+  /** true on touch devices (phones, tablets, touch laptops) — drives 44px/16px touch minimums. */
+  isCoarsePointer: boolean;
   /** true when the viewport is phone-sized (drives the full-screen mobile shell). */
   isMobileViewport: boolean;
   staleDays: number;
@@ -167,13 +174,16 @@ export interface Guataca {
   paletteResults: PaletteItem[];
   tour: TourVm;
   toasts: ToastVm[];
-  tokens: { name: string; hex: string; tw: string; use: string }[];
+  tokens: { name: string; varName: string; tw: string; use: string }[];
   typeScale: typeof TYPE_SCALE;
   handoffNotes: { h: string; items: string[] }[];
 
   // ---- actions
   go: (v: View) => void;
   setLang: (l: Lang) => void;
+  /** Current appearance preference ('light' | 'dark' | 'system'). */
+  theme: ThemePref;
+  setTheme: (t: ThemePref) => void;
   toggleRole: () => void;
   setDevice: (dv: State['device']) => void;
   setCalTab: (tab: State['calTab']) => void;
@@ -285,14 +295,23 @@ export function useGuataca(): Guataca {
     addComment: persistComment, submitFeedback: persistFeedback, pickPoll: persistPoll, transferCustody: persistCustody,
     setEventSetlist: persistSetlist, settleEvent: persistSettle, uploadProof: persistUpload,
   } = useData();
-  const isMobileViewport = useMediaQuery('(max-width: 768px)');
+  const isPhoneViewport = useMediaQuery('(max-width: 767.98px)');
+  const isTabletViewport = useMediaQuery('(min-width: 768px) and (max-width: 1023.98px)');
+  const isCoarsePointer = useMediaQuery('(pointer: coarse)');
+  const isMobileViewport = isPhoneViewport;
 
   return useMemo<Guataca>(() => {
     const lang = st.lang;
     const t = T[lang];
     const isAdmin = profile?.role === 'admin' || (!user && st.role === 'admin');
-    const isMobile = isMobileViewport || st.device === 'mobile';
-    const isDesktop = !isMobile;
+    // Layout tier. `device` is the dev preview override; 'auto' follows the viewport.
+    const forced = st.device === 'mobile' ? 'phone' : st.device === 'tablet' ? 'tablet' : st.device === 'desktop' ? 'desktop' : null;
+    const viewportLayout: 'phone' | 'tablet' | 'desktop' = isPhoneViewport ? 'phone' : isTabletViewport ? 'tablet' : 'desktop';
+    const layout = forced ?? viewportLayout;
+    const isPhone = layout === 'phone';
+    const isTablet = layout === 'tablet';
+    const isMobile = isPhone; // back-compat alias
+    const isDesktop = layout === 'desktop';
     const staleDays = props.staleDays || 30;
     const me = user && profile ? profileToMember(profile) : memberById(dbMembers, isAdmin ? 'm1' : 'm2');
     const instruments: Instrument[] = (() => {
@@ -331,7 +350,7 @@ export function useGuataca(): Guataca {
         return b.takeCount - a.takeCount || a.title.localeCompare(b.title); // 'recorded' (most takes first)
       });
     const genreChips: GenreChip[] = [
-      { id: 'all', label: t.allGenres, color: '#a78bfa', active: st.genre === 'all' },
+      { id: 'all', label: t.allGenres, color: 'var(--color-violet-light)', active: st.genre === 'all' },
       ...GENRE_IDS.map((k): GenreChip => ({ id: k, label: Lx(GENRES[k].label), color: GENRES[k].color, active: st.genre === k })),
     ];
 
@@ -459,7 +478,7 @@ export function useGuataca(): Guataca {
       roleLabel: isAdmin ? t.admin : t.member, me, signedIn: !!user,
       bandName: props.bandName || 'GUATACA',
       view: st.view, viewTitle: t[st.view] || t.dashboard, viewSub: t[viewSubKey] || '',
-      isDesktop, isMobile, isMobileViewport, staleDays, loading, error,
+      isDesktop, isMobile, layout, isPhone, isTablet, isCoarsePointer, isMobileViewport, staleDays, loading, error,
 
       songs, filteredSongs, staleSongs, genreChips,
       events, upcoming, history, calList: st.calTab === 'upcoming' ? upcoming : history, nextEvent, dashUpcoming,
@@ -477,16 +496,18 @@ export function useGuataca(): Guataca {
       sheet: st.sheet, custody: st.custody, custodyTargets: dbMembers, settle: st.settle, form, paletteResults, tour,
       toasts: st.toasts.map((x) => ({
         ...x,
-        color: x.tone === 'violet' ? '#a78bfa' : x.tone === 'err' ? '#fda4af' : '#6ee7b7',
-        border: x.tone === 'violet' ? '#7c3aed66' : x.tone === 'err' ? '#f43f5e66' : '#34d39966',
-        bg: x.tone === 'violet' ? '#7c3aed1f' : x.tone === 'err' ? '#f43f5e1f' : '#34d3991f',
+        color: x.tone === 'violet' ? 'var(--color-violet-light)' : x.tone === 'err' ? 'var(--color-rose)' : 'var(--color-emerald)',
+        border: x.tone === 'violet' ? 'color-mix(in srgb, var(--color-violet) 40%, transparent)' : x.tone === 'err' ? 'color-mix(in srgb, var(--color-rose) 40%, transparent)' : 'color-mix(in srgb, var(--color-emerald) 40%, transparent)',
+        bg: x.tone === 'violet' ? 'var(--color-tint-violet)' : x.tone === 'err' ? 'var(--color-tint-rose)' : 'var(--color-tint-emerald)',
       })),
-      tokens: COLOR_TOKENS.map((k) => ({ name: k.name, hex: k.hex, tw: k.tw, use: Lx(k.use) })),
+      tokens: COLOR_TOKENS.map((k) => ({ name: k.name, varName: k.varName, tw: k.tw, use: Lx(k.use) })),
       typeScale: TYPE_SCALE,
       handoffNotes: HANDOFF_NOTES.map((s) => ({ h: Lx(s.h), items: s.items.map((i) => Lx(i).replace('%STALE%', String(staleDays))) })),
 
       go,
-      setLang: (l) => set({ lang: l }),
+      setLang: (l) => { writeLangPref(l); set({ lang: l }); },
+      theme: st.theme,
+      setTheme: (tp) => { writeThemePref(tp); set({ theme: tp }); },
       toggleRole: () => {
         const nx = isAdmin ? 'member' : 'admin';
         set({ role: nx, modal: null });
@@ -700,5 +721,5 @@ export function useGuataca(): Guataca {
       closeHandoff: () => set({ handoff: false }),
       toast,
     };
-  }, [st, props, set, toast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myThreadVotes, myPollPicks, loading, error, isMobileViewport, createEvent, createSong, updateSong, persistSongLinks, createTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
+  }, [st, props, set, toast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myThreadVotes, myPollPicks, loading, error, isPhoneViewport, isTabletViewport, isCoarsePointer, createEvent, createSong, updateSong, persistSongLinks, createTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
 }

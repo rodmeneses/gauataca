@@ -44,15 +44,15 @@ export const L = (lang: Lang, v: Localized | string | null | undefined): string 
   v && typeof v === 'object' ? (v[lang] ?? v.es) : (v ?? '');
 
 /* ---------------------------------------------------------------- colors */
-export const STATE_COLOR = { active: '#34d399', cancelled: '#f43f5e', rescheduled: '#fbbf24' } as const;
-export const TYPE_COLOR = { gig: '#a78bfa', studio: '#38bdf8', garage: '#94a3b8' } as const;
-export const LEVEL_COLOR: Record<Proficiency, string> = { expert: '#34d399', inter: '#38bdf8', beg: '#64748b' };
+export const STATE_COLOR = { active: 'var(--color-emerald)', cancelled: 'var(--color-rose)', rescheduled: 'var(--color-amber)' } as const;
+export const TYPE_COLOR = { gig: 'var(--color-violet-light)', studio: 'var(--color-sky)', garage: 'var(--color-ink-meta)' } as const;
+export const LEVEL_COLOR: Record<Proficiency, string> = { expert: 'var(--color-emerald)', inter: 'var(--color-sky)', beg: 'var(--color-ink-muted)' };
 export const LEVEL_PCT: Record<Proficiency, string> = { expert: '100%', inter: '62%', beg: '30%' };
-export const RSVP_COLOR: Record<RsvpStatus, string> = { going: '#34d399', maybe: '#fbbf24', no: '#f43f5e' };
-export const RSVP_PENDING_COLOR = '#64748b';
+export const RSVP_COLOR: Record<RsvpStatus, string> = { going: 'var(--color-emerald)', maybe: 'var(--color-amber)', no: 'var(--color-rose)' };
+export const RSVP_PENDING_COLOR = 'var(--color-ink-muted)';
 export const RSVP_ORDER: RsvpStatus[] = ['going', 'maybe', 'no'];
-/** Hex + 1c = ~11% alpha tint used for badge backgrounds. */
-export const tint = (hex: string) => hex + '1c';
+/** ~11% wash of an accent, behind coloured badges/labels. Accepts any CSS colour incl. var(--color-*). */
+export const tint = (c: string) => `color-mix(in srgb, ${c} 12%, transparent)`;
 
 /* ------------------------------------------------------------------ songs */
 export interface RehearsalLog {
@@ -146,8 +146,8 @@ export function songVm(s: Song, allEvents: BandEvent[], openSong: string | null,
     dur: s.dur,
     lastLabel: s.last ? rel(s.last, lang) : t.neverRehearsed,
     lastDate: s.last ? fmt(s.last, lang, true) : '—',
-    staleColor: veryStale ? '#f43f5e' : stale ? '#fbbf24' : '#34d399',
-    staleBg: veryStale ? '#f43f5e1c' : stale ? '#fbbf241c' : '#34d3991c',
+    staleColor: veryStale ? 'var(--color-rose)' : stale ? 'var(--color-amber)' : 'var(--color-emerald)',
+    staleBg: veryStale ? tint('var(--color-rose)') : stale ? tint('var(--color-amber)') : tint('var(--color-emerald)'),
     isStale: stale,
     open: openSong === s.id,
     streaming,
@@ -410,8 +410,8 @@ export function txVm(x: Transaction, ctx: Ctx): TxVm {
     dateStr: fmt(x.date, lang, true),
     desc: L(lang, x.desc),
     amountStr: (inc ? '+' : '−') + money(x.amt).replace('-', ''),
-    color: inc ? '#34d399' : '#f87171',
-    bg: inc ? '#34d3991c' : '#f871711c',
+    color: inc ? 'var(--color-emerald)' : 'var(--color-red)',
+    bg: inc ? tint('var(--color-emerald)') : tint('var(--color-red)'),
     kindLabel: inc ? t.income : t.expense,
     isIn: inc,
     arrow: inc ? '↑' : '↓',
@@ -482,8 +482,8 @@ export function gearVm(g: Gear, holderId: string, ctx: Ctx): GearVm {
     holderInitial: h.initial,
     note: L(lang, g.note),
     condLabel: good ? t.good : t.attention,
-    condColor: good ? '#34d399' : '#fbbf24',
-    condBg: good ? '#34d3991c' : '#fbbf241c',
+    condColor: good ? 'var(--color-emerald)' : 'var(--color-amber)',
+    condBg: good ? tint('var(--color-emerald)') : tint('var(--color-amber)'),
     hasTx: !!g.tx,
     boughtBy: buyer ? buyer.short : null,
     boughtByInitial: buyer ? buyer.initial : '',
@@ -562,8 +562,8 @@ export function memberVm(m: Member, ctx: Ctx): MemberVm {
     title: L(lang, m.title),
     isAdminRole: admin,
     roleLabel: admin ? t.admin : t.member,
-    roleColor: admin ? '#34d399' : '#94a3b8',
-    roleBg: admin ? '#34d3991c' : '#94a3b81c',
+    roleColor: admin ? 'var(--color-emerald)' : 'var(--color-ink-meta)',
+    roleBg: admin ? tint('var(--color-emerald)') : tint('var(--color-ink-meta)'),
     since: t.since + ' ' + fmt(m.joined, lang, true),
     instruments: m.instruments.map((i) => {
       const inst = ctx.instruments.find((x) => x.id === i.id);
@@ -602,7 +602,7 @@ export interface FeedbackVm {
 
 function ratingRow(key: RatingKey, label: string, val: number): RatingRow {
   const pct = Math.round((val / 5) * 100);
-  return { key, label, val: val.toFixed(1), pct: pct + '%', color: val >= 4.2 ? '#34d399' : val >= 3.5 ? '#fbbf24' : '#f87171' };
+  return { key, label, val: val.toFixed(1), pct: pct + '%', color: val >= 4.2 ? 'var(--color-emerald)' : val >= 3.5 ? 'var(--color-amber)' : 'var(--color-red)' };
 }
 
 export function feedbackVm(f: EventFeedback, pollPick: number | null, ctx: Ctx): FeedbackVm {

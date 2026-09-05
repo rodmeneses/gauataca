@@ -115,6 +115,10 @@ const es = {
   // song link editor
   links: 'Enlaces', addLink: 'Agregar enlace', linkLabel: 'Etiqueta', linkUrl: 'URL', removeLink: 'Quitar', editSong: 'Editar canción',
   openSong: 'Abrir canción',
+  // appearance / settings
+  settings: 'Ajustes', appearance: 'Apariencia',
+  themeLight: 'Claro', themeDark: 'Oscuro', themeSystem: 'Sistema',
+  language: 'Idioma',
 };
 
 const en: typeof es = {
@@ -230,6 +234,10 @@ const en: typeof es = {
   // song link editor
   links: 'Links', addLink: 'Add link', linkLabel: 'Label', linkUrl: 'URL', removeLink: 'Remove', editSong: 'Edit song',
   openSong: 'Open song',
+  // appearance / settings
+  settings: 'Settings', appearance: 'Appearance',
+  themeLight: 'Light', themeDark: 'Dark', themeSystem: 'System',
+  language: 'Language',
 };
 
 export type Dict = typeof es;

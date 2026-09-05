@@ -13,11 +13,11 @@ import { DesignSystem } from '../views/DesignSystem';
 export function DesktopShell() {
   const { view } = useGuataca();
   return (
-    <div className="grid min-h-screen" style={{ gridTemplateColumns: '252px minmax(0,1fr)' }}>
+    <div className="grid min-h-screen grid-cols-[64px_minmax(0,1fr)] lg:grid-cols-[252px_minmax(0,1fr)]">
       <Sidebar />
       <div className="flex flex-col min-w-0">
         <TopBar />
-        <main className="flex-1 min-w-0 pt-6 px-7 pb-[72px]">
+        <main className="flex-1 min-w-0 pt-5 px-4 pb-16 lg:pt-6 lg:px-7 lg:pb-[72px]">
           {view === 'dashboard' && <Dashboard />}
           {view === 'calendar' && <CalendarView />}
           {view === 'repertoire' && <Repertoire />}

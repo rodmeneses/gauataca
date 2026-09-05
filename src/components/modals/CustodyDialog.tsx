@@ -9,7 +9,7 @@ export function CustodyDialog() {
   if (!custody) return null;
 
   return (
-    <div className="fixed inset-0 z-[85] bg-[#020617cc] backdrop-blur-[6px] flex items-center justify-center p-[32px_20px] animate-fade-fast">
+    <div className="fixed inset-0 z-[85] bg-[color-mix(in_srgb,var(--color-base)_80%,transparent)] backdrop-blur-[6px] flex items-center justify-center p-[32px_20px] animate-fade-fast">
       <div role="dialog" aria-modal="true" className="w-full max-w-[400px] bg-raised border border-line rounded-[18px] p-[22px] animate-rise">
         <div className="font-display font-semibold text-[16px] leading-normal text-ink-bright mb-[7px]">{t.transfer}</div>
         <div className="text-[12.5px] text-ink-muted leading-[1.6] mb-[18px]">
@@ -21,7 +21,7 @@ export function CustodyDialog() {
               key={m.id}
               type="button"
               onClick={() => transferCustody(m.id)}
-              className="flex items-center gap-3 w-full p-[12px_14px] rounded-[11px] border border-line bg-surface text-ink-body font-sans font-semibold text-[13.5px] leading-normal cursor-pointer text-left hover:border-[#a78bfa55]"
+              className="flex items-center gap-3 w-full p-[12px_14px] rounded-[11px] border border-line bg-surface text-ink-body font-sans font-semibold text-[13.5px] leading-normal cursor-pointer text-left hover:border-violet-light/40"
             >
               <span className="w-7 h-7 rounded-[9px] bg-line grid place-items-center font-display font-semibold text-[10.5px] leading-normal text-ink-meta flex-none">
                 {m.initial}

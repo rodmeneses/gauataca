@@ -2,16 +2,48 @@
  * Shared primitives. Values are copied from the design verbatim — do not "improve" them.
  * Views compose these plus Tailwind utilities (arbitrary values allowed, e.g. text-[13.5px]).
  */
-import type { ButtonHTMLAttributes, CSSProperties, InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
+import { useEffect, useRef, type ButtonHTMLAttributes, type CSSProperties, type HTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
 import { X } from 'lucide-react';
+import { useMediaQuery } from '../../lib/useMediaQuery';
+
+/** Lock body scroll (ref-counted) + trap focus inside `ref` while a dialog is open. */
+let scrollLocks = 0;
+function useDialogChrome(ref: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const prevActive = document.activeElement as HTMLElement | null;
+    if (scrollLocks++ === 0) {
+      const sbw = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = 'hidden';
+      if (sbw > 0) document.body.style.paddingRight = `${sbw}px`;
+    }
+    const node = ref.current;
+    const focusable = () => node ? Array.from(node.querySelectorAll<HTMLElement>('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter((el) => el.offsetParent !== null) : [];
+    (focusable()[0] ?? node)?.focus?.();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab' || !node) return;
+      const items = focusable();
+      if (!items.length) return;
+      const first = items[0], last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    node?.addEventListener('keydown', onKey);
+    return () => {
+      node?.removeEventListener('keydown', onKey);
+      if (--scrollLocks === 0) { document.body.style.overflow = ''; document.body.style.paddingRight = ''; }
+      prevActive?.focus?.();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+}
 
 const cx = (...a: (string | false | null | undefined)[]) => a.filter(Boolean).join(' ');
 
 /* ------------------------------------------------------------------ Badge */
-/** 9.5px uppercase status chip. `color` is the text color; bg is the 11% tint. */
+/** Uppercase status chip. `color` is the text color (any CSS colour incl. `var(--color-*)`); bg is a ~12% wash. */
 export function Badge({ color, children, lg, className, style }: { color: string; children: ReactNode; lg?: boolean; className?: string; style?: CSSProperties }) {
   return (
-    <span className={cx('badge', lg && 'badge-lg', className)} style={{ color, background: color + '1c', ...style }}>
+    <span className={cx('badge', lg && 'badge-lg', className)} style={{ color, background: `color-mix(in srgb, ${color} 12%, transparent)`, ...style }}>
       {children}
     </span>
   );
@@ -49,10 +81,10 @@ export function Button({ variant = 'ghost', className, children, ...rest }: Butt
 /** Initials tile. size in px; tone changes the text color (violet for "me"/custodians). */
 export function Avatar({ initial, size = 28, radius, tone = 'muted', className, style }: { initial: string; size?: number; radius?: number; tone?: 'muted' | 'violet' | 'brand'; className?: string; style?: CSSProperties }) {
   const fs = Math.round(size * 0.4);
-  const color = tone === 'muted' ? '#94a3b8' : tone === 'violet' ? '#a78bfa' : '#c4b5fd';
-  const bg = tone === 'brand' ? 'linear-gradient(145deg,#1e293b,#0b1220)' : '#1e293b';
+  const color = tone === 'muted' ? 'var(--color-ink-meta)' : tone === 'violet' ? 'var(--color-violet-light)' : 'var(--color-violet-lighter)';
+  const bg = tone === 'brand' ? 'linear-gradient(145deg,var(--color-line),var(--color-raised))' : 'var(--color-line)';
   return (
-    <span className={cx('avatar', className)} style={{ width: size, height: size, borderRadius: radius ?? Math.round(size * 0.32), fontSize: fs, color, background: bg, border: tone === 'brand' ? '1px solid #253349' : undefined, ...style }}>
+    <span className={cx('avatar', className)} style={{ width: size, height: size, borderRadius: radius ?? Math.round(size * 0.32), fontSize: fs, color, background: bg, border: tone === 'brand' ? '1px solid var(--color-line-strong)' : undefined, ...style }}>
       {initial}
     </span>
   );
@@ -70,8 +102,8 @@ export function IconLink({ href, color, title, hoverColor, children, className, 
       title={title}
       className={cx('icon-box group/il', className)}
       style={{ color, ...style }}
-      onMouseEnter={(e) => { e.currentTarget.style.borderColor = hc + '66'; e.currentTarget.style.background = hc + '14'; }}
-      onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#1e293b'; e.currentTarget.style.background = '#0b1220'; }}
+      onMouseEnter={(e) => { e.currentTarget.style.borderColor = `color-mix(in srgb, ${hc} 45%, transparent)`; e.currentTarget.style.background = `color-mix(in srgb, ${hc} 12%, transparent)`; }}
+      onMouseLeave={(e) => { e.currentTarget.style.borderColor = ''; e.currentTarget.style.background = ''; }}
     >
       {children}
     </a>
@@ -85,9 +117,9 @@ export function CloseButton({ onClick, size = 34, className }: { onClick: () => 
       type="button"
       onClick={onClick}
       aria-label="Close"
-      className={cx('grid place-items-center border border-line bg-surface text-ink-meta hover:text-ink hover:border-ink-faint flex-none', size === 34 ? 'w-[34px] h-[34px] rounded-[10px]' : 'w-8 h-8 rounded-[9px]', className)}
+      className={cx('grid place-items-center border border-line bg-surface text-ink-meta hover:text-ink hover:border-line-hover flex-none min-w-[44px] min-h-[44px]', size === 34 ? 'w-11 h-11 rounded-[11px]' : 'w-10 h-10 rounded-[10px]', className)}
     >
-      <X size={size === 34 ? 16 : 15} strokeWidth={2.2} />
+      <X size={size === 34 ? 18 : 16} strokeWidth={2.2} />
     </button>
   );
 }
@@ -120,26 +152,53 @@ export function Textarea({ className, ...rest }: TextareaHTMLAttributes<HTMLText
 
 /* ------------------------------------------------------------------ Modal */
 /**
- * Fixed scrim + centered card. `align="top"` = 44px top padding + scrollable (event / thread modals).
- * Clicking the scrim closes; clicks inside the card do not.
+ * Scrim + dialog. On a phone-sized viewport (or coarse pointer) it slides up as a
+ * bottom sheet; on larger screens it is a centered card. Either way the overlay
+ * scrolls when the content is taller than the viewport (the old `align="center"`
+ * branch clipped tall forms with no way to scroll). Body scroll is locked and
+ * focus is trapped while it is open. Clicking the scrim closes; inside clicks do not.
  */
-export function Modal({ onClose, maxWidth, align = 'center', z = 80, children, cardClassName, cardStyle, scrimStyle }: {
+export function Modal({ onClose, maxWidth, align = 'center', z = 80, labelledBy, children, cardClassName, cardStyle, scrimStyle }: {
   onClose: () => void;
   maxWidth: number;
   align?: 'top' | 'center';
   z?: number;
+  labelledBy?: string;
   children: ReactNode;
   cardClassName?: string;
   cardStyle?: CSSProperties;
   scrimStyle?: CSSProperties;
 }) {
+  const sheet = useMediaQuery('(max-width: 767.98px), (pointer: coarse)');
+  const cardRef = useRef<HTMLDivElement>(null);
+  useDialogChrome(cardRef);
+
   return (
     <div
-      className={cx('overlay animate-fade-fast', align === 'top' ? 'items-start overflow-y-auto py-11 px-5' : 'items-center py-8 px-5')}
+      className={cx(
+        'overlay animate-fade-fast',
+        sheet ? 'items-end overflow-y-auto' : align === 'top' ? 'items-start overflow-y-auto py-11 px-5' : 'items-center overflow-y-auto py-8 px-5',
+      )}
       style={{ zIndex: z, ...scrimStyle }}
       onClick={onClose}
     >
-      <div className={cx('modal-card', cardClassName)} style={{ maxWidth, ...cardStyle }} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+      <div
+        ref={cardRef}
+        tabIndex={-1}
+        className={cx(
+          'modal-card',
+          sheet
+            ? 'w-full rounded-b-none max-h-[92dvh] overflow-y-auto overscroll-contain pb-[max(20px,env(safe-area-inset-bottom))] animate-sheet'
+            : 'my-auto',
+          cardClassName,
+        )}
+        style={{ maxWidth: sheet ? 560 : maxWidth, ...cardStyle }}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={labelledBy}
+      >
+        {sheet && <span aria-hidden className="mx-auto mt-2.5 mb-0.5 h-1 w-10 rounded-full bg-line-hover flex-none" />}
         {children}
       </div>
     </div>
@@ -177,7 +236,7 @@ export function BrandMark({ size = 38, radius = 11, icon = 20 }: { size?: number
   return (
     <span
       className="grid place-items-center flex-none"
-      style={{ width: size, height: size, borderRadius: radius, background: 'linear-gradient(145deg,#8b5cf6,#6d28d9)', boxShadow: size >= 36 ? '0 0 0 1px #a78bfa44,0 6px 18px -6px #7c3aedaa' : undefined }}
+      style={{ width: size, height: size, borderRadius: radius, background: 'linear-gradient(145deg,var(--color-violet),var(--color-violet-deeper))', boxShadow: size >= 36 ? '0 0 0 1px color-mix(in srgb,var(--color-violet-light) 27%,transparent),0 6px 18px -6px color-mix(in srgb,var(--color-violet-deep) 67%,transparent)' : undefined }}
     >
       <svg width={icon} height={icon} viewBox="0 0 24 24" fill="none" stroke="#f5f3ff" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
         <path d="M9 18V5l12-2v13" />
@@ -190,21 +249,31 @@ export function BrandMark({ size = 38, radius = 11, icon = 20 }: { size?: number
 
 /* ---------------------------------------------------------------- Segment */
 /** Pill group container (ES/EN, Upcoming/History, device switch). */
-export function Segment({ children, className, style }: { children: ReactNode; className?: string; style?: CSSProperties }) {
+export function Segment({ children, className, style, ...rest }: { children: ReactNode; className?: string; style?: CSSProperties } & Pick<HTMLAttributes<HTMLDivElement>, 'aria-label' | 'role'>) {
   return (
-    <div className={cx('flex bg-raised border border-line rounded-[10px] p-[3px] gap-[2px]', className)} style={style}>
+    <div className={cx('flex bg-raised border border-line rounded-[10px] p-[3px] gap-[2px]', className)} style={style} {...rest}>
       {children}
     </div>
   );
 }
 
-/** Pill button inside a Segment / chip row. `color` = active accent (default violet). */
-export function Pill({ active, color = '#7c3aed', activeText, className, children, ...rest }: ButtonHTMLAttributes<HTMLButtonElement> & { active: boolean; color?: string; activeText?: string }) {
+/**
+ * Pill button inside a Segment / chip row. `color` = active accent (any CSS color;
+ * defaults to the brand violet token). `size="md"` is the 44px touch target for mobile.
+ */
+export function Pill({ active, color = 'var(--color-violet-light)', activeText, size = 'sm', className, children, ...rest }: ButtonHTMLAttributes<HTMLButtonElement> & { active: boolean; color?: string; activeText?: string; size?: 'sm' | 'md' }) {
   return (
     <button
       type="button"
-      className={cx('py-[5px] px-[11px] rounded-[7px] border-none font-mono font-semibold text-[11.5px] tracking-[.03em] whitespace-nowrap cursor-pointer', className)}
-      style={{ background: active ? color + '2e' : 'transparent', color: active ? (activeText ?? (color === '#7c3aed' ? '#a78bfa' : color)) : '#64748b' }}
+      className={cx(
+        'rounded-[7px] border-none font-mono font-semibold tracking-[.03em] whitespace-nowrap cursor-pointer transition-colors',
+        size === 'md' ? 'min-h-[44px] px-3.5 text-[13px]' : 'py-[5px] px-[11px] text-[11.5px]',
+        className,
+      )}
+      style={{
+        background: active ? `color-mix(in srgb, ${color} 22%, transparent)` : 'transparent',
+        color: active ? (activeText ?? color) : 'var(--color-ink-muted)',
+      }}
       {...rest}
     >
       {children}

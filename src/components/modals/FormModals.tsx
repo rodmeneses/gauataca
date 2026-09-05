@@ -106,16 +106,16 @@ export function NewEventModal() {
 
         {/* setlist picker */}
         <div>
-          <div className="font-display font-semibold text-[10.5px] leading-[normal] tracking-[.11em] uppercase text-[#64748b] mb-[9px]">{t.setlist}</div>
+          <div className="font-display font-semibold text-[10.5px] leading-[normal] tracking-[.11em] uppercase text-ink-muted mb-[9px]">{t.setlist}</div>
           {selected.length > 0 && (
             <div className="flex flex-col gap-[5px] mb-[9px]">
               {selected.map((s, i) => (
-                <div key={s.id} className="flex items-center gap-[12px] py-[9px] px-[12px] rounded-[10px] bg-[#0f172a] border border-[#172033]">
-                  <span className="font-mono font-semibold text-[12px] leading-[normal] text-[#475569] flex-none">{String(i + 1).padStart(2, '0')}</span>
+                <div key={s.id} className="flex items-center gap-[12px] py-[9px] px-[12px] rounded-[10px] bg-surface border border-line-soft">
+                  <span className="font-mono font-semibold text-[12px] leading-[normal] text-ink-dim flex-none">{String(i + 1).padStart(2, '0')}</span>
                   <span className="w-[3px] h-[18px] rounded-[2px] flex-none" style={{ background: s.genreColor }} />
-                  <span className="flex-1 min-w-0 font-sans font-semibold text-[13.5px] leading-[normal] text-[#e2e8f0]">{s.title}</span>
-                  <span className="font-mono font-medium text-[11px] leading-[normal] text-[#64748b] flex-none">{s.key} · {s.dur}</span>
-                  <button type="button" onClick={() => remove(s.id)} title={t.removeSong} aria-label={t.removeSong} className="grid place-items-center w-[24px] h-[24px] rounded-[7px] border border-[#1e293b] bg-[#0b1220] text-[#64748b] hover:text-[#cbd5e1] hover:border-[#34d39955] cursor-pointer flex-none">
+                  <span className="flex-1 min-w-0 font-sans font-semibold text-[13.5px] leading-[normal] text-ink-base">{s.title}</span>
+                  <span className="font-mono font-medium text-[11px] leading-[normal] text-ink-muted flex-none">{s.key} · {s.dur}</span>
+                  <button type="button" onClick={() => remove(s.id)} title={t.removeSong} aria-label={t.removeSong} className="grid place-items-center w-[24px] h-[24px] rounded-[7px] border border-line bg-raised text-ink-muted hover:text-ink-body hover:border-emerald/40 cursor-pointer flex-none">
                     <X size={13} strokeWidth={2.2} />
                   </button>
                 </div>
@@ -123,7 +123,7 @@ export function NewEventModal() {
             </div>
           )}
           <div className="relative mb-[9px]">
-            <Search size={15} strokeWidth={1.9} className="absolute left-[12px] top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: '#475569' }} />
+            <Search size={15} strokeWidth={1.9} className="absolute left-[12px] top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--color-ink-dim)' }} />
             <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t.searchSongs} className="pl-[36px]" />
           </div>
           <div className="max-h-[160px] overflow-y-auto flex flex-col gap-[4px]">
@@ -132,16 +132,16 @@ export function NewEventModal() {
                 key={s.id}
                 type="button"
                 onClick={() => add(s.id)}
-                className="flex items-center gap-[12px] py-[9px] px-[12px] rounded-[10px] border border-[#1e293b] bg-[#0b1220] text-left cursor-pointer hover:border-[#34d39955]"
+                className="flex items-center gap-[12px] py-[9px] px-[12px] rounded-[10px] border border-line bg-raised text-left cursor-pointer hover:border-emerald/40"
               >
                 <span className="w-[3px] h-[18px] rounded-[2px] flex-none" style={{ background: s.genreColor }} />
-                <span className="flex-1 min-w-0 font-sans font-medium text-[13px] leading-[normal] text-[#cbd5e1]">{s.title}</span>
-                <span className="font-mono font-medium text-[11px] leading-[normal] text-[#64748b] flex-none">{s.key} · {s.dur}</span>
-                <Plus size={15} strokeWidth={2.2} className="flex-none" style={{ color: '#34d399' }} />
+                <span className="flex-1 min-w-0 font-sans font-medium text-[13px] leading-[normal] text-ink-body">{s.title}</span>
+                <span className="font-mono font-medium text-[11px] leading-[normal] text-ink-muted flex-none">{s.key} · {s.dur}</span>
+                <Plus size={15} strokeWidth={2.2} className="flex-none" style={{ color: 'var(--color-emerald)' }} />
               </button>
             ))}
             {available.length === 0 && (
-              <p className="m-0 font-sans font-normal text-[12.5px] leading-[normal] text-[#475569]">{t.noResults}</p>
+              <p className="m-0 font-sans font-normal text-[12.5px] leading-[normal] text-ink-dim">{t.noResults}</p>
             )}
           </div>
         </div>
@@ -262,14 +262,14 @@ export function NewTxModal() {
               value={form.proof}
               onChange={(e) => setForm('proof', e.target.value)}
               placeholder="https://drive.google.com/file/d/…"
-              className="text-[13px] border-[#34d39933] focus:border-[#34d39933] flex-1"
+              className="text-[13px] border-emerald/40 focus:border-emerald/40 flex-1"
             />
             {!isDemo && (
               <button
                 type="button"
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading}
-                className="flex-none inline-flex items-center gap-[6px] py-[9px] px-[12px] rounded-[10px] border border-[#34d39944] bg-[#34d3990f] text-[#6ee7b7] font-sans font-semibold text-[12.5px] leading-[normal] cursor-pointer hover:bg-[#34d39922] disabled:opacity-50 disabled:cursor-wait"
+                className="flex-none inline-flex items-center gap-[6px] py-[9px] px-[12px] rounded-[10px] border border-emerald/40 bg-[var(--color-tint-emerald)] text-emerald-light font-sans font-semibold text-[12.5px] leading-[normal] cursor-pointer hover:bg-[var(--color-tint-emerald)] disabled:opacity-50 disabled:cursor-wait"
               >
                 <Upload size={14} strokeWidth={2} />
                 {uploading ? t.uploading : t.upload}
@@ -278,7 +278,7 @@ export function NewTxModal() {
           </div>
           <input ref={fileRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={onPick} />
           {isImage && (
-            <img src={form.proof} alt="" className="mt-2 max-h-[120px] rounded-[8px] border border-[#1e293b]" />
+            <img src={form.proof} alt="" className="mt-2 max-h-[120px] rounded-[8px] border border-line" />
           )}
           <span className="block text-[11.5px] text-ink-dim mt-2 leading-[1.5]">{t.proofHint}</span>
         </Field>
@@ -300,10 +300,10 @@ function SongLinksEditor() {
 
   return (
     <div>
-      <div className="font-display font-semibold text-[10.5px] leading-[normal] tracking-[.11em] uppercase text-[#64748b] mb-[9px]">{t.links}</div>
+      <div className="font-display font-semibold text-[10.5px] leading-[normal] tracking-[.11em] uppercase text-ink-muted mb-[9px]">{t.links}</div>
       <div className="flex flex-col gap-[8px]">
         {links.map((l, i) => (
-          <div key={i} className="flex flex-col gap-[6px] p-[10px] rounded-[10px] border border-[#172033] bg-[#0f172a]">
+          <div key={i} className="flex flex-col gap-[6px] p-[10px] rounded-[10px] border border-line-soft bg-surface">
             <div className="flex gap-2 items-center">
               <Select value={l.kind} onChange={(e) => update(i, { kind: e.target.value as LinkKind })} className="flex-1">
                 <option value="youtube">{t.ytLink}</option>
@@ -311,7 +311,7 @@ function SongLinksEditor() {
                 <option value="spotify">{t.spLink}</option>
                 <option value="chart">{t.charts}</option>
               </Select>
-              <button type="button" onClick={() => remove(i)} title={t.removeLink} aria-label={t.removeLink} className="grid place-items-center w-[28px] h-[28px] rounded-[8px] border border-[#1e293b] bg-[#0b1220] text-[#64748b] hover:text-[#cbd5e1] hover:border-[#f43f5e55] cursor-pointer flex-none">
+              <button type="button" onClick={() => remove(i)} title={t.removeLink} aria-label={t.removeLink} className="grid place-items-center w-[28px] h-[28px] rounded-[8px] border border-line bg-raised text-ink-muted hover:text-ink-body hover:border-rose/40 cursor-pointer flex-none">
                 <X size={13} strokeWidth={2.2} />
               </button>
             </div>
@@ -323,7 +323,7 @@ function SongLinksEditor() {
       <button
         type="button"
         onClick={add}
-        className="mt-[9px] inline-flex items-center gap-[6px] py-[8px] px-[12px] rounded-[9px] border border-[#34d39944] bg-[#34d3990f] text-[#6ee7b7] font-sans font-semibold text-[12.5px] leading-[normal] cursor-pointer hover:bg-[#34d39922]"
+        className="mt-[9px] inline-flex items-center gap-[6px] py-[8px] px-[12px] rounded-[9px] border border-emerald/40 bg-[var(--color-tint-emerald)] text-emerald-light font-sans font-semibold text-[12.5px] leading-[normal] cursor-pointer hover:bg-[var(--color-tint-emerald)]"
       >
         <Plus size={14} strokeWidth={2.2} />
         {t.addLink}
@@ -463,14 +463,14 @@ export function NewGearModal() {
               value={form.proof}
               onChange={(e) => setForm('proof', e.target.value)}
               placeholder="https://drive.google.com/file/d/…"
-              className="text-[13px] border-[#34d39933] focus:border-[#34d39933] flex-1"
+              className="text-[13px] border-emerald/40 focus:border-emerald/40 flex-1"
             />
             {!isDemo && (
               <button
                 type="button"
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading}
-                className="flex-none inline-flex items-center gap-[6px] py-[9px] px-[12px] rounded-[10px] border border-[#34d39944] bg-[#34d3990f] text-[#6ee7b7] font-sans font-semibold text-[12.5px] leading-[normal] cursor-pointer hover:bg-[#34d39922] disabled:opacity-50 disabled:cursor-wait"
+                className="flex-none inline-flex items-center gap-[6px] py-[9px] px-[12px] rounded-[10px] border border-emerald/40 bg-[var(--color-tint-emerald)] text-emerald-light font-sans font-semibold text-[12.5px] leading-[normal] cursor-pointer hover:bg-[var(--color-tint-emerald)] disabled:opacity-50 disabled:cursor-wait"
               >
                 <Upload size={14} strokeWidth={2} />
                 {uploading ? t.uploading : t.upload}
@@ -479,7 +479,7 @@ export function NewGearModal() {
           </div>
           <input ref={fileRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={onPick} />
           {isImage && (
-            <img src={form.proof} alt="" className="mt-2 max-h-[120px] rounded-[8px] border border-[#1e293b]" />
+            <img src={form.proof} alt="" className="mt-2 max-h-[120px] rounded-[8px] border border-line" />
           )}
           <span className="block text-[11.5px] text-ink-dim mt-2 leading-[1.5]">{t.proofHint}</span>
         </Field>

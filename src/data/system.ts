@@ -1,20 +1,20 @@
 import type { CSSProperties } from 'react';
 import type { Localized } from '../types';
 
-/** Color tokens shown in the Design System view. `tw` is the closest Tailwind name. */
-export const COLOR_TOKENS: { name: string; hex: string; tw: string; use: Localized }[] = [
-  { name: 'bg / base', hex: '#020617', tw: 'slate-950', use: { es: 'Fondo de la app', en: 'App background' } },
-  { name: 'bg / raised', hex: '#0b1220', tw: 'slate-950+', use: { es: 'Barra lateral, campos', en: 'Sidebar, inputs' } },
-  { name: 'surface', hex: '#0f172a', tw: 'slate-900', use: { es: 'Tarjetas y paneles', en: 'Cards and panels' } },
-  { name: 'border', hex: '#1e293b', tw: 'slate-800', use: { es: 'Bordes de 1px', en: '1px borders' } },
-  { name: 'text / primary', hex: '#f1f5f9', tw: 'slate-100', use: { es: 'Títulos', en: 'Headings' } },
-  { name: 'text / body', hex: '#cbd5e1', tw: 'slate-300', use: { es: 'Texto de lectura', en: 'Reading text' } },
-  { name: 'text / muted', hex: '#64748b', tw: 'slate-500', use: { es: 'Etiquetas, metadatos', en: 'Labels, metadata' } },
-  { name: 'accent / active', hex: '#34d399', tw: 'emerald-400', use: { es: 'Activo, ingresos, saldo', en: 'Active, income, balance' } },
-  { name: 'accent / brand', hex: '#8b5cf6', tw: 'violet-500', use: { es: 'Marca, navegación activa', en: 'Brand, active nav' } },
-  { name: 'accent / warn', hex: '#fbbf24', tw: 'amber-400', use: { es: 'Reagendado, atención', en: 'Rescheduled, attention' } },
-  { name: 'accent / danger', hex: '#f43f5e', tw: 'rose-500', use: { es: 'Cancelado, muy atrasado', en: 'Cancelled, very stale' } },
-  { name: 'accent / info', hex: '#38bdf8', tw: 'sky-400', use: { es: 'Ensayo de estudio', en: 'Studio practice' } },
+/** Color tokens shown in the Design System view. `varName` is the themed CSS variable; `tw` the closest Tailwind name. */
+export const COLOR_TOKENS: { name: string; varName: string; tw: string; use: Localized }[] = [
+  { name: 'bg / base', varName: '--color-base', tw: 'slate', use: { es: 'Fondo de la app', en: 'App background' } },
+  { name: 'bg / raised', varName: '--color-raised', tw: 'slate', use: { es: 'Barra lateral, campos', en: 'Sidebar, inputs' } },
+  { name: 'surface', varName: '--color-surface', tw: 'slate', use: { es: 'Tarjetas y paneles', en: 'Cards and panels' } },
+  { name: 'border', varName: '--color-line', tw: 'slate', use: { es: 'Bordes de 1px', en: '1px borders' } },
+  { name: 'text / primary', varName: '--color-ink', tw: 'slate', use: { es: 'Títulos', en: 'Headings' } },
+  { name: 'text / body', varName: '--color-ink-body', tw: 'slate', use: { es: 'Texto de lectura', en: 'Reading text' } },
+  { name: 'text / muted', varName: '--color-ink-muted', tw: 'slate', use: { es: 'Etiquetas, metadatos (AA)', en: 'Labels, metadata (AA)' } },
+  { name: 'accent / active', varName: '--color-emerald', tw: 'emerald', use: { es: 'Activo, ingresos, saldo', en: 'Active, income, balance' } },
+  { name: 'accent / brand', varName: '--color-violet', tw: 'violet', use: { es: 'Marca, navegación activa', en: 'Brand, active nav' } },
+  { name: 'accent / warn', varName: '--color-amber', tw: 'amber', use: { es: 'Reagendado, atención', en: 'Rescheduled, attention' } },
+  { name: 'accent / danger', varName: '--color-rose', tw: 'rose', use: { es: 'Cancelado, muy atrasado', en: 'Cancelled, very stale' } },
+  { name: 'accent / info', varName: '--color-sky', tw: 'sky', use: { es: 'Ensayo de estudio', en: 'Studio practice' } },
 ];
 
 export interface TypeScaleRow {
@@ -25,11 +25,11 @@ export interface TypeScaleRow {
 }
 
 export const TYPE_SCALE: TypeScaleRow[] = [
-  { name: 'Display / Space Grotesk 600', px: '19–22px', sample: 'Festival Latino de Fruitvale', style: { font: "600 19px 'Space Grotesk',sans-serif", color: '#f1f5f9', letterSpacing: '-.015em' } },
-  { name: 'Section / Space Grotesk 600', px: '11px · .12em', sample: 'FONDO COMÚN', style: { font: "600 11px 'Space Grotesk',sans-serif", letterSpacing: '.12em', textTransform: 'uppercase', color: '#64748b' } },
-  { name: 'Body / IBM Plex Sans 400', px: '14px', sample: 'Set de 45 min. Llegar 17:30 para prueba de sonido.', style: { font: "400 14px 'IBM Plex Sans',sans-serif", color: '#cbd5e1' } },
-  { name: 'Meta / IBM Plex Sans 500', px: '12.5px', sample: 'Hayward, CA · 5 confirmados', style: { font: "500 12.5px 'IBM Plex Sans',sans-serif", color: '#64748b' } },
-  { name: 'Numeric / IBM Plex Mono 600', px: '22px', sample: '$1,112.70', style: { font: "600 22px 'IBM Plex Mono',monospace", color: '#34d399' } },
+  { name: 'Display / Space Grotesk 600', px: '19–22px', sample: 'Festival Latino de Fruitvale', style: { font: "600 19px 'Space Grotesk',sans-serif", color: 'var(--color-ink)', letterSpacing: '-.015em' } },
+  { name: 'Section / Space Grotesk 600', px: '11px · .12em', sample: 'FONDO COMÚN', style: { font: "600 11px 'Space Grotesk',sans-serif", letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--color-ink-muted)' } },
+  { name: 'Body / IBM Plex Sans 400', px: '14px', sample: 'Set de 45 min. Llegar 17:30 para prueba de sonido.', style: { font: "400 14px 'IBM Plex Sans',sans-serif", color: 'var(--color-ink-body)' } },
+  { name: 'Meta / IBM Plex Sans 500', px: '12.5px', sample: 'Hayward, CA · 5 confirmados', style: { font: "500 12.5px 'IBM Plex Sans',sans-serif", color: 'var(--color-ink-muted)' } },
+  { name: 'Numeric / IBM Plex Mono 600', px: '22px', sample: '$1,112.70', style: { font: "600 22px 'IBM Plex Mono',monospace", color: 'var(--color-emerald)' } },
 ];
 
 /** Handoff notes for Phase 2. `%STALE%` is replaced with the current staleDays knob. */

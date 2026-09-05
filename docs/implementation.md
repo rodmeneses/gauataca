@@ -46,8 +46,13 @@ The design is a `.dc.html` template (`{{ bindings }}`, `<sc-if>`, `<sc-for>`, `s
 - **Closures → actions.** The design attached `onOpen`/`onShare`/`onToggle`/`fSet.title` to each row; the port exposes
   `openEvent(id)`, `openShare(id)`, `toggleSong(id)`, `setForm('title', v)`, `voteThread(id)`, `pickPoll(i)`,
   `setRating(k, n)`, `transferCustody(memberId)`, etc.
-- **Inline styles → Tailwind utilities with arbitrary values**, preserving the exact px/hex values
-  (`text-[13.5px]`, `bg-[#34d3991c]`, `rounded-[14px]`, `tracking-[.12em]`). Dynamic colors stay inline (`style={{ color: e.typeColor }}`).
+- **Inline styles → Tailwind utilities with arbitrary values**, preserving the exact px values
+  (`text-[13.5px]`, `rounded-[14px]`, `tracking-[.12em]`).
+- **Colour is never a raw hex** (post-theming rule that supersedes the original "preserve exact hex"):
+  use a token class (`bg-surface`, `text-ink-muted`, `border-line`) or `var(--color-*)` in an
+  arbitrary value / inline style. Alpha tints are `color-mix(in srgb, var(--color-x) N%, transparent)`
+  or a `--color-tint-*` token, never `hex + '1c'`. View-models in `src/store/vm.ts` return
+  `var(--color-*)` strings, so `style={{ color: e.typeColor }}` stays theme-aware with no call-site change.
 - **`font:` shorthand → `font-display|sans|mono font-<weight> text-[px]`.**
 - **`<sc-if>` → `{cond && …}`, `<sc-for>` → `.map()` with stable keys, `style-hover` → `hover:` classes.**
 - **Copy → `t.*` keys**, including a handful of strings that were hard-coded Spanish in the design
@@ -92,6 +97,13 @@ Intentional, small, and listed so nobody "fixes" them back by accident:
 | `font:` shorthand in the design resets line-height to `normal`; the port inherits `1.5` on some small labels | sub-pixel to ~2 px; invisible in side-by-side screenshots. Add `leading-[normal]` where it matters |
 | `CloseButton` has a hover state everywhere (design: only on the event modal) | shared primitive |
 | **Attendance / RSVP exists in code but not in `design/Guataca.dc.html`** (event modal section, card chips, dashboard counts, derived "Confirmados") | added code-first after the port (see `docs/iterating.md`); built from the documented vocabulary — tiles, badges, poll-style option buttons, avatars |
+| **Light theme + `Light/Dark/System` toggle** (design is dark-only) | added code-first; token architecture in `src/styles.css`, state in `src/store`, bootstrap in `index.html`, control in `MobileProfile` + `TopBar`. The `design/Guataca.dc.html` snapshot lags on all of the below. |
+| **Responsive overhaul, 3 tiers** — phone (`<768px`, full-screen `position:fixed` shell), tablet (`768–1024px`, desktop shell + 64px icon-rail sidebar), desktop (`≥1024px`) | the design's "mobile view" was a 392px preview inside the desktop page; it is now a real breakpoint layout. `useGuataca` exposes `layout`/`isPhone`/`isTablet`/`isCoarsePointer`; `Device` gains `'auto'`/`'tablet'`. |
+| **Mobile type + touch scale**: no font below 12px (design used 9–11.5), all inputs 16px (design 14px — avoids iOS focus-zoom), tap targets ≥ 44px, `.badge` → 10.5–12px, `Pill` gains a `size` prop | WCAG AA + platform touch minimums; `@media (pointer: coarse)` enforces 44/16px on touch tablets too |
+| **Modals are bottom sheets on phone / coarse-pointer**, and the centred-card overlay now scrolls (was `overflow:hidden` with no `max-height` — tall forms were unusable). Body scroll-lock + focus-trap added. | `Modal` in `src/components/ui/index.tsx`, once, so no call-site changes |
+| **Bottom nav**: phone shell is `position:fixed; inset:0` with `<html>` scroll locked | the old `min-h-screen`(100vh) wrapper vs `h-dvh` shell let the iOS toolbar scroll the document and drift the tab bar |
+| **Mobile repertoire is no longer capped at 14 songs** (`slice(0,14)` removed) | the visible count contradicted the list |
+| `.input` has a focus ring; global `:focus-visible` ring added | the design suppressed outlines app-wide (`.input { outline: none }`) |
 
 Everything the design mocks is still mocked: placeholder Drive/iCloud/Docs/YouTube/Spotify links,
 `navigator.share` with a desktop toast fallback, in-memory forms/votes/comments/ratings, no auth.

@@ -18,9 +18,9 @@ export function Brainstorm() {
             onClick={() => voteThread(b.id)}
             className="flex flex-col items-center gap-[3px] py-2 px-[11px] rounded-[10px] cursor-pointer flex-none"
             style={{
-              border: '1px solid ' + (b.voted ? '#34d39966' : '#1e293b'),
-              background: b.voted ? '#34d3991a' : '#0b1220',
-              color: b.voted ? '#6ee7b7' : '#94a3b8',
+              border: '1px solid ' + (b.voted ? 'color-mix(in srgb, var(--color-emerald) 40%, transparent)' : 'var(--color-line)'),
+              background: b.voted ? 'color-mix(in srgb, var(--color-emerald) 11%, transparent)' : 'var(--color-raised)',
+              color: b.voted ? 'var(--color-emerald-light)' : 'var(--color-ink-meta)',
             }}
           >
             <ArrowUp size={16} strokeWidth={2.2} />
@@ -55,7 +55,7 @@ export function Brainstorm() {
                 <button
                   type="button"
                   onClick={() => convertThread(b.id)}
-                  className="ml-auto flex items-center gap-[7px] py-2 px-3 rounded-[9px] border border-[#7c3aed4d] bg-[#7c3aed14] text-violet-lighter font-sans font-semibold text-[12px] cursor-pointer whitespace-nowrap hover:bg-[#7c3aed2e]"
+                  className="ml-auto flex items-center gap-[7px] py-2 px-3 rounded-[9px] border border-violet/40 bg-[var(--color-tint-violet)] text-violet-lighter font-sans font-semibold text-[12px] cursor-pointer whitespace-nowrap hover:bg-[var(--color-tint-violet)]"
                 >
                   <CalendarPlus size={13} strokeWidth={2} />
                   {t.convert}

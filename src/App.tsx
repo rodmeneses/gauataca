@@ -4,6 +4,7 @@ import { AuthProvider } from './lib/auth';
 import { DataProvider } from './lib/data';
 import type { AppProps, Lang, Role, View } from './types';
 import { Shell } from './components/shell/Shell';
+import { readLangPref } from './lib/prefs';
 
 const VIEWS: View[] = ['dashboard', 'calendar', 'repertoire', 'ledger', 'brainstorm', 'members', 'system'];
 
@@ -17,9 +18,11 @@ function readProps(): AppProps {
   const role = q.get('role');
   const view = q.get('view');
   const stale = Number(q.get('stale'));
+  // URL param wins (prototype knob); otherwise the stored choice; otherwise Spanish.
+  const initialLang: Lang = lang === 'en' ? 'en' : lang === 'es' ? 'es' : readLangPref() ?? 'es';
   return {
     bandName: q.get('band') || 'GUATACA',
-    initialLang: (lang === 'en' ? 'en' : 'es') as Lang,
+    initialLang,
     initialRole: (role === 'member' ? 'member' : 'admin') as Role,
     startView: VIEWS.includes(view as View) ? (view as View) : 'dashboard',
     showTour: q.get('tour') === '1',

@@ -17,7 +17,7 @@ export function SettleDialog() {
   const toggle = (on: boolean) => setHappened(on);
 
   return (
-    <div className="fixed inset-0 z-[85] bg-[#020617cc] backdrop-blur-[6px] flex items-center justify-center p-[32px_20px] animate-fade-fast">
+    <div className="fixed inset-0 z-[85] bg-[color-mix(in_srgb,var(--color-base)_80%,transparent)] backdrop-blur-[6px] flex items-center justify-center p-[32px_20px] animate-fade-fast">
       <div role="dialog" aria-modal="true" className="w-full max-w-[420px] bg-raised border border-line rounded-[18px] p-[22px] animate-rise">
         <div className="font-display font-semibold text-[16px] leading-normal text-ink-bright mb-[7px]">{t.settleTitle}</div>
         <div className="text-[12.5px] text-ink-muted leading-[1.6] mb-[18px]">{settle.title}</div>
@@ -29,7 +29,7 @@ export function SettleDialog() {
               onClick={() => toggle(true)}
               aria-pressed={happened}
               className="p-[11px] rounded-[10px] border font-sans font-semibold text-[13px] leading-normal cursor-pointer"
-              style={{ borderColor: happened ? '#34d39966' : '#1e293b', background: happened ? '#34d3991a' : '#0b1220', color: happened ? '#34d399' : '#94a3b8' }}
+              style={{ borderColor: happened ? 'color-mix(in srgb, var(--color-emerald) 40%, transparent)' : 'var(--color-line)', background: happened ? 'color-mix(in srgb, var(--color-emerald) 11%, transparent)' : 'var(--color-raised)', color: happened ? 'var(--color-emerald)' : 'var(--color-ink-meta)' }}
             >
               {t.happenedYes}
             </button>
@@ -38,7 +38,7 @@ export function SettleDialog() {
               onClick={() => toggle(false)}
               aria-pressed={!happened}
               className="p-[11px] rounded-[10px] border font-sans font-semibold text-[13px] leading-normal cursor-pointer"
-              style={{ borderColor: !happened ? '#f43f5e66' : '#1e293b', background: !happened ? '#f43f5e1a' : '#0b1220', color: !happened ? '#f43f5e' : '#94a3b8' }}
+              style={{ borderColor: !happened ? 'color-mix(in srgb, var(--color-rose) 40%, transparent)' : 'var(--color-line)', background: !happened ? 'color-mix(in srgb, var(--color-rose) 11%, transparent)' : 'var(--color-raised)', color: !happened ? 'var(--color-rose)' : 'var(--color-ink-meta)' }}
             >
               {t.happenedNo}
             </button>
