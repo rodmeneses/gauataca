@@ -119,6 +119,13 @@ const es = {
   settings: 'Ajustes', appearance: 'Apariencia',
   themeLight: 'Claro', themeDark: 'Oscuro', themeSystem: 'Sistema',
   language: 'Idioma',
+  // PWA: update prompt + offline state
+  updateReady: 'Nueva versión disponible',
+  updateNow: 'Actualizar',
+  updateDismiss: 'Ahora no',
+  offline: 'Sin conexión — mostrando datos guardados',
+  offlineWriteBlocked: 'Sin conexión: no se pudo guardar. Intenta de nuevo cuando vuelvas a estar en línea.',
+  backOnline: 'De vuelta en línea',
 };
 
 const en: typeof es = {
@@ -238,6 +245,13 @@ const en: typeof es = {
   settings: 'Settings', appearance: 'Appearance',
   themeLight: 'Light', themeDark: 'Dark', themeSystem: 'System',
   language: 'Language',
+  // PWA: update prompt + offline state
+  updateReady: 'A new version is available',
+  updateNow: 'Update',
+  updateDismiss: 'Not now',
+  offline: "Offline — showing saved data",
+  offlineWriteBlocked: "You're offline: couldn't save. Try again once you're back online.",
+  backOnline: 'Back online',
 };
 
 export type Dict = typeof es;
