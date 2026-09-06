@@ -298,7 +298,9 @@ export function useGuataca(): Guataca {
   const isPhoneViewport = useMediaQuery('(max-width: 767.98px)');
   const isTabletViewport = useMediaQuery('(min-width: 768px) and (max-width: 1023.98px)');
   const isCoarsePointer = useMediaQuery('(pointer: coarse)');
-  const isMobileViewport = isPhoneViewport;
+  // Touch devices up to tablet width get the phone layout: landscape phones,
+  // tablets, and "Request Desktop Site" all report > 768px but are still touch-first.
+  const isMobileViewport = isPhoneViewport || (isCoarsePointer && isTabletViewport);
 
   return useMemo<Guataca>(() => {
     const lang = st.lang;
@@ -306,7 +308,7 @@ export function useGuataca(): Guataca {
     const isAdmin = profile?.role === 'admin' || (!user && st.role === 'admin');
     // Layout tier. `device` is the dev preview override; 'auto' follows the viewport.
     const forced = st.device === 'mobile' ? 'phone' : st.device === 'tablet' ? 'tablet' : st.device === 'desktop' ? 'desktop' : null;
-    const viewportLayout: 'phone' | 'tablet' | 'desktop' = isPhoneViewport ? 'phone' : isTabletViewport ? 'tablet' : 'desktop';
+    const viewportLayout: 'phone' | 'tablet' | 'desktop' = isMobileViewport ? 'phone' : isTabletViewport ? 'tablet' : 'desktop';
     const layout = forced ?? viewportLayout;
     const isPhone = layout === 'phone';
     const isTablet = layout === 'tablet';
@@ -721,5 +723,5 @@ export function useGuataca(): Guataca {
       closeHandoff: () => set({ handoff: false }),
       toast,
     };
-  }, [st, props, set, toast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myThreadVotes, myPollPicks, loading, error, isPhoneViewport, isTabletViewport, isCoarsePointer, createEvent, createSong, updateSong, persistSongLinks, createTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
+  }, [st, props, set, toast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myThreadVotes, myPollPicks, loading, error, isPhoneViewport, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, createSong, updateSong, persistSongLinks, createTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
 }
