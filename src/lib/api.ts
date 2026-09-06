@@ -334,6 +334,27 @@ export async function createEvent(
   return id;
 }
 
+/** Update an event's core fields (title / type / date / time / hours / venue / fee / cost / note). */
+export async function updateEvent(
+  id: string,
+  input: { title: string; venue: string; date: string; time: string; hours: number; fee: number; cost: number; note: string; type: EventType },
+  _userId: string,
+): Promise<void> {
+  const startsAt = `${input.date}T${input.time || '19:00'}:00Z`;
+  await supabase.from('events').update({
+    type: input.type,
+    starts_at: startsAt,
+    duration_hours: input.hours || null,
+    venue: input.venue,
+    fee_cents: Math.round(input.fee * 100),
+    cost_cents: Math.round(input.cost * 100),
+    title_es: input.title,
+    title_en: input.title,
+    note_es: input.note,
+    note_en: input.note,
+  }).eq('id', id);
+}
+
 export async function createSong(
   input: { title: string; genre: GenreId; key: string; bpm: number; dur: string },
   _userId: string,

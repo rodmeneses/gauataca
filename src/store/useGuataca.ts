@@ -150,6 +150,8 @@ export interface Guataca {
 
   // ---- headline numbers (pre-formatted)
   balanceStr: string;
+  /** true when the pool balance is negative (drives red vs green). */
+  balanceNeg: boolean;
   incomeStr: string;
   expenseStr: string;
   txCount: string;
@@ -201,6 +203,7 @@ export interface Guataca {
   openThread: (id: string) => void;
   openMember: (id: string, edit?: boolean) => void;
   openNewEvent: () => void;
+  openEditEvent: (id: string) => void;
   openNewSong: () => void;
   openEditSong: (id: string) => void;
   openNewTx: () => void;
@@ -288,7 +291,7 @@ export function useGuataca(): Guataca {
   const {
     songs: dbSongs, events: dbEvents, transactions: dbTx, gear: dbGear, threads: dbThreads, members: dbMembers,
     instruments: dbInstruments, takes: dbTakes, myThreadVotes, myPollPicks, loading, error,
-    createEvent, createSong, updateSong, setSongLinks: persistSongLinks, createTransaction, createGear: persistGear, createInstrument: persistInstrument,
+    createEvent, updateEvent, createSong, updateSong, setSongLinks: persistSongLinks, createTransaction, createGear: persistGear, createInstrument: persistInstrument,
     onboard: persistOnboard, updateMemberInstruments: persistMemberInstruments, setSongInstruments: persistSongInstruments,
     addTake: persistTake, deleteTake: persistDeleteTake,
     setRsvp: persistRsvp, voteThread: persistVote,
@@ -489,7 +492,7 @@ export function useGuataca(): Guataca {
       gear, gearValue: money0(dbGear.reduce((a, b) => a + b.cost, 0)),
       threads, members, instruments,
 
-      balanceStr: money(balance), incomeStr: money(income), expenseStr: money(expense),
+      balanceStr: money(balance), balanceNeg: balance < 0, incomeStr: money(income), expenseStr: money(expense),
       txCount: String(allTx.length), statSongs: String(allSongs.length),
       statUpcoming: String(upcomingRaw.filter((e) => e.state === 'active').length),
       statStale: String(staleSongs.length), staleHint: t.staleHint.replace('%d', String(staleDays)),
@@ -529,6 +532,19 @@ export function useGuataca(): Guataca {
       openThread: (id) => set({ modal: { kind: 'thread', id } }),
       openMember: (id, edit) => set({ modal: { kind: 'member', id, edit } }),
       openNewEvent: () => set({ modal: { kind: 'newEvent' }, form: {} }),
+      openEditEvent: (id) => {
+        const e = allEvents.find((x) => x.id === id);
+        if (!e) return;
+        set({
+          modal: { kind: 'newEvent', id },
+          form: {
+            title: Lx(e.title), venue: e.venue, date: e.date, time: e.time,
+            hours: e.hours != null ? String(e.hours) : '',
+            fee: e.fee ? String(e.fee) : '', cost: e.cost ? String(e.cost) : '',
+            note: Lx(e.note), type: e.type, setlist: e.setlist,
+          },
+        });
+      },
       openNewSong: () => set({ modal: { kind: 'newSong' }, form: {} }),
       openEditSong: (id) => {
         const s = dbSongs.find((x) => x.id === id);
@@ -668,15 +684,22 @@ export function useGuataca(): Guataca {
         }
       },
       saveEvent: async () => {
+        const editingId = st.modal?.kind === 'newEvent' ? st.modal.id : undefined;
         const dte = f.date || '2026-11-07';
         const songIds = f.setlist || [];
         set({ modal: null, form: {} });
-        const id = await createEvent({
+        const input = {
           title: f.title || 'Evento nuevo', venue: f.venue || 'Bay Area, CA', date: dte, time: f.time || '19:00', hours: +(f.hours || 0),
           fee: +(f.fee || 0), cost: +(f.cost || 0), note: f.note || '', type: f.type || 'gig',
-        });
-        if (id && songIds.length) await persistSetlist(id, songIds);
-        toast(t.eventCreated);
+        };
+        if (editingId) {
+          await updateEvent(editingId, input);
+          await persistSetlist(editingId, songIds);
+        } else {
+          const id = await createEvent(input);
+          if (id && songIds.length) await persistSetlist(id, songIds);
+        }
+        toast(editingId ? t.eventSaved : t.eventCreated);
       },
       saveTx: async () => {
         set({ modal: null, form: {} });
@@ -723,5 +746,5 @@ export function useGuataca(): Guataca {
       closeHandoff: () => set({ handoff: false }),
       toast,
     };
-  }, [st, props, set, toast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myThreadVotes, myPollPicks, loading, error, isPhoneViewport, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, createSong, updateSong, persistSongLinks, createTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
+  }, [st, props, set, toast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myThreadVotes, myPollPicks, loading, error, isPhoneViewport, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, updateEvent, createSong, updateSong, persistSongLinks, createTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
 }

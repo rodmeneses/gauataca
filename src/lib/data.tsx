@@ -9,7 +9,7 @@ import {
   addComment as apiAddComment, addTake as apiAddTake, createEvent as apiCreateEvent, createGear as apiCreateGear, createInstrument as apiCreateInstrument,
   createSong as apiCreateSong, createTransaction as apiCreateTransaction, deleteTake as apiDeleteTake, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
   setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, setSongInstruments as apiSetSongInstruments, setSongLinks as apiSetSongLinks,
-  settleEvent as apiSettleEvent, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateMemberInstruments as apiUpdateMemberInstruments, updateSong as apiUpdateSong,
+  settleEvent as apiSettleEvent, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateEvent as apiUpdateEvent, updateMemberInstruments as apiUpdateMemberInstruments, updateSong as apiUpdateSong,
   uploadProof as apiUploadProof, voteThread as apiVoteThread, type DataSnapshot,
 } from './api';
 import { EVENTS, GEAR, INSTRUMENTS, MEMBERS, SONGS, TAKES, THREADS, TRANSACTIONS } from '../data';
@@ -28,6 +28,7 @@ interface DataValue extends DataSnapshot {
   error: string | null;
   reload: () => Promise<void>;
   createEvent: (input: CreateEventInput) => Promise<string | undefined>;
+  updateEvent: (id: string, input: CreateEventInput) => Promise<void>;
   createSong: (input: CreateSongInput) => Promise<string | undefined>;
   updateSong: (id: string, input: CreateSongInput) => Promise<void>;
   setSongLinks: (songId: string, links: SongLinkInput[]) => Promise<void>;
@@ -136,6 +137,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       error,
       reload,
       createEvent: (input) => run(() => apiCreateEvent(input, uid)),
+      updateEvent: (id, input) => run(() => apiUpdateEvent(id, input, uid)),
       createSong: (input) => run(() => apiCreateSong(input, uid)),
       updateSong: (id, input) => run(() => apiUpdateSong(id, input, uid)),
       setSongLinks: (songId, links) => run(() => apiSetSongLinks(songId, links)),

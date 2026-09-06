@@ -9,7 +9,7 @@ import { Badge, Eyebrow } from '@/components/ui';
 export function Dashboard() {
   const {
     t,
-    balanceStr, incomeStr, expenseStr,
+    balanceStr, balanceNeg, incomeStr, expenseStr,
     nextEvent,
     statSongs, statStale, staleHint,
     dashUpcoming, staleSongs, recentTx, txCount,
@@ -24,7 +24,7 @@ export function Dashboard() {
       <div className="grid grid-cols-[repeat(auto-fit,minmax(196px,1fr))] gap-[14px]">
         <div className="card p-[17px_18px]">
           <Eyebrow>{t.poolBalance}</Eyebrow>
-          <div className="font-mono font-semibold text-[clamp(19px,2.1vw,26px)] leading-none text-emerald mt-[11px] whitespace-nowrap tracking-[-.02em]">{balanceStr}</div>
+          <div className={`font-mono font-semibold text-[clamp(19px,2.1vw,26px)] leading-none ${balanceNeg ? 'text-red' : 'text-emerald'} mt-[11px] whitespace-nowrap tracking-[-.02em]`}>{balanceStr}</div>
           <div className="flex flex-wrap gap-[6px_14px] mt-[11px] text-[11.5px]">
             <span className="text-emerald whitespace-nowrap">↑ {incomeStr}</span>
             <span className="text-red whitespace-nowrap">↓ {expenseStr}</span>
