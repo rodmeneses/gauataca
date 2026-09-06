@@ -58,6 +58,8 @@ export interface StoreApi {
   /** setState-like merge (accepts an object or an updater fn). */
   set: (u: Updater) => void;
   toast: (msg: string, tone?: Toast['tone']) => void;
+  /** Dismiss a toast early (tap) — plays the exit animation, then removes it. */
+  dismissToast: (id: string) => void;
 }
 
 const StoreContext = createContext<StoreApi | null>(null);
@@ -107,13 +109,18 @@ export function GuatacaProvider({ props, children }: { props: AppProps; children
     setState((s) => ({ ...s, ...(typeof u === 'function' ? u(s) : u) }));
   }, []);
 
+  const dismissToast = useCallback((id: string) => {
+    setState((s) => ({ ...s, toasts: s.toasts.map((x) => (x.id === id ? { ...x, leaving: true } : x)) }));
+    window.setTimeout(() => setState((s) => ({ ...s, toasts: s.toasts.filter((x) => x.id !== id) })), 220);
+  }, []);
+
   const toast = useCallback(
     (msg: string, tone: Toast['tone'] = 'ok') => {
       const id = 'k' + Date.now() + '-' + seqRef.current++;
       setState((s) => ({ ...s, toasts: [...s.toasts, { id, msg, tone }] }));
-      window.setTimeout(() => setState((s) => ({ ...s, toasts: s.toasts.filter((x) => x.id !== id) })), 3600);
+      window.setTimeout(() => dismissToast(id), 3600);
     },
-    [],
+    [dismissToast],
   );
 
   // Keep <html data-theme> and the address-bar colour in sync with the choice,
@@ -142,7 +149,7 @@ export function GuatacaProvider({ props, children }: { props: AppProps; children
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  const api = useMemo<StoreApi>(() => ({ state, props, set, toast }), [state, props, set, toast]);
+  const api = useMemo<StoreApi>(() => ({ state, props, set, toast, dismissToast }), [state, props, set, toast, dismissToast]);
   return <StoreContext.Provider value={api}>{children}</StoreContext.Provider>;
 }
 

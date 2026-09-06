@@ -198,6 +198,8 @@ export interface Toast {
   id: string;
   msg: string;
   tone: ToastTone;
+  /** Set briefly before removal so the stack can play an exit animation. */
+  leaving?: boolean;
 }
 
 export type Modal =
