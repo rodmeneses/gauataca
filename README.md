@@ -10,8 +10,8 @@ snapshot in [`design/`](./design/README.md)).
 
 ## Quick start (play with the mock locally)
 
-Prerequisites: **Node.js 20 or newer** and npm. With nvm: `nvm use` (an `.nvmrc` pins 24). Internet is needed once for
-`npm install` and, while running, for the Google Fonts.
+Prerequisites: **Node.js 20 or newer** and npm. With nvm: `nvm use` (an `.nvmrc` pins 24). Internet is needed only once,
+for `npm install` — the fonts are self-hosted in `public/fonts/`, so the running app makes no third-party requests.
 
 ```sh
 git clone https://github.com/rodmeneses/gauataca.git
@@ -44,7 +44,17 @@ Other commands:
 ```sh
 npm run build      # strict typecheck + production build → dist/
 npm run preview    # serve the production build on http://localhost:4173
+npm run assets:fonts   # re-vendor the self-hosted Google Fonts into public/fonts/
+npm run assets:icons   # regenerate the PWA icon set into public/
 ```
+
+### PWA
+
+The app is an installable PWA (`vite-plugin-pwa`): a web manifest, self-hosted fonts and a service worker that precaches
+the app shell so it opens offline. Supabase reads fall back to the last cached response when offline (a thin top bar shows
+the offline state); writes are blocked with a toast until the connection is back. A new deploy is fetched in the background
+and applied only when the user accepts the *"Nueva versión disponible"* prompt — the running session is never swapped
+mid-action. Offline-first data (a local write queue) is intentionally **not** implemented yet.
 
 Troubleshooting: `node: command not found` → install Node 20+ (or `nvm install 24 && nvm use`). Port 5173 busy → `npm run dev -- --port 5174`.
 To compare with the original design side by side: `python3 -m http.server 5177 --directory design` → http://localhost:5177/Guataca.dc.html.
