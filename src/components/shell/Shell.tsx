@@ -18,6 +18,8 @@ import { CommandPalette } from '../modals/CommandPalette';
 import { HandoffPanel } from '../modals/HandoffPanel';
 import { TourOverlay } from '../modals/TourOverlay';
 import { Toasts } from '../modals/Toasts';
+import { UpdatePrompt } from '../pwa/UpdatePrompt';
+import { OfflineBanner } from '../pwa/OfflineBanner';
 
 /** Locks page scroll while the fixed-position phone shell is mounted. */
 function PhoneFrame({ children }: { children: ReactNode }) {
@@ -115,6 +117,8 @@ export function Shell() {
       {bs.state.handoff && <HandoffPanel />}
       {bs.tour.on && <TourOverlay />}
       {bs.toasts.length > 0 && <Toasts />}
+      <OfflineBanner />
+      <UpdatePrompt />
     </Wrapper>
   );
 }

@@ -114,12 +114,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const uid = user?.id ?? '';
     const run = async <T,>(fn: () => Promise<T>): Promise<T | undefined> => {
       if (isDemo) return undefined;
+      // Don't let a write hang on a dead connection — bail early and let the UI
+      // surface it (see OfflineBanner). The service worker never caches writes.
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        window.dispatchEvent(new Event('guataca:offline-write'));
+        return undefined;
+      }
       try {
         const result = await fn();
         await reload();
         return result;
       } catch (err) {
         console.error('Mutation failed:', err);
+        window.dispatchEvent(new Event('guataca:mutation-error'));
         return undefined;
       }
     };
