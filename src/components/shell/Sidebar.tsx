@@ -33,7 +33,7 @@ function NavItem({ active, onClick, icon, label, badge }: { active: boolean; onC
 
 /** Sticky sidebar: 252px with labels on desktop, a 64px icon rail on tablet. */
 export function Sidebar() {
-  const { t, view, bandName, statUpcoming, statSongs, balanceStr, me, roleLabel, go } = useGuataca();
+  const { t, view, bandName, statUpcoming, statSongs, balanceStr, balanceNeg, me, roleLabel, go } = useGuataca();
   const is = (v: View) => view === v;
   const upBadge = <span className="font-mono font-semibold text-[11px] leading-normal text-emerald bg-[var(--color-tint-emerald)] p-[2px_7px] rounded-[20px]">{statUpcoming}</span>;
   const songBadge = <span className="font-mono font-semibold text-[11px] leading-normal text-ink-muted">{statSongs}</span>;
@@ -68,7 +68,7 @@ export function Sidebar() {
           className="text-left bg-surface border border-line rounded-[12px] p-2 lg:p-[13px_14px] cursor-pointer block w-full hover:border-emerald/40"
         >
           <div className="font-display font-semibold text-[10px] leading-none tracking-[.12em] uppercase text-ink-muted hidden lg:block">{t.poolBalance}</div>
-          <div className="font-mono font-semibold text-[13px] lg:text-[22px] leading-none text-emerald lg:mt-2 text-center lg:text-left">{balanceStr}</div>
+          <div className={`font-mono font-semibold text-[13px] lg:text-[22px] leading-none ${balanceNeg ? 'text-red' : 'text-emerald'} lg:mt-2 text-center lg:text-left`}>{balanceStr}</div>
           <div className="text-[11px] text-ink-dim mt-[6px] hidden lg:block">{t.treasurer}: Diego S.</div>
         </button>
         <div className="flex items-center gap-[9px] p-[2px_2px] justify-center lg:justify-start">

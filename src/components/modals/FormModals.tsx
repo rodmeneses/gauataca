@@ -45,7 +45,8 @@ function FormFooter({ cancel, save, onCancel, onSave }: { cancel: string; save: 
 
 /* -------------------------------------------------------------- new event */
 export function NewEventModal() {
-  const { t, lang, form, setForm, closeModal, saveEvent, songs } = useGuataca();
+  const { t, lang, form, setForm, closeModal, saveEvent, songs, modal } = useGuataca();
+  const editing = modal?.kind === 'newEvent' && !!modal.id;
   const [query, setQuery] = useState('');
 
   const byId = useMemo(() => new Map(songs.map((s) => [s.id, s])), [songs]);
@@ -60,7 +61,7 @@ export function NewEventModal() {
 
   return (
     <Modal onClose={closeModal} maxWidth={560}>
-      <FormHeader title={t.newEvent} onClose={closeModal} />
+      <FormHeader title={editing ? t.editEvent : t.newEvent} onClose={closeModal} />
       <FormBody>
         <Field label={t.titleL}>
           <Input value={form.title} onChange={(e) => setForm('title', e.target.value)} placeholder="Festival Latino de Fruitvale" />

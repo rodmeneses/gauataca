@@ -2,7 +2,7 @@
  * Event detail modal (design lines 929–1111): header, 4 stat tiles, setlist,
  * media gallery, retrospective (ratings, well/improve, poll, my ratings) and footer.
  */
-import { ChartColumn, Check, EyeOff, ExternalLink, Image, Instagram, Star } from 'lucide-react';
+import { ChartColumn, Check, EyeOff, ExternalLink, Image, Instagram, Pencil, Star } from 'lucide-react';
 import { RSVP_COLOR, RSVP_ORDER, RSVP_PENDING_COLOR, rsvpLabel, useGuataca } from '@/store';
 import { Avatar, Badge, Button, CloseButton, Modal } from '@/components/ui';
 import { SetlistEditor } from './SetlistEditor';
@@ -18,7 +18,7 @@ const textareaCls =
   'w-full py-[11px] px-[13px] rounded-[10px] border border-line bg-base text-ink-base font-sans font-normal text-[13px] leading-[normal] outline-none resize-y';
 
 export function EventModal() {
-  const { t, ev, fb, state, songs, isAdmin, closeModal, openShare, openSettle, pickPoll, setRating, toggleAnon, setFbWell, setFbImprove, submitFb, setRsvp, setEventSetlist, addTake, deleteTake, goToSong } = useGuataca();
+  const { t, ev, fb, state, songs, isAdmin, closeModal, openShare, openSettle, openEditEvent, pickPoll, setRating, toggleAnon, setFbWell, setFbImprove, submitFb, setRsvp, setEventSetlist, addTake, deleteTake, goToSong } = useGuataca();
   if (!ev) return null;
 
   const ratingLabel: Record<RatingKey, string> = { sound: t.sound, perf: t.perf, log: t.logistics, energy: t.energy };
@@ -317,6 +317,12 @@ export function EventModal() {
 
       {/* ---- footer */}
       <div className="py-[18px] px-6 flex gap-[10px] justify-end">
+        {isAdmin && (
+          <Button variant="surface" onClick={() => openEditEvent(ev.id)} className="py-[11px] px-4 rounded-[11px]">
+            <Pencil size={15} strokeWidth={1.9} />
+            {t.edit}
+          </Button>
+        )}
         {ev.canSettle && (
           <Button variant="primary" onClick={() => openSettle(ev.id)} className="py-[11px] px-4 rounded-[11px]">
             {t.settle}

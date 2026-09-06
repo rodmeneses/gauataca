@@ -37,7 +37,7 @@ export interface Member {
   vocals: VocalFlag[];
 }
 
-export type GenreId = 'joropo' | 'llanera' | 'gaita' | 'tambor' | 'calipso' | 'balada' | 'merengue' | 'guacharaca' | 'vals' | 'lirica';
+export type GenreId = 'joropo' | 'llanera' | 'gaita' | 'tambor' | 'calipso' | 'balada' | 'merengue' | 'guacharaca' | 'vals' | 'lirica' | 'tonada' | 'pop' | 'otra' | 'instrumental';
 
 export interface Genre {
   id: GenreId;
@@ -204,7 +204,7 @@ export type Modal =
   | { kind: 'event'; id: string }
   | { kind: 'thread'; id: string }
   | { kind: 'member'; id: string; edit?: boolean }
-  | { kind: 'newEvent' }
+  | { kind: 'newEvent'; id?: string }
   | { kind: 'newSong'; id?: string }
   | { kind: 'newTx' }
   | { kind: 'newGear' }

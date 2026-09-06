@@ -10,7 +10,7 @@ import type { TxDate, TxFilter } from '@/types';
 const TX_GRID = 'min-w-[800px] grid grid-cols-[120px_1fr_130px_150px_120px] gap-3';
 
 export function Ledger() {
-  const { t, isAdmin, balanceStr, incomeStr, expenseStr, txCount, tx, txFilter, txDate, setTxFilter, setTxDate, gear, gearValue, openNewTx, openNewGear, openCustody, contributions } = useGuataca();
+  const { t, isAdmin, balanceStr, balanceNeg, incomeStr, expenseStr, txCount, tx, txFilter, txDate, setTxFilter, setTxDate, gear, gearValue, openNewTx, openNewGear, openCustody, contributions } = useGuataca();
 
   return (
     <div className="flex flex-col gap-5 animate-fade">
@@ -18,7 +18,7 @@ export function Ledger() {
       <div className="grid grid-cols-[repeat(auto-fit,minmax(210px,1fr))] gap-[14px]">
         <div className="bg-[linear-gradient(150deg,var(--color-surface),var(--color-raised))] border border-emerald/40 rounded-2xl p-[22px]">
           <div className="font-display font-semibold text-[10.5px] tracking-[.12em] uppercase text-emerald-light">{t.poolBalance}</div>
-          <div className="font-mono font-semibold text-[clamp(26px,3.4vw,38px)] leading-none text-emerald mt-[14px] tracking-[-.02em] whitespace-nowrap">{balanceStr}</div>
+          <div className={`font-mono font-semibold text-[clamp(26px,3.4vw,38px)] leading-none ${balanceNeg ? 'text-red' : 'text-emerald'} mt-[14px] tracking-[-.02em] whitespace-nowrap`}>{balanceStr}</div>
           <div className="text-[12px] text-ink-muted mt-[14px] leading-[1.6]">
             {t.treasurer}: Diego Salazar · {txCount} {t.movements}
           </div>

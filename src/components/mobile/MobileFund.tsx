@@ -6,13 +6,13 @@ import type { TxDate, TxFilter } from '../../types';
 const SECTION = 'font-display font-semibold text-[12px] tracking-[.08em] uppercase text-ink-muted';
 
 export function MobileFund() {
-  const { t, isAdmin, balanceStr, incomeStr, expenseStr, tx, txFilter, txDate, setTxFilter, setTxDate, contributions, gear, gearValue, openNewTx, openNewGear, openCustody } = useGuataca();
+  const { t, isAdmin, balanceStr, balanceNeg, incomeStr, expenseStr, tx, txFilter, txDate, setTxFilter, setTxDate, contributions, gear, gearValue, openNewTx, openNewGear, openCustody } = useGuataca();
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
         <div className="border border-emerald/30 rounded-2xl p-5 bg-surface">
           <div className="font-display font-semibold text-[12px] tracking-[.1em] uppercase text-emerald">{t.poolBalance}</div>
-          <div className="font-mono font-semibold text-[32px] leading-none text-emerald mt-3">{balanceStr}</div>
+          <div className={`font-mono font-semibold text-[32px] leading-none ${balanceNeg ? 'text-red' : 'text-emerald'} mt-3`}>{balanceStr}</div>
           <div className="flex flex-wrap gap-y-1.5 gap-x-4 mt-3.5 font-mono font-medium text-[13px]">
             <span className="text-emerald whitespace-nowrap">↑ {incomeStr}</span>
             <span className="text-red whitespace-nowrap">↓ {expenseStr}</span>

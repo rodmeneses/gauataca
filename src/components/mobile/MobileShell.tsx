@@ -58,7 +58,7 @@ function useKeyboardOpen(): boolean {
 
 /** The actual mobile app: header + scroll area + bottom tab bar. */
 function MobileApp({ banner }: { banner?: ReactNode }) {
-  const { t, bandName, balanceStr, state, setMobileTab } = useGuataca();
+  const { t, bandName, balanceStr, balanceNeg, state, setMobileTab } = useGuataca();
   const tab: MobileTab = state.mobileTab;
   const keyboardOpen = useKeyboardOpen();
 
@@ -77,7 +77,7 @@ function MobileApp({ banner }: { banner?: ReactNode }) {
         </span>
         <span
           aria-label={`${t.poolBalance}: ${balanceStr}`}
-          className="font-mono font-semibold text-[13px] text-emerald bg-[var(--color-tint-emerald)] min-h-[36px] inline-flex items-center py-1 px-3 rounded-full flex-none"
+          className={`font-mono font-semibold text-[13px] ${balanceNeg ? 'text-red bg-[var(--color-tint-rose)]' : 'text-emerald bg-[var(--color-tint-emerald)]'} min-h-[36px] inline-flex items-center py-1 px-3 rounded-full flex-none`}
         >
           {balanceStr}
         </span>
