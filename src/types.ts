@@ -103,7 +103,7 @@ export interface BandEvent {
   hours?: number; // duration in hours (e.g. 2.5)
   title: Localized;
   venue: string;
-  fee: number; // expected income (cachet), >= 0
+  fee: number; // expected income (honorarios), >= 0
   cost: number; // expected expense (e.g. studio rental), >= 0
   /** true once the event's income/expense have been confirmed into the ledger. */
   settled: boolean;

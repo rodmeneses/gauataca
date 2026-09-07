@@ -61,7 +61,7 @@ const es = {
   tourSkip: 'Saltar', tourNext: 'Siguiente', tourDone: 'Entendido',
   agenda: 'Agenda', profile: 'Perfil', fund: 'Fondo',
   noResults: 'Sin resultados', run: 'Ejecutar', navigate: 'Ir a', actions: 'Acciones',
-  attendees: 'Confirmados', fee: 'Cachet', costLabel: 'Costo', movedFrom: 'Movido del',
+  attendees: 'Confirmados', fee: 'Honorarios', costLabel: 'Costo', movedFrom: 'Movido del',
   money: 'Dinero', settle: 'Confirmar', settleTitle: 'Confirmar evento', settled: 'Liquidado',
   happened: '¿Ocurrió?', happenedYes: 'Sí, ocurrió', happenedNo: 'No ocurrió', eventSettled: 'Evento confirmado',
   // extra strings that were hard-coded in the design
@@ -77,7 +77,7 @@ const es = {
   openingFlyer: 'Abriendo el flyer…',
   shareIntent: 'Intento de compartir: instagram://camera',
   genresHint: '5 géneros venezolanos',
-  incomeHint: 'Cachets, propinas y donaciones',
+  incomeHint: 'Honorarios, propinas y donaciones',
   expenseHint: 'Estudio, equipos y transporte',
   titleL: 'Título', hourL: 'Hora', hoursL: 'Duración (h)', venueL: 'Venue', notesL: 'Notas', genreL: 'Género',
   pickDate: 'Elegir fecha',

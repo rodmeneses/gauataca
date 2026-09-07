@@ -611,7 +611,7 @@ async function syncEventTransactions(
   const titleEs = ev?.title_es ?? '';
   const titleEn = ev?.title_en ?? '';
 
-  // Income (cachet) — matched by the settle flow's `category = 'fee'` tag.
+  // Income (honorarios) — matched by the settle flow's `category = 'fee'` tag.
   const { data: feeTx } = await supabase.from('transactions').select('id').eq('event_id', eventId).eq('kind', 'in').eq('category', 'fee');
   if (fee > 0) {
     if (feeTx?.length) {
@@ -622,7 +622,7 @@ async function syncEventTransactions(
         kind: 'in',
         amount_cents: Math.round(fee * 100),
         occurred_on: date,
-        description_es: 'Cachet — ' + titleEs,
+        description_es: 'Honorarios — ' + titleEs,
         description_en: 'Fee — ' + titleEn,
         proof_url: null,
         proof_kind: 'zelle',
