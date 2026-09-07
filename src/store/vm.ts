@@ -112,16 +112,17 @@ export interface SongVm {
 export function songVm(s: Song, allEvents: BandEvent[], openSong: string | null, ctx: Ctx): SongVm {
   const { lang, t } = ctx;
   const g = GENRES[s.genre];
-  // "Last rehearsed" is derived, not stored: the most recent past event whose
-  // setlist includes this song (see the "derived, not stored" handoff note).
-  const pastSetlists = allEvents
-    .filter((e) => (e.setlist || []).includes(s.id) && days(e.date) <= 0)
+  // "Last rehearsed" is derived, not stored: the most recent confirmed (settled)
+  // event whose setlist includes this song. A song only counts as rehearsed once
+  // its event has been confirmed into the ledger (see the "derived, not stored" note).
+  const rehearsals = allEvents
+    .filter((e) => (e.setlist || []).includes(s.id) && e.settled)
     .sort((a, b) => d(b.date).getTime() - d(a.date).getTime());
-  const last = pastSetlists[0]?.date ?? null;
+  const last = rehearsals[0]?.date ?? null;
   const gap = last ? -days(last) : 9999;
   const stale = gap > ctx.staleDays;
   const veryStale = gap > 90;
-  const logs = pastSetlists.map((e) => ({ id: e.id, title: L(lang, e.title), date: fmt(e.date, lang, true), typeLabel: t[e.type] }));
+  const logs = rehearsals.map((e) => ({ id: e.id, title: L(lang, e.title), date: fmt(e.date, lang, true), typeLabel: t[e.type] }));
   const songInstruments = (s.instruments || []).map((id) => {
     const inst = ctx.instruments.find((x) => x.id === id);
     return inst ? L(lang, inst.name) : id;

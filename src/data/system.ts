@@ -50,7 +50,7 @@ export const HANDOFF_NOTES: { h: Localized; items: Localized[] }[] = [
   ] },
   { h: { es: 'Lógica derivada, no almacenada', en: 'Derived, not stored' }, items: [
     { es: 'Historial: events donde starts_at < now(). No hay campo "archived".', en: 'History: events where starts_at < now(). There is no "archived" column.' },
-    { es: 'La última fecha de ensayo de cada canción se deriva del último event_songs con evento pasado (no se almacena).', en: "Each song's last-rehearsed date is derived from the latest event_songs on a past event (not stored)." },
+    { es: 'La última fecha de ensayo de cada canción se deriva del último event_songs con evento confirmado (settled), no del evento pasado (no se almacena).', en: "Each song's last-rehearsed date is derived from the latest event_songs on a confirmed (settled) event, not a past one (not stored)." },
     { es: 'Umbral de "sin ensayar" configurable (tweak staleDays, hoy %STALE% días). Amarillo > umbral, rojo > 90 días.', en: '"Unrehearsed" threshold is configurable (staleDays tweak, currently %STALE% days). Amber over threshold, red over 90 days.' },
     { es: 'Saldo del fondo = suma de ingresos − egresos. Nunca se guarda un total.', en: 'Pool balance = sum of income − expenses. Never store a total.' },
   ] },
