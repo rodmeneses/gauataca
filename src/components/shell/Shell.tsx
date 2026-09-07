@@ -18,6 +18,7 @@ import { CommandPalette } from '../modals/CommandPalette';
 import { HandoffPanel } from '../modals/HandoffPanel';
 import { TourOverlay } from '../modals/TourOverlay';
 import { Toasts } from '../modals/Toasts';
+import { TopProgress } from './TopProgress';
 import { UpdatePrompt } from '../pwa/UpdatePrompt';
 import { OfflineBanner } from '../pwa/OfflineBanner';
 
@@ -117,6 +118,7 @@ export function Shell() {
       {bs.state.handoff && <HandoffPanel />}
       {bs.tour.on && <TourOverlay />}
       {bs.toasts.length > 0 && <Toasts />}
+      <TopProgress />
       <OfflineBanner />
       <UpdatePrompt />
     </Wrapper>

@@ -1,7 +1,9 @@
 /**
  * DataProvider: loads the whole dataset from Supabase (or the Phase 1 mock
  * arrays when no env keys are set) and exposes it plus the write mutations.
- * Mutations are no-ops in demo mode; in live mode they write then reload.
+ * Mutations are no-ops in demo mode; in live mode they write then reload
+ * silently (the on-screen data stays put and swaps in place — no full-screen
+ * spinner). `mutating` is true while a write + its refetch are in flight.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useAuth } from './auth';
@@ -26,7 +28,9 @@ interface DataValue extends DataSnapshot {
   loading: boolean;
   /** Non-null when a live fetch failed (e.g. schema not applied yet). */
   error: string | null;
-  reload: () => Promise<void>;
+  /** True while a mutation and its follow-up refetch are in flight. */
+  mutating: boolean;
+  reload: (opts?: { silent?: boolean }) => Promise<void>;
   createEvent: (input: CreateEventInput) => Promise<string | undefined>;
   updateEvent: (id: string, input: CreateEventInput) => Promise<void>;
   createSong: (input: CreateSongInput) => Promise<string | undefined>;
@@ -86,24 +90,35 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [snap, setSnap] = useState<DataSnapshot>(isDemo ? DEMO : EMPTY);
   const [loading, setLoading] = useState(!isDemo);
+  const [mutating, setMutating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const reload = useCallback(async () => {
+  const reload = useCallback(async (opts?: { silent?: boolean }) => {
     if (isDemo) {
       setSnap(DEMO);
       setLoading(false);
       return;
     }
-    setLoading(true);
-    setError(null);
+    // A silent reload (after a mutation) keeps the current screen mounted and
+    // swaps the data in place — no full-screen spinner, no flicker.
+    if (!opts?.silent) {
+      setLoading(true);
+      setError(null);
+    }
     try {
       setSnap(await fetchAll(user?.id ?? null));
     } catch (err) {
-      setSnap(EMPTY);
-      setError(err instanceof Error ? err.message : String(err));
       console.error('Failed to load data:', err);
+      if (opts?.silent) {
+        // Don't tear down the screen for a failed background refetch — the
+        // write itself likely succeeded; just surface it like any mutation error.
+        window.dispatchEvent(new Event('guataca:mutation-error'));
+      } else {
+        setSnap(EMPTY);
+        setError(err instanceof Error ? err.message : String(err));
+      }
     } finally {
-      setLoading(false);
+      if (!opts?.silent) setLoading(false);
     }
   }, [user?.id]);
 
@@ -121,19 +136,23 @@ export function DataProvider({ children }: { children: ReactNode }) {
         window.dispatchEvent(new Event('guataca:offline-write'));
         return undefined;
       }
+      setMutating(true);
       try {
         const result = await fn();
-        await reload();
+        await reload({ silent: true });
         return result;
       } catch (err) {
         console.error('Mutation failed:', err);
         window.dispatchEvent(new Event('guataca:mutation-error'));
         return undefined;
+      } finally {
+        setMutating(false);
       }
     };
     return {
       ...snap,
       loading,
+      mutating,
       error,
       reload,
       createEvent: (input) => run(() => apiCreateEvent(input, uid)),
@@ -162,7 +181,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         return apiUploadProof(file);
       },
     };
-  }, [snap, loading, error, reload, user?.id]);
+  }, [snap, loading, mutating, error, reload, user?.id]);
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }

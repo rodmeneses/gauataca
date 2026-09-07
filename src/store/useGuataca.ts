@@ -117,6 +117,8 @@ export interface Guataca {
   staleDays: number;
   /** true while the data layer is fetching (live mode). */
   loading: boolean;
+  /** true while a mutation + its silent refetch are in flight (drives the top progress bar). */
+  mutating: boolean;
   /** Non-null when a live fetch failed (e.g. schema not applied yet). */
   error: string | null;
 
@@ -268,6 +270,7 @@ export interface Guataca {
   toggleHandoff: () => void;
   closeHandoff: () => void;
   toast: (msg: string, tone?: Toast['tone']) => void;
+  dismissToast: (id: string) => void;
 }
 
 function profileToMember(p: Profile): Member {
@@ -286,11 +289,11 @@ function profileToMember(p: Profile): Member {
 }
 
 export function useGuataca(): Guataca {
-  const { state: st, props, set, toast } = useStore();
+  const { state: st, props, set, toast, dismissToast } = useStore();
   const { user, profile, signOut, refreshProfile } = useAuth();
   const {
     songs: dbSongs, events: dbEvents, transactions: dbTx, gear: dbGear, threads: dbThreads, members: dbMembers,
-    instruments: dbInstruments, takes: dbTakes, myThreadVotes, myPollPicks, loading, error,
+    instruments: dbInstruments, takes: dbTakes, myThreadVotes, myPollPicks, loading, mutating, error,
     createEvent, updateEvent, createSong, updateSong, setSongLinks: persistSongLinks, createTransaction, createGear: persistGear, createInstrument: persistInstrument,
     onboard: persistOnboard, updateMemberInstruments: persistMemberInstruments, setSongInstruments: persistSongInstruments,
     addTake: persistTake, deleteTake: persistDeleteTake,
@@ -483,7 +486,7 @@ export function useGuataca(): Guataca {
       roleLabel: isAdmin ? t.admin : t.member, me, signedIn: !!user,
       bandName: props.bandName || 'GUATACA',
       view: st.view, viewTitle: t[st.view] || t.dashboard, viewSub: t[viewSubKey] || '',
-      isDesktop, isMobile, layout, isPhone, isTablet, isCoarsePointer, isMobileViewport, staleDays, loading, error,
+      isDesktop, isMobile, layout, isPhone, isTablet, isCoarsePointer, isMobileViewport, staleDays, loading, mutating, error,
 
       songs, filteredSongs, staleSongs, genreChips,
       events, upcoming, history, calList: st.calTab === 'upcoming' ? upcoming : history, nextEvent, dashUpcoming,
@@ -745,6 +748,7 @@ export function useGuataca(): Guataca {
       toggleHandoff: () => set((s) => ({ handoff: !s.handoff })),
       closeHandoff: () => set({ handoff: false }),
       toast,
+      dismissToast,
     };
-  }, [st, props, set, toast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myThreadVotes, myPollPicks, loading, error, isPhoneViewport, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, updateEvent, createSong, updateSong, persistSongLinks, createTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
+  }, [st, props, set, toast, dismissToast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myThreadVotes, myPollPicks, loading, mutating, error, isPhoneViewport, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, updateEvent, createSong, updateSong, persistSongLinks, createTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
 }
