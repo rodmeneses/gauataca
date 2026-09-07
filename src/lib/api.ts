@@ -98,7 +98,6 @@ function mapSongs(rows: Row[], songInstruments: Row[], songLinks: Row[]): Song[]
     key: s.key,
     bpm: s.bpm,
     dur: s.duration,
-    last: s.last_rehearsed_at ?? null,
     instruments: (instrBySong.get(s.id) ?? []).map((r) => r.instrument_id),
     links: (linksBySong.get(s.id) ?? [])
       .sort((a, b) => a.position - b.position)
@@ -368,7 +367,6 @@ export async function createSong(
     key: input.key,
     bpm: input.bpm,
     duration: input.dur,
-    last_rehearsed_at: null,
   });
   return id;
 }

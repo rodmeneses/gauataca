@@ -40,7 +40,7 @@ export const HANDOFF_NOTES: { h: Localized; items: Localized[] }[] = [
   ] },
   { h: { es: 'Tablas sugeridas', en: 'Suggested tables' }, items: [
     { es: 'profiles(id, name, email, role, joined_at) · profile_instruments(profile_id, instrument, proficiency) · profile_vocals(profile_id, flag)', en: 'profiles(id, name, email, role, joined_at) · profile_instruments(profile_id, instrument, proficiency) · profile_vocals(profile_id, flag)' },
-    { es: 'songs(id, title, genre, key, bpm, duration, last_rehearsed_at) · song_links(song_id, kind, label, url, position) · takes(event_id, song_id, url, n)', en: 'songs(id, title, genre, key, bpm, duration, last_rehearsed_at) · song_links(song_id, kind, label, url, position) · takes(event_id, song_id, url, n)' },
+    { es: 'songs(id, title, genre, key, bpm, duration) · song_links(song_id, kind, label, url, position) · takes(event_id, song_id, url, n)', en: 'songs(id, title, genre, key, bpm, duration) · song_links(song_id, kind, label, url, position) · takes(event_id, song_id, url, n)' },
     { es: 'events(id, type, state, starts_at, venue, fee_cents, flyer_url, note, previous_starts_at) · event_songs(event_id, song_id, position)', en: 'events(id, type, state, starts_at, venue, fee_cents, flyer_url, note, previous_starts_at) · event_songs(event_id, song_id, position)' },
     { es: 'event_media(event_id, label, url, submitted_by) · feedback(event_id, profile_id, anonymous, sound, performance, logistics, energy, went_well, improve)', en: 'event_media(event_id, label, url, submitted_by) · feedback(event_id, profile_id, anonymous, sound, performance, logistics, energy, went_well, improve)' },
     { es: 'polls(event_id, question) · poll_options(poll_id, label) · poll_votes(option_id, profile_id)', en: 'polls(event_id, question) · poll_options(poll_id, label) · poll_votes(option_id, profile_id)' },
@@ -50,7 +50,7 @@ export const HANDOFF_NOTES: { h: Localized; items: Localized[] }[] = [
   ] },
   { h: { es: 'Lógica derivada, no almacenada', en: 'Derived, not stored' }, items: [
     { es: 'Historial: events donde starts_at < now(). No hay campo "archived".', en: 'History: events where starts_at < now(). There is no "archived" column.' },
-    { es: 'last_rehearsed_at de cada canción se recalcula del último event_songs con evento pasado.', en: "Each song's last_rehearsed_at recomputes from the latest event_songs on a past event." },
+    { es: 'La última fecha de ensayo de cada canción se deriva del último event_songs con evento pasado (no se almacena).', en: "Each song's last-rehearsed date is derived from the latest event_songs on a past event (not stored)." },
     { es: 'Umbral de "sin ensayar" configurable (tweak staleDays, hoy %STALE% días). Amarillo > umbral, rojo > 90 días.', en: '"Unrehearsed" threshold is configurable (staleDays tweak, currently %STALE% days). Amber over threshold, red over 90 days.' },
     { es: 'Saldo del fondo = suma de ingresos − egresos. Nunca se guarda un total.', en: 'Pool balance = sum of income − expenses. Never store a total.' },
   ] },
