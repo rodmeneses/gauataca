@@ -203,16 +203,14 @@ export function NewTxModal() {
                 <option value="DTV">{t.dtv}</option>
               </Select>
             </Field>
-            {form.category === 'contribution' && (
-              <Field label={t.contributor}>
-                <Select value={form.contributor} onChange={(e) => setForm('contributor', e.target.value)}>
-                  <option value="">{t.noLink}</option>
-                  {members.map((m) => (
-                    <option key={m.id} value={m.id}>{m.name}</option>
-                  ))}
-                </Select>
-              </Field>
-            )}
+            <Field label={t.contributor}>
+              <Select value={form.contributor} onChange={(e) => setForm('contributor', e.target.value)}>
+                <option value="">{t.noLink}</option>
+                {members.map((m) => (
+                  <option key={m.id} value={m.id}>{m.name}</option>
+                ))}
+              </Select>
+            </Field>
           </div>
         )}
         <div className="grid grid-cols-2 gap-3">

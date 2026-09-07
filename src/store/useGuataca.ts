@@ -394,7 +394,9 @@ export function useGuataca(): Guataca {
     const tx = txFiltered.map((x) => txVm(x, ctx));
     const recentTx = allTx.slice(0, 4).map((x) => txVm(x, ctx));
 
-    const contribTx = allTx.filter((x) => x.category === 'contribution' && x.contributor);
+    // Any income with a contributor counts toward the member's contributions
+    // (donations, contributions, etc.), not just category 'contribution'.
+    const contribTx = allTx.filter((x) => x.kind === 'in' && x.contributor);
     const contribByMember = new Map<string, { total: number; month: number }>();
     for (const x of contribTx) {
       const key = x.contributor!;
