@@ -586,7 +586,9 @@ export function useGuataca(): Guataca {
           },
         });
       },
-      openNewTx: () => set({ modal: { kind: 'newTx' }, form: {} }),
+      // Pre-select the logged-in user as the contributor — the common case is
+      // logging your own contribution; admins can change it for someone else.
+      openNewTx: () => set({ modal: { kind: 'newTx' }, form: { contributor: me.id } }),
       openEditTx: (id) => {
         const x = allTx.find((t) => t.id === id);
         if (!x) return;
