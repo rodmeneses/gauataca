@@ -91,6 +91,18 @@ genre chip, and the **Apple Music icon** fall back to dark neon values (`#f472b6
   are external Drive/iCloud links that don't work offline anyway.
 - Web push notifications — deferred until Phase 2 auth + a backend function exist.
 
+### 4. Treasurer name is hard-coded (by design, for now)
+The treasurer shown in the ledger balance card and the sidebar is a **hard-coded string**,
+not derived from a member record:
+
+- `src/components/views/Ledger.tsx` — `{t.treasurer}: Rodrigo Meneses · …`
+- `src/components/shell/Sidebar.tsx` — `{t.treasurer}: Rodrigo M.`
+
+`t.treasurer` is just the i18n label ("Tesorero" / "Treasurer"); the name itself is typed
+directly into the JSX. To change the treasurer, edit those two strings. (A future
+`treasurer_id` pointer or `is_treasurer` flag on `profiles` would make it data-driven —
+see the discussion in the session; not needed yet.)
+
 ## Key files map
 
 | File | Role |
