@@ -200,6 +200,7 @@ export function NewTxModal() {
                 <option value="tip">{t.tip}</option>
                 <option value="donation">{t.donation}</option>
                 <option value="contribution">{t.contribution}</option>
+                <option value="DTV">{t.dtv}</option>
               </Select>
             </Field>
             {form.category === 'contribution' && (

@@ -427,7 +427,7 @@ export function txVm(x: Transaction, ctx: Ctx): TxVm {
     proofKind: x.proofKind === 'zelle' ? t.zelle : x.proofKind === 'invoice' ? t.invoice : x.proofKind === 'photo' ? t.photo : t.receipt,
     eventLabel: ev ? L(lang, ev.title) : null,
     gearLabel: g ? L(lang, g.name) : null,
-    categoryLabel: x.category === 'fee' ? t.fee : x.category === 'tip' ? t.tip : x.category === 'donation' ? t.donation : x.category === 'contribution' ? t.contribution : null,
+    categoryLabel: x.category === 'fee' ? t.fee : x.category === 'tip' ? t.tip : x.category === 'donation' ? t.donation : x.category === 'contribution' ? t.contribution : x.category === 'DTV' ? t.dtv : null,
   };
 }
 
