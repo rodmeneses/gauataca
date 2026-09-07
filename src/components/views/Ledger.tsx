@@ -2,13 +2,26 @@
  * Ledger & gear view — pool balance cards, the transactions table and the
  * equipment inventory grid (design lines 454–551).
  */
-import { ArrowLeftRight, ExternalLink, Package, Pencil, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ArrowLeftRight, ExternalLink, Link, Package, Pencil, Plus, Trash2 } from 'lucide-react';
 import { Badge, Button, Select } from '@/components/ui';
 import { useGuataca } from '@/store';
 import type { TxDate, TxFilter } from '@/types';
 
 export function Ledger() {
-  const { t, isAdmin, balanceStr, balanceNeg, incomeStr, expenseStr, txCount, tx, txFilter, txDate, setTxFilter, setTxDate, gear, gearValue, openNewTx, openNewGear, openCustody, openEditTx, deleteTx, contributions } = useGuataca();
+  const { t, isAdmin, state, balanceStr, balanceNeg, incomeStr, expenseStr, txCount, tx, txFilter, txDate, setTxFilter, setTxDate, gear, gearValue, openNewTx, openNewGear, openCustody, openEditTx, deleteTx, contributions, clearScrollToTx, copyLink } = useGuataca();
+  // After a deep link (goToTx), scroll the target movement into view and flash it.
+  const [hlTx, setHlTx] = useState<string | null>(null);
+  useEffect(() => {
+    if (!state.scrollToTx) return;
+    const el = document.getElementById(`tx-${state.scrollToTx}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setHlTx(state.scrollToTx);
+      window.setTimeout(() => setHlTx(null), 2200);
+    }
+    clearScrollToTx();
+  }, [state.scrollToTx, clearScrollToTx]);
   const TX_GRID = isAdmin
     ? 'min-w-[860px] grid grid-cols-[120px_1fr_130px_150px_120px_72px] gap-3'
     : 'min-w-[800px] grid grid-cols-[120px_1fr_130px_150px_120px] gap-3';
@@ -80,7 +93,7 @@ export function Ledger() {
             {isAdmin && <span />}
           </div>
           {tx.map((x) => (
-            <div key={x.id} className={`${TX_GRID} py-[14px] px-[18px] border-b border-line-faint items-center hover:bg-hover-soft`}>
+            <div key={x.id} id={`tx-${x.id}`} className={`${TX_GRID} py-[14px] px-[18px] border-b border-line-faint items-center hover:bg-hover-soft ${hlTx === x.id ? 'ring-2 ring-emerald/50' : ''}`}>
               <span className="font-mono font-medium text-[12px] text-ink-muted">{x.dateStr}</span>
               <span className="flex items-center gap-[10px] min-w-0">
                 <span className="w-[22px] h-[22px] rounded-[7px] grid place-items-center flex-none font-mono font-semibold text-[12px]" style={{ background: x.bg, color: x.color }}>
@@ -99,6 +112,15 @@ export function Ledger() {
                     </span>
                   )}
                 </span>
+                <button
+                  type="button"
+                  onClick={() => copyLink('tx', x.id)}
+                  title={t.copyLink}
+                  aria-label={`${t.copyLink} — ${x.desc}`}
+                  className="grid place-items-center w-[26px] h-[26px] rounded-[7px] border border-line bg-raised text-ink-muted hover:text-ink-body hover:border-emerald/40 cursor-pointer flex-none"
+                >
+                  <Link size={13} strokeWidth={2} />
+                </button>
               </span>
               <span className="flex items-center gap-2">
                 <span className="w-[22px] h-[22px] rounded-[7px] bg-line grid place-items-center font-display font-semibold text-[9.5px] text-ink-meta flex-none">{x.byInitial}</span>

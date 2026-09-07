@@ -2,7 +2,7 @@
  * Event detail modal (design lines 929–1111): header, 4 stat tiles, setlist,
  * media gallery, retrospective (ratings, well/improve, poll, my ratings) and footer.
  */
-import { ChartColumn, Check, EyeOff, ExternalLink, Image, Instagram, Pencil, Star } from 'lucide-react';
+import { ChartColumn, Check, EyeOff, ExternalLink, Image, Instagram, Link, Pencil, Star } from 'lucide-react';
 import { RSVP_COLOR, RSVP_ORDER, RSVP_PENDING_COLOR, rsvpLabel, useGuataca } from '@/store';
 import { Avatar, Badge, Button, CloseButton, Modal } from '@/components/ui';
 import { SetlistEditor } from './SetlistEditor';
@@ -18,7 +18,7 @@ const textareaCls =
   'w-full py-[11px] px-[13px] rounded-[10px] border border-line bg-base text-ink-base font-sans font-normal text-[13px] leading-[normal] outline-none resize-y';
 
 export function EventModal() {
-  const { t, ev, fb, state, songs, isAdmin, closeModal, openShare, openSettle, openEditEvent, pickPoll, setRating, toggleAnon, setFbWell, setFbImprove, submitFb, setRsvp, setEventSetlist, addTake, deleteTake, goToSong } = useGuataca();
+  const { t, ev, fb, state, songs, isAdmin, closeModal, openShare, openSettle, openEditEvent, pickPoll, setRating, toggleAnon, setFbWell, setFbImprove, submitFb, setRsvp, setEventSetlist, addTake, deleteTake, goToSong, copyLink } = useGuataca();
   if (!ev) return null;
 
   const ratingLabel: Record<RatingKey, string> = { sound: t.sound, perf: t.perf, log: t.logistics, energy: t.energy };
@@ -334,6 +334,10 @@ export function EventModal() {
             {t.prepIg}
           </Button>
         )}
+        <Button variant="surface" onClick={() => copyLink('event', ev.id)} className="py-[11px] px-4 rounded-[11px]">
+          <Link size={15} strokeWidth={1.9} />
+          {t.copyLink}
+        </Button>
         <Button variant="surface" onClick={closeModal} className="py-[11px] px-[18px] rounded-[11px]">
           {t.close}
         </Button>

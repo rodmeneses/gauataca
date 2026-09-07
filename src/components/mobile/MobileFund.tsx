@@ -1,12 +1,25 @@
 /** Mobile "Fondo" tab: pool balance hero + "New movement" (admin) + in/out & date filters + transactions, contributions and the gear inventory. */
-import { ArrowLeftRight, ExternalLink, Package, Pencil, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ArrowLeftRight, ExternalLink, Link, Package, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useGuataca } from '../../store';
 import type { TxDate, TxFilter } from '../../types';
 
 const SECTION = 'font-display font-semibold text-[12px] tracking-[.08em] uppercase text-ink-muted';
 
 export function MobileFund() {
-  const { t, isAdmin, balanceStr, balanceNeg, incomeStr, expenseStr, tx, txFilter, txDate, setTxFilter, setTxDate, contributions, gear, gearValue, openNewTx, openNewGear, openCustody, openEditTx, deleteTx } = useGuataca();
+  const { t, isAdmin, state, balanceStr, balanceNeg, incomeStr, expenseStr, tx, txFilter, txDate, setTxFilter, setTxDate, contributions, gear, gearValue, openNewTx, openNewGear, openCustody, openEditTx, deleteTx, clearScrollToTx, copyLink } = useGuataca();
+  // After a deep link (goToTx), scroll the target movement into view and flash it.
+  const [hlTx, setHlTx] = useState<string | null>(null);
+  useEffect(() => {
+    if (!state.scrollToTx) return;
+    const el = document.getElementById(`tx-${state.scrollToTx}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setHlTx(state.scrollToTx);
+      window.setTimeout(() => setHlTx(null), 2200);
+    }
+    clearScrollToTx();
+  }, [state.scrollToTx, clearScrollToTx]);
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
@@ -61,7 +74,7 @@ export function MobileFund() {
         </div>
 
         {tx.map((x) => (
-          <div key={x.id} className="bg-surface border border-line rounded-xl py-3.5 px-4 flex flex-col gap-2.5">
+          <div key={x.id} id={`tx-${x.id}`} className={`bg-surface border border-line rounded-xl py-3.5 px-4 flex flex-col gap-2.5 ${hlTx === x.id ? 'ring-2 ring-emerald/50' : ''}`}>
             <div className="flex items-center gap-3">
               <span
                 className="w-7 h-7 rounded-lg grid place-items-center flex-none font-mono font-semibold text-[13px]"
@@ -70,6 +83,14 @@ export function MobileFund() {
                 {x.arrow}
               </span>
               <span className="min-w-0 flex-1 font-sans font-medium text-[14px] text-ink-base">{x.desc}</span>
+              <button
+                type="button"
+                onClick={() => copyLink('tx', x.id)}
+                aria-label={`${t.copyLink} — ${x.desc}`}
+                className="grid place-items-center w-[44px] h-[44px] rounded-lg border border-line bg-raised text-ink-muted cursor-pointer"
+              >
+                <Link size={15} strokeWidth={2} />
+              </button>
               <span className="font-mono font-semibold text-[14px] flex-none" style={{ color: x.color }}>{x.amountStr}</span>
             </div>
             <div className="flex items-center gap-2.5">

@@ -20,6 +20,8 @@ export interface State {
   openSong: string | null;
   /** Song id to scroll into view after a cross-view jump (set by goToSong, cleared after scroll). */
   scrollToSong: string | null;
+  /** Ledger movement id to scroll into view after a deep link (set by goToTx, cleared after scroll). */
+  scrollToTx: string | null;
   q: string;
   genre: GenreId | 'all';
   staleOnly: boolean;
@@ -73,6 +75,7 @@ export function initialState(props: AppProps): State {
     calTab: 'upcoming',
     openSong: null,
     scrollToSong: null,
+    scrollToTx: null,
     q: '',
     genre: 'all',
     staleOnly: false,

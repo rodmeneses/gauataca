@@ -6,7 +6,7 @@
  * log entries link to their event.
  */
 import { useEffect } from 'react';
-import { ChevronDown, ChevronRight, Clock, FileText, Mic, Pencil, Plus, Search, Youtube } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clock, FileText, Link, Mic, Pencil, Plus, Search, Youtube } from 'lucide-react';
 import { AppleMusicIcon, Pill, Segment, SpotifyIcon } from '@/components/ui';
 import { useGuataca } from '@/store';
 import type { LinkKind } from '@/types';
@@ -24,7 +24,7 @@ function streamIcon(kind: LinkKind) {
 }
 
 export function Repertoire() {
-  const { state, t, isAdmin, setQ, openNewSong, openEditSong, openEvent, genreChips, setGenre, toggleStale, filteredSongs, statSongs, setSongSort, toggleSong, clearScrollToSong } = useGuataca();
+  const { state, t, isAdmin, setQ, openNewSong, openEditSong, openEvent, genreChips, setGenre, toggleStale, filteredSongs, statSongs, setSongSort, toggleSong, clearScrollToSong, copyLink } = useGuataca();
 
   // After a cross-view jump (goToSong), scroll the target song card into view.
   useEffect(() => {
@@ -141,6 +141,15 @@ export function Repertoire() {
                   <Pencil size={14} strokeWidth={2} />
                 </button>
               )}
+              <button
+                type="button"
+                onClick={() => copyLink('song', s.id)}
+                title={t.copyLink}
+                aria-label={`${t.copyLink} — ${s.title}`}
+                className="grid place-items-center w-[30px] h-[30px] rounded-[9px] border border-line bg-raised text-ink-muted hover:text-ink-body hover:border-line-hover cursor-pointer flex-none"
+              >
+                <Link size={14} strokeWidth={2} />
+              </button>
               <button
                 type="button"
                 onClick={() => toggleSong(s.id)}
