@@ -153,7 +153,8 @@ export function NewEventModal() {
 
 /* ---------------------------------------------------------- new movement */
 export function NewTxModal() {
-  const { t, lang, form, setForm, closeModal, saveTx, events, gear, members, uploadProof, toast } = useGuataca();
+  const { t, lang, form, setForm, closeModal, saveTx, events, gear, members, uploadProof, toast, modal } = useGuataca();
+  const editing = modal?.kind === 'newTx' && !!modal.id;
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -178,7 +179,7 @@ export function NewTxModal() {
 
   return (
     <Modal onClose={closeModal} maxWidth={520}>
-      <FormHeader title={t.newTx} onClose={closeModal} />
+      <FormHeader title={editing ? t.editTx : t.newTx} onClose={closeModal} />
       <FormBody>
         <div className="grid grid-cols-2 gap-3">
           <Field label={t.type}>

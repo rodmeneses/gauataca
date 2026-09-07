@@ -8,9 +8,9 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { useAuth } from './auth';
 import {
   addComment as apiAddComment, addTake as apiAddTake, createEvent as apiCreateEvent, createGear as apiCreateGear, createInstrument as apiCreateInstrument,
-  createSong as apiCreateSong, createTransaction as apiCreateTransaction, deleteTake as apiDeleteTake, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
+  createSong as apiCreateSong, createTransaction as apiCreateTransaction, deleteTake as apiDeleteTake, deleteTransaction as apiDeleteTransaction, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
   setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, setSongInstruments as apiSetSongInstruments, setSongLinks as apiSetSongLinks,
-  settleEvent as apiSettleEvent, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateEvent as apiUpdateEvent, updateMemberInstruments as apiUpdateMemberInstruments, updateSong as apiUpdateSong,
+  settleEvent as apiSettleEvent, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateEvent as apiUpdateEvent, updateMemberInstruments as apiUpdateMemberInstruments, updateSong as apiUpdateSong, updateTransaction as apiUpdateTransaction,
   uploadProof as apiUploadProof, voteThread as apiVoteThread, type DataSnapshot,
 } from './api';
 import type { EventType, GearCondition, GenreId, LinkKind, Proficiency, ProofKind, RsvpStatus, TxCategory, TxKind, VocalFlag } from '../types';
@@ -35,6 +35,8 @@ interface DataValue extends DataSnapshot {
   updateSong: (id: string, input: CreateSongInput) => Promise<void>;
   setSongLinks: (songId: string, links: SongLinkInput[]) => Promise<void>;
   createTransaction: (input: CreateTxInput) => Promise<void>;
+  updateTransaction: (id: string, input: CreateTxInput) => Promise<void>;
+  deleteTransaction: (id: string) => Promise<void>;
   createGear: (input: CreateGearInput) => Promise<void>;
   createInstrument: (name: string) => Promise<string | undefined>;
   onboard: (instruments: { id: string; lv: Proficiency }[], vocals: VocalFlag[]) => Promise<void>;
@@ -138,6 +140,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
       updateSong: (id, input) => run(() => apiUpdateSong(id, input, uid)),
       setSongLinks: (songId, links) => run(() => apiSetSongLinks(songId, links)),
       createTransaction: (input) => run(() => apiCreateTransaction(input, uid)),
+      updateTransaction: (id, input) => run(() => apiUpdateTransaction(id, input, uid)),
+      deleteTransaction: (id) => run(() => apiDeleteTransaction(id)),
       createGear: (input) => run(() => apiCreateGear(input, uid)),
       createInstrument: (name) => run(() => apiCreateInstrument(name)),
       onboard: (instruments, vocals) => run(() => apiOnboard(uid, instruments, vocals)),

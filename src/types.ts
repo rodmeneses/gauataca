@@ -207,7 +207,7 @@ export type Modal =
   | { kind: 'member'; id: string; edit?: boolean }
   | { kind: 'newEvent'; id?: string }
   | { kind: 'newSong'; id?: string }
-  | { kind: 'newTx' }
+  | { kind: 'newTx'; id?: string }
   | { kind: 'newGear' }
   | { kind: 'onboard' }
   | { kind: 'signin' };

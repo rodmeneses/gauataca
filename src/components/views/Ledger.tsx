@@ -2,15 +2,16 @@
  * Ledger & gear view — pool balance cards, the transactions table and the
  * equipment inventory grid (design lines 454–551).
  */
-import { ArrowLeftRight, ExternalLink, Package, Plus } from 'lucide-react';
+import { ArrowLeftRight, ExternalLink, Package, Pencil, Plus, Trash2 } from 'lucide-react';
 import { Badge, Button, Select } from '@/components/ui';
 import { useGuataca } from '@/store';
 import type { TxDate, TxFilter } from '@/types';
 
-const TX_GRID = 'min-w-[800px] grid grid-cols-[120px_1fr_130px_150px_120px] gap-3';
-
 export function Ledger() {
-  const { t, isAdmin, balanceStr, balanceNeg, incomeStr, expenseStr, txCount, tx, txFilter, txDate, setTxFilter, setTxDate, gear, gearValue, openNewTx, openNewGear, openCustody, contributions } = useGuataca();
+  const { t, isAdmin, balanceStr, balanceNeg, incomeStr, expenseStr, txCount, tx, txFilter, txDate, setTxFilter, setTxDate, gear, gearValue, openNewTx, openNewGear, openCustody, openEditTx, deleteTx, contributions } = useGuataca();
+  const TX_GRID = isAdmin
+    ? 'min-w-[860px] grid grid-cols-[120px_1fr_130px_150px_120px_72px] gap-3'
+    : 'min-w-[800px] grid grid-cols-[120px_1fr_130px_150px_120px] gap-3';
 
   return (
     <div className="flex flex-col gap-5 animate-fade">
@@ -76,6 +77,7 @@ export function Ledger() {
             <span>{t.addedBy}</span>
             <span>{t.proof}</span>
             <span className="text-right">{t.amount}</span>
+            {isAdmin && <span />}
           </div>
           {tx.map((x) => (
             <div key={x.id} className={`${TX_GRID} py-[14px] px-[18px] border-b border-line-faint items-center hover:bg-hover-soft`}>
@@ -123,6 +125,28 @@ export function Ledger() {
                 )}
               </span>
               <span className="font-mono font-semibold text-[14.5px] text-right" style={{ color: x.color }}>{x.amountStr}</span>
+              {isAdmin && (
+                <span className="flex items-center justify-end gap-1">
+                  <button
+                    type="button"
+                    onClick={() => openEditTx(x.id)}
+                    aria-label={t.editTx}
+                    title={t.editTx}
+                    className="grid place-items-center w-[26px] h-[26px] rounded-[7px] border border-line bg-raised text-ink-muted hover:text-ink-body hover:border-emerald/40 cursor-pointer"
+                  >
+                    <Pencil size={13} strokeWidth={2} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteTx(x.id)}
+                    aria-label={t.deleteTx}
+                    title={t.deleteTx}
+                    className="grid place-items-center w-[26px] h-[26px] rounded-[7px] border border-line bg-raised text-ink-muted hover:text-ink-body hover:border-rose/40 cursor-pointer"
+                  >
+                    <Trash2 size={13} strokeWidth={2} />
+                  </button>
+                </span>
+              )}
             </div>
           ))}
         </div>
