@@ -72,6 +72,11 @@
   --color-pink: var(--g-pink);
   --color-teal: var(--g-teal);
 
+  /* flag — the GUATACA mark (Venezuelan tricolor), fixed across themes */
+  --color-flag-yellow: var(--g-flag-yellow);
+  --color-flag-blue: var(--g-flag-blue);
+  --color-flag-red: var(--g-flag-red);
+
   /* accent tints — background washes behind coloured text/badges.
      A separate value per theme because a dark-designed alpha wash
      (e.g. #34d39914) is invisible on white. */
@@ -172,6 +177,10 @@
   --g-fuchsia: #d946ef;
   --g-pink: #f472b6;
   --g-teal: #2dd4bf;
+
+  --g-flag-yellow: #FFCC00;
+  --g-flag-blue: #00247D;
+  --g-flag-red: #CF142B;
 
   --g-tint-emerald: #34d39921;
   --g-tint-violet: #8b5cf624;
