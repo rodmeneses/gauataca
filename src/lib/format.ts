@@ -1,22 +1,24 @@
 import type { Lang } from '../types';
 import { T } from '../i18n';
 
-/** "Now" for relative dates. */
-export const TODAY = new Date();
+/** "Now" for relative dates — a function so it's always fresh (a module-level
+ *  constant would go stale across midnight in a long-lived PWA session). */
+export const now = (): Date => new Date();
 
 export function d(iso: string): Date {
   return new Date(iso + 'T12:00:00');
 }
 
-/** Whole days from TODAY to `iso` (negative = past). */
+/** Whole days from now to `iso` (negative = past). */
 export function days(iso: string): number {
-  return Math.round((d(iso).getTime() - TODAY.getTime()) / 86400000);
+  return Math.round((d(iso).getTime() - now().getTime()) / 86400000);
 }
 
 /** true when `iso` falls in the current calendar month. */
 export function sameMonth(iso: string): boolean {
   const dt = d(iso);
-  return dt.getFullYear() === TODAY.getFullYear() && dt.getMonth() === TODAY.getMonth();
+  const today = now();
+  return dt.getFullYear() === today.getFullYear() && dt.getMonth() === today.getMonth();
 }
 
 const DOW: Record<Lang, string[]> = {
