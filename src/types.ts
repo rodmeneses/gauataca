@@ -132,7 +132,7 @@ export interface Take {
 export type TxKind = 'in' | 'out';
 export type ProofKind = 'zelle' | 'invoice' | 'photo' | 'receipt';
 /** Income category (null for expenses). */
-export type TxCategory = 'fee' | 'tip' | 'donation' | 'contribution' | 'dtv';
+export type TxCategory = 'fee' | 'tip' | 'donation' | 'contribution' | 'DTV';
 /** Ledger filter: all movements, income only, or expenses only. */
 export type TxFilter = 'all' | 'in' | 'out';
 /** Ledger date window: all time, or the last N days. */

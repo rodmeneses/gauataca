@@ -1,4 +1,4 @@
--- GUATACA — V4: add the 'dtv' income category.
+-- GUATACA — V4: add the 'DTV' income category.
 --
 -- DTV (the org) pays for some practices, so income movements need a category
 -- to trace them back to DTV. Extend the transactions.category check constraint
@@ -6,4 +6,4 @@
 
 alter table transactions drop constraint if exists transactions_category_check;
 alter table transactions add constraint transactions_category_check
-  check (category is null or category in ('fee', 'tip', 'donation', 'contribution', 'dtv'));
+  check (category is null or category in ('fee', 'tip', 'donation', 'contribution', 'DTV'));
