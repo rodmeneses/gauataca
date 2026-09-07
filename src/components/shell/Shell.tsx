@@ -1,6 +1,7 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { useGuataca } from '../../store';
 import { useAuth } from '../../lib/auth';
+import { clearDeepLink, readDeepLink } from '../../lib/deepLink';
 import { LoginPage } from '../auth/LoginPage';
 import { DesktopShell } from './DesktopShell';
 import { MobileShell } from '../mobile/MobileShell';
@@ -49,6 +50,21 @@ export function Shell() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, profile, bs.state.onboardDismissed, modal]);
+
+  // Shareable deep link (?event= / ?song= / ?tx=): apply once data is loaded,
+  // then strip the params so a refresh doesn't re-open the item.
+  const deepLinkApplied = useRef(false);
+  useEffect(() => {
+    if (deepLinkApplied.current || bs.loading) return;
+    deepLinkApplied.current = true;
+    const dl = readDeepLink();
+    if (!dl) return;
+    clearDeepLink();
+    if (dl.kind === 'event') bs.openEvent(dl.id);
+    else if (dl.kind === 'song') bs.goToSong(dl.id);
+    else bs.goToTx(dl.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bs.loading]);
 
   if (authLoading) {
     return (

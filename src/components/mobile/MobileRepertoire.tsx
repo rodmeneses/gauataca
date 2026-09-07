@@ -1,6 +1,6 @@
 /** Mobile "Repertorio" tab: search + genre/sort filters + song cards with streaming links, chart links, takes and a collapsible rehearsal log. */
 import { useEffect } from 'react';
-import { ChevronDown, ChevronRight, Clock, FileText, Mic, Pencil, Plus, Youtube } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clock, FileText, Link, Mic, Pencil, Plus, Youtube } from 'lucide-react';
 import { useGuataca } from '../../store';
 import { AppleMusicIcon, Pill, Segment, SpotifyIcon } from '../ui';
 import type { LinkKind } from '../../types';
@@ -15,7 +15,7 @@ function streamIcon(kind: LinkKind) {
 }
 
 export function MobileRepertoire() {
-  const { t, isAdmin, state, setQ, filteredSongs, statSongs, openNewSong, openEditSong, openEvent, genreChips, setGenre, toggleStale, setSongSort, toggleSong, clearScrollToSong } = useGuataca();
+  const { t, isAdmin, state, setQ, filteredSongs, statSongs, openNewSong, openEditSong, openEvent, genreChips, setGenre, toggleStale, setSongSort, toggleSong, clearScrollToSong, copyLink } = useGuataca();
 
   // After a cross-view jump (goToSong), scroll the target song card into view.
   useEffect(() => {
@@ -96,6 +96,15 @@ export function MobileRepertoire() {
                   <Pencil size={16} strokeWidth={2} />
                 </button>
               )}
+              <button
+                type="button"
+                onClick={() => copyLink('song', s.id)}
+                title={t.copyLink}
+                aria-label={`${t.copyLink} — ${s.title}`}
+                className="grid place-items-center w-11 h-11 rounded-lg border border-line bg-raised text-ink-muted cursor-pointer"
+              >
+                <Link size={16} strokeWidth={2} />
+              </button>
               <button
                 type="button"
                 onClick={() => toggleSong(s.id)}

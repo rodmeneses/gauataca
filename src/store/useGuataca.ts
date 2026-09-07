@@ -13,6 +13,7 @@ import type {
 } from '../types';
 import { useStore, type State } from './store';
 import { writeLangPref, writeThemePref, type ThemePref } from '../lib/prefs';
+import { itemUrl } from '../lib/deepLink';
 import { useAuth } from '../lib/auth';
 import { useData } from '../lib/data';
 import { useMediaQuery } from '../lib/useMediaQuery';
@@ -197,6 +198,12 @@ export interface Guataca {
   goToSong: (id: string) => void;
   /** Clear the pending scroll-to-song request (called by the repertoire views after scrolling). */
   clearScrollToSong: () => void;
+  /** Navigate to the ledger and scroll to a specific movement (from a shareable link). */
+  goToTx: (id: string) => void;
+  /** Clear the pending scroll-to-movement request (called by the ledger views after scrolling). */
+  clearScrollToTx: () => void;
+  /** Copy a shareable deep link for an item (event / song / movement) to the clipboard. */
+  copyLink: (kind: 'event' | 'song' | 'tx', id: string) => void;
   setQ: (q: string) => void;
   setGenre: (g: GenreId | 'all') => void;
   toggleStale: () => void;
@@ -529,6 +536,12 @@ export function useGuataca(): Guataca {
       toggleSong: (id) => set((s) => ({ openSong: s.openSong === id ? null : id })),
       goToSong: (id) => set({ view: 'repertoire', mobileTab: 'repertoire', openSong: id, scrollToSong: id, q: '', genre: 'all', staleOnly: false, modal: null, palette: false }),
       clearScrollToSong: () => set({ scrollToSong: null }),
+      goToTx: (id) => set({ view: 'ledger', mobileTab: 'fund', scrollToTx: id, modal: null, palette: false }),
+      clearScrollToTx: () => set({ scrollToTx: null }),
+      copyLink: (kind, id) => {
+        if (navigator.clipboard) navigator.clipboard.writeText(itemUrl(kind, id)).catch(() => {});
+        toast(t.linkCopied);
+      },
       setQ: (v) => set({ q: v }),
       setGenre: (g) => set({ genre: g }),
       toggleStale: () => set((s) => ({ staleOnly: !s.staleOnly })),
