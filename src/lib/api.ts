@@ -185,7 +185,7 @@ function mapEvents(
       note: { es: e.note_es ?? '', en: e.note_en ?? '' },
       flyer: e.flyer_url ?? undefined,
       prevDate: e.previous_starts_at ? e.previous_starts_at.slice(0, 10) : undefined,
-      media: (mediaByEvent.get(e.id) ?? []).map((m) => ({ label: { es: m.label_es, en: m.label_en }, url: m.url })),
+      media: (mediaByEvent.get(e.id) ?? []).map((m) => ({ id: m.id, kind: m.kind, label: { es: m.label_es, en: m.label_en }, url: m.url })),
       feedback: fbRows.length ? buildFeedback(fbRows, poll, optsByPoll, votesByOpt, memberShort) : undefined,
     };
   });
@@ -515,6 +515,46 @@ export async function uploadProof(file: File): Promise<string> {
   const { error } = await supabase.storage.from('receipts').upload(path, file, { cacheControl: '3600', upsert: false });
   if (error) throw error;
   const { data } = supabase.storage.from('receipts').getPublicUrl(path);
+  return data.publicUrl;
+}
+
+/* ------------------------------------------------------------- event media */
+/** Add a photo or video link to an event. */
+export async function addEventMedia(
+  eventId: string,
+  input: { kind: 'photo' | 'video'; labelEs: string; labelEn: string; url: string },
+  userId: string,
+): Promise<void> {
+  await supabase.from('event_media').insert({
+    event_id: eventId,
+    kind: input.kind,
+    label_es: input.labelEs,
+    label_en: input.labelEn,
+    url: input.url,
+    submitted_by: userId || null,
+  });
+}
+
+/** Remove an event media row; also deletes the storage object when it's an uploaded photo. */
+export async function deleteEventMedia(id: number): Promise<void> {
+  const { data: row } = await supabase.from('event_media').select('url').eq('id', id).single();
+  await supabase.from('event_media').delete().eq('id', id);
+  if (row?.url) {
+    const marker = '/storage/v1/object/public/event-photos/';
+    const idx = row.url.indexOf(marker);
+    if (idx >= 0) {
+      const path = row.url.slice(idx + marker.length);
+      await supabase.storage.from('event-photos').remove([path]);
+    }
+  }
+}
+
+/** Upload an event photo to the public `event-photos` bucket; returns its public URL. */
+export async function uploadEventPhoto(blob: Blob): Promise<string> {
+  const path = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+  const { error } = await supabase.storage.from('event-photos').upload(path, blob, { cacheControl: '3600', upsert: false });
+  if (error) throw error;
+  const { data } = supabase.storage.from('event-photos').getPublicUrl(path);
   return data.publicUrl;
 }
 

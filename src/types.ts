@@ -115,7 +115,7 @@ export interface BandEvent {
   note: Localized;
   flyer?: string;
   prevDate?: string;
-  media?: { label: Localized; url: string }[];
+  media?: { id: number; kind: 'photo' | 'video'; label: Localized; url: string }[];
   feedback?: EventFeedback;
 }
 
