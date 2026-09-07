@@ -237,7 +237,7 @@ export function NewTxModal() {
           </Field>
         </div>
         <Field label={t.desc}>
-          <Input value={form.desc} onChange={(e) => setForm('desc', e.target.value)} placeholder="Cachet — Festival Latino de Fruitvale" />
+          <Input value={form.desc} onChange={(e) => setForm('desc', e.target.value)} placeholder="Honorarios — Festival Latino de Fruitvale" />
         </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label={t.linkEvent}>
