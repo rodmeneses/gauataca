@@ -63,16 +63,10 @@ export const HANDOFF_NOTES: { h: Localized; items: Localized[] }[] = [
     { es: 'Añadido en código, no está en el archivo de Claude Design: cada músico marca Voy / Quizás / No voy en eventos futuros no cancelados (modal del evento); las tarjetas del calendario y de la agenda móvil muestran su respuesta.', en: 'Added in code, not in the Claude Design file: each member marks Going / Maybe / Not going on upcoming, non-cancelled events (event modal); calendar and mobile agenda cards show their answer.' },
     { es: 'Tabla: event_attendance(event_id, profile_id, status, updated_at) con unique(event_id, profile_id). RLS: cada músico inserta/actualiza su propia fila; todos leen.', en: 'Table: event_attendance(event_id, profile_id, status, updated_at) with unique(event_id, profile_id). RLS: each member inserts/updates their own row; everyone reads.' },
     { es: '"Confirmados" nunca se guarda: count(status = \'going\'); "por responder" = miembros sin fila.', en: '"Confirmed" is never stored: count(status = \'going\'); "pending" = members without a row.' } ] },
-  { h: { es: 'Simulado en este prototipo', en: 'Mocked in this prototype' }, items: [
-    { es: 'Los enlaces de Drive / iCloud / Docs son ficticios y no resuelven. Reemplazar por URLs reales.', en: 'Drive / iCloud / Docs links are fictional and do not resolve. Replace with real URLs.' },
-    { es: 'navigator.share y el deep link instagram://camera se intentan de verdad; en escritorio caen a un aviso.', en: 'navigator.share and the instagram://camera deep link are genuinely attempted; on desktop they fall back to a toast.' },
-    { es: 'Los formularios de nuevo evento / canción / movimiento sí insertan en el estado local, sin persistencia.', en: 'The new event / song / movement forms do insert into local state, with no persistence.' },
-    { es: 'Auth, OAuth y recuperación de contraseña no están en Fase 1.', en: 'Auth, OAuth and password recovery are out of scope for Phase 1.' },
-  ] },
 ];
 
 export const TOUR_STEPS: { title: Localized; body: Localized }[] = [
-  { title: { es: 'Bienvenido a GUATACA', en: 'Welcome to GUATACA' }, body: { es: 'Prototipo de Fase 1 con datos ficticios pero realistas: 24 canciones, 11 eventos, 13 movimientos del fondo y 6 equipos.', en: 'Phase 1 prototype with fictional but realistic data: 24 songs, 11 events, 13 ledger movements and 6 pieces of gear.' } },
+  { title: { es: 'Bienvenido a GUATACA', en: 'Welcome to GUATACA' }, body: { es: 'El panel de tu banda: agenda, repertorio, fondo común, equipos y más.', en: 'Your band\'s dashboard: schedule, repertoire, shared fund, gear and more.' } },
   { title: { es: 'Cambia de rol en vivo', en: 'Flip roles live' }, body: { es: 'El botón de rol en la barra superior alterna Admin y Músico. Los controles de escritura desaparecen para el músico.', en: 'The role button in the top bar toggles Admin and Band member. Write controls disappear for members.' } },
   { title: { es: 'Todo en dos idiomas', en: 'Everything in two languages' }, body: { es: 'ES / EN cambia la interfaz completa, incluidas fechas, leyendas de Instagram y notas de eventos.', en: 'ES / EN switches the whole interface, including dates, Instagram captions and event notes.' } },
   { title: { es: 'Vista móvil y ⌘K', en: 'Mobile view and ⌘K' }, body: { es: 'El icono de teléfono abre la vista móvil con el flujo de Instagram. ⌘K abre la paleta de comandos.', en: 'The phone icon opens the mobile view with the Instagram flow. ⌘K opens the command palette.' } },

@@ -8,7 +8,6 @@ import { ExternalLink, Plus, Search, Upload, X } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { Button, DatePicker, Field, Input, Modal, Select, Textarea } from '@/components/ui';
 import { GENRES, GENRE_IDS } from '@/data';
-import { isDemo } from '@/lib/data';
 import { InstrumentPicker } from './InstrumentPicker';
 import type { EventType, GearCondition, GenreId, LinkKind, ProofKind, TxCategory, TxKind } from '@/types';
 
@@ -265,17 +264,15 @@ export function NewTxModal() {
               placeholder="https://drive.google.com/file/d/…"
               className="text-[13px] border-emerald/40 focus:border-emerald/40 flex-1"
             />
-            {!isDemo && (
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                disabled={uploading}
-                className="flex-none inline-flex items-center gap-[6px] py-[9px] px-[12px] rounded-[10px] border border-emerald/40 bg-[var(--color-tint-emerald)] text-emerald-light font-sans font-semibold text-[12.5px] leading-[normal] cursor-pointer hover:bg-[var(--color-tint-emerald)] disabled:opacity-50 disabled:cursor-wait"
-              >
-                <Upload size={14} strokeWidth={2} />
-                {uploading ? t.uploading : t.upload}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              className="flex-none inline-flex items-center gap-[6px] py-[9px] px-[12px] rounded-[10px] border border-emerald/40 bg-[var(--color-tint-emerald)] text-emerald-light font-sans font-semibold text-[12.5px] leading-[normal] cursor-pointer hover:bg-[var(--color-tint-emerald)] disabled:opacity-50 disabled:cursor-wait"
+            >
+              <Upload size={14} strokeWidth={2} />
+              {uploading ? t.uploading : t.upload}
+            </button>
           </div>
           <input ref={fileRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={onPick} />
           {isImage && (
@@ -466,17 +463,15 @@ export function NewGearModal() {
               placeholder="https://drive.google.com/file/d/…"
               className="text-[13px] border-emerald/40 focus:border-emerald/40 flex-1"
             />
-            {!isDemo && (
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                disabled={uploading}
-                className="flex-none inline-flex items-center gap-[6px] py-[9px] px-[12px] rounded-[10px] border border-emerald/40 bg-[var(--color-tint-emerald)] text-emerald-light font-sans font-semibold text-[12.5px] leading-[normal] cursor-pointer hover:bg-[var(--color-tint-emerald)] disabled:opacity-50 disabled:cursor-wait"
-              >
-                <Upload size={14} strokeWidth={2} />
-                {uploading ? t.uploading : t.upload}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              className="flex-none inline-flex items-center gap-[6px] py-[9px] px-[12px] rounded-[10px] border border-emerald/40 bg-[var(--color-tint-emerald)] text-emerald-light font-sans font-semibold text-[12.5px] leading-[normal] cursor-pointer hover:bg-[var(--color-tint-emerald)] disabled:opacity-50 disabled:cursor-wait"
+            >
+              <Upload size={14} strokeWidth={2} />
+              {uploading ? t.uploading : t.upload}
+            </button>
           </div>
           <input ref={fileRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={onPick} />
           {isImage && (

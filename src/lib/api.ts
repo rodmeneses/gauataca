@@ -1,7 +1,7 @@
 /**
  * Supabase data layer: fetch + map rows into the domain shapes `vm.ts` consumes,
  * and the write mutations the actions call. Pure functions over `supabase` —
- * no React. `data.tsx` wraps these with a demo fallback and a reload hook.
+ * no React. `data.tsx` wraps these with a reload hook.
  */
 import { supabase } from './supabase';
 import type {

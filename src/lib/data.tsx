@@ -1,9 +1,8 @@
 /**
- * DataProvider: loads the whole dataset from Supabase (or the Phase 1 mock
- * arrays when no env keys are set) and exposes it plus the write mutations.
- * Mutations are no-ops in demo mode; in live mode they write then reload
- * silently (the on-screen data stays put and swaps in place — no full-screen
- * spinner). `mutating` is true while a write + its refetch are in flight.
+ * DataProvider: loads the whole dataset from Supabase and exposes it plus the
+ * write mutations. Mutations write then reload silently (the on-screen data
+ * stays put and swaps in place — no full-screen spinner). `mutating` is true
+ * while a write + its refetch are in flight.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useAuth } from './auth';
@@ -14,7 +13,6 @@ import {
   settleEvent as apiSettleEvent, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateEvent as apiUpdateEvent, updateMemberInstruments as apiUpdateMemberInstruments, updateSong as apiUpdateSong,
   uploadProof as apiUploadProof, voteThread as apiVoteThread, type DataSnapshot,
 } from './api';
-import { EVENTS, GEAR, INSTRUMENTS, MEMBERS, SONGS, TAKES, THREADS, TRANSACTIONS } from '../data';
 import type { EventType, GearCondition, GenreId, LinkKind, Proficiency, ProofKind, RsvpStatus, TxCategory, TxKind, VocalFlag } from '../types';
 
 export interface CreateEventInput { title: string; venue: string; date: string; time: string; hours: number; fee: number; cost: number; note: string; type: EventType; }
@@ -52,26 +50,11 @@ interface DataValue extends DataSnapshot {
   transferCustody: (gearId: string, toMemberId: string) => Promise<void>;
   setEventSetlist: (eventId: string, songIds: string[]) => Promise<void>;
   settleEvent: (eventId: string, input: { happened: boolean; fee: number; cost: number }) => Promise<void>;
-  /** Upload a receipt/invoice file; resolves to its public URL (undefined in demo mode). */
+  /** Upload a receipt/invoice file; resolves to its public URL. */
   uploadProof: (file: File) => Promise<string | undefined>;
 }
 
 const DataContext = createContext<DataValue | null>(null);
-
-export const isDemo = !import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-const DEMO: DataSnapshot = {
-  songs: SONGS,
-  events: EVENTS,
-  transactions: TRANSACTIONS,
-  gear: GEAR,
-  threads: THREADS,
-  members: MEMBERS,
-  instruments: INSTRUMENTS,
-  takes: TAKES,
-  myThreadVotes: [],
-  myPollPicks: {},
-};
 
 const EMPTY: DataSnapshot = {
   songs: [],
@@ -88,17 +71,12 @@ const EMPTY: DataSnapshot = {
 
 export function DataProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [snap, setSnap] = useState<DataSnapshot>(isDemo ? DEMO : EMPTY);
-  const [loading, setLoading] = useState(!isDemo);
+  const [snap, setSnap] = useState<DataSnapshot>(EMPTY);
+  const [loading, setLoading] = useState(true);
   const [mutating, setMutating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async (opts?: { silent?: boolean }) => {
-    if (isDemo) {
-      setSnap(DEMO);
-      setLoading(false);
-      return;
-    }
     // A silent reload (after a mutation) keeps the current screen mounted and
     // swaps the data in place — no full-screen spinner, no flicker.
     if (!opts?.silent) {
@@ -129,7 +107,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const value = useMemo<DataValue>(() => {
     const uid = user?.id ?? '';
     const run = async <T,>(fn: () => Promise<T>): Promise<T | undefined> => {
-      if (isDemo) return undefined;
       // Don't let a write hang on a dead connection — bail early and let the UI
       // surface it (see OfflineBanner). The service worker never caches writes.
       if (typeof navigator !== 'undefined' && navigator.onLine === false) {
@@ -177,7 +154,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setEventSetlist: (eventId, songIds) => run(() => apiSetEventSetlist(eventId, songIds, uid)),
       settleEvent: (eventId, input) => run(() => apiSettleEvent(eventId, input, uid)),
       uploadProof: async (file) => {
-        if (isDemo) return undefined;
         return apiUploadProof(file);
       },
     };

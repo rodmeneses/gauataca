@@ -6,9 +6,8 @@ import type {
 import { applyTheme, readThemePref, type ThemePref } from '../lib/prefs';
 
 /**
- * Whole-app state. Mirrors the design's single state object so the view models
- * can be derived exactly like the prototype's `renderVals()`.
- * Nothing is persisted — Phase 1 is an in-memory prototype.
+ * Whole-app UI state. Domain data lives in Supabase (see src/lib/data.tsx);
+ * this store holds only view state (lang, theme, view, modals, …).
  */
 export interface State {
   lang: Lang;
