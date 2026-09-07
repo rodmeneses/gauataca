@@ -209,6 +209,7 @@ export interface Guataca {
   openNewSong: () => void;
   openEditSong: (id: string) => void;
   openNewTx: () => void;
+  openEditTx: (id: string) => void;
   openNewGear: () => void;
   /** Complete sign-up onboarding (instruments + vocals). */
   onboard: (instruments: { id: string; lv: Proficiency }[], vocals: VocalFlag[]) => Promise<void>;
@@ -260,6 +261,7 @@ export interface Guataca {
   setForm: <K extends keyof FormState>(k: K, v: FormState[K]) => void;
   saveEvent: () => Promise<void>;
   saveTx: () => Promise<void>;
+  deleteTx: (id: string) => Promise<void>;
   saveSong: () => Promise<void>;
   saveGear: () => Promise<void>;
   openPalette: () => void;
@@ -294,7 +296,7 @@ export function useGuataca(): Guataca {
   const {
     songs: dbSongs, events: dbEvents, transactions: dbTx, gear: dbGear, threads: dbThreads, members: dbMembers,
     instruments: dbInstruments, takes: dbTakes, myThreadVotes, myPollPicks, loading, mutating, error,
-    createEvent, updateEvent, createSong, updateSong, setSongLinks: persistSongLinks, createTransaction, createGear: persistGear, createInstrument: persistInstrument,
+    createEvent, updateEvent, createSong, updateSong, setSongLinks: persistSongLinks, createTransaction, updateTransaction: persistUpdateTransaction, deleteTransaction: persistDeleteTransaction, createGear: persistGear, createInstrument: persistInstrument,
     onboard: persistOnboard, updateMemberInstruments: persistMemberInstruments, setSongInstruments: persistSongInstruments,
     addTake: persistTake, deleteTake: persistDeleteTake,
     setRsvp: persistRsvp, voteThread: persistVote,
@@ -562,6 +564,19 @@ export function useGuataca(): Guataca {
         });
       },
       openNewTx: () => set({ modal: { kind: 'newTx' }, form: {} }),
+      openEditTx: (id) => {
+        const x = allTx.find((t) => t.id === id);
+        if (!x) return;
+        set({
+          modal: { kind: 'newTx', id },
+          form: {
+            kind: x.kind, amt: String(x.amt), date: x.date, desc: Lx(x.desc),
+            proof: x.proof || '', proofKind: x.proofKind,
+            event: x.event || '', gear: x.gear || '',
+            category: x.category, contributor: x.contributor || '',
+          },
+        });
+      },
       openNewGear: () => set({ modal: { kind: 'newGear' }, form: { custodian: me.id, boughtBy: me.id } }),
       onboard: async (instruments, vocals) => {
         await persistOnboard(instruments, vocals);
@@ -705,13 +720,23 @@ export function useGuataca(): Guataca {
         toast(editingId ? t.eventSaved : t.eventCreated);
       },
       saveTx: async () => {
+        const editingId = st.modal?.kind === 'newTx' ? st.modal.id : undefined;
         set({ modal: null, form: {} });
-        await createTransaction({
+        const input = {
           kind: f.kind || 'in', amt: +(f.amt || 0), date: f.date || '2026-08-25', desc: f.desc || 'Movimiento', proof: f.proof || null,
           proofKind: f.proofKind || 'receipt', event: f.event || undefined, gear: f.gear || undefined,
-          category: f.category || undefined, contributor: f.contributor || undefined,
-        });
-        toast(t.txLogged);
+          category: (f.kind || 'in') === 'in' ? (f.category || undefined) : undefined, contributor: f.contributor || undefined,
+        };
+        if (editingId) {
+          await persistUpdateTransaction(editingId, input);
+        } else {
+          await createTransaction(input);
+        }
+        toast(editingId ? t.txSaved : t.txLogged);
+      },
+      deleteTx: async (id) => {
+        await persistDeleteTransaction(id);
+        toast(t.txDeleted);
       },
       saveSong: async () => {
         const editingId = st.modal?.kind === 'newSong' ? st.modal.id : undefined;
@@ -750,5 +775,5 @@ export function useGuataca(): Guataca {
       toast,
       dismissToast,
     };
-  }, [st, props, set, toast, dismissToast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myThreadVotes, myPollPicks, loading, mutating, error, isPhoneViewport, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, updateEvent, createSong, updateSong, persistSongLinks, createTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
+  }, [st, props, set, toast, dismissToast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myThreadVotes, myPollPicks, loading, mutating, error, isPhoneViewport, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, updateEvent, createSong, updateSong, persistSongLinks, createTransaction, persistUpdateTransaction, persistDeleteTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
 }

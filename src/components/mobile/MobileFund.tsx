@@ -1,12 +1,12 @@
 /** Mobile "Fondo" tab: pool balance hero + "New movement" (admin) + in/out & date filters + transactions, contributions and the gear inventory. */
-import { ArrowLeftRight, ExternalLink, Package, Plus } from 'lucide-react';
+import { ArrowLeftRight, ExternalLink, Package, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useGuataca } from '../../store';
 import type { TxDate, TxFilter } from '../../types';
 
 const SECTION = 'font-display font-semibold text-[12px] tracking-[.08em] uppercase text-ink-muted';
 
 export function MobileFund() {
-  const { t, isAdmin, balanceStr, balanceNeg, incomeStr, expenseStr, tx, txFilter, txDate, setTxFilter, setTxDate, contributions, gear, gearValue, openNewTx, openNewGear, openCustody } = useGuataca();
+  const { t, isAdmin, balanceStr, balanceNeg, incomeStr, expenseStr, tx, txFilter, txDate, setTxFilter, setTxDate, contributions, gear, gearValue, openNewTx, openNewGear, openCustody, openEditTx, deleteTx } = useGuataca();
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
@@ -74,6 +74,26 @@ export function MobileFund() {
             </div>
             <div className="flex items-center gap-2.5">
               <span className="text-[13px] text-ink-muted flex-1">{x.dateStr} · {x.by}</span>
+              {isAdmin && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => openEditTx(x.id)}
+                    aria-label={t.editTx}
+                    className="grid place-items-center w-[44px] h-[44px] rounded-lg border border-line bg-raised text-ink-muted cursor-pointer"
+                  >
+                    <Pencil size={15} strokeWidth={2} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteTx(x.id)}
+                    aria-label={t.deleteTx}
+                    className="grid place-items-center w-[44px] h-[44px] rounded-lg border border-line bg-raised text-ink-muted cursor-pointer"
+                  >
+                    <Trash2 size={15} strokeWidth={2} />
+                  </button>
+                </>
+              )}
               {x.hasProof && (
                 <a
                   href={x.proof ?? undefined}
