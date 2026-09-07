@@ -194,8 +194,16 @@ export function NewTxModal() {
         </div>
         {form.kind === 'in' && (
           <div className="grid grid-cols-2 gap-3">
-            <Field label={t.category}>
-              <Select value={form.category} onChange={(e) => setForm('category', e.target.value as TxCategory)}>
+            <Field label={t.category} className={form.category === 'DTV' ? 'col-span-2' : ''}>
+              <Select
+                value={form.category}
+                onChange={(e) => {
+                  const cat = e.target.value as TxCategory;
+                  setForm('category', cat);
+                  // DTV income is the org's, not a member's — clear any contributor.
+                  if (cat === 'DTV') setForm('contributor', '');
+                }}
+              >
                 <option value="fee">{t.fee}</option>
                 <option value="tip">{t.tip}</option>
                 <option value="donation">{t.donation}</option>
@@ -203,14 +211,16 @@ export function NewTxModal() {
                 <option value="DTV">{t.dtv}</option>
               </Select>
             </Field>
-            <Field label={t.contributor}>
-              <Select value={form.contributor} onChange={(e) => setForm('contributor', e.target.value)}>
-                <option value="">{t.noLink}</option>
-                {members.map((m) => (
-                  <option key={m.id} value={m.id}>{m.name}</option>
-                ))}
-              </Select>
-            </Field>
+            {form.category !== 'DTV' && (
+              <Field label={t.contributor}>
+                <Select value={form.contributor} onChange={(e) => setForm('contributor', e.target.value)}>
+                  <option value="">{t.noLink}</option>
+                  {members.map((m) => (
+                    <option key={m.id} value={m.id}>{m.name}</option>
+                  ))}
+                </Select>
+              </Field>
+            )}
           </div>
         )}
         <div className="grid grid-cols-2 gap-3">

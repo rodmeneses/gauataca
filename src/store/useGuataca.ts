@@ -396,7 +396,8 @@ export function useGuataca(): Guataca {
 
     // Any income with a contributor counts toward the member's contributions
     // (donations, contributions, etc.), not just category 'contribution'.
-    const contribTx = allTx.filter((x) => x.kind === 'in' && x.contributor);
+    // DTV income is the org's, never a member's — excluded from the section.
+    const contribTx = allTx.filter((x) => x.kind === 'in' && x.contributor && x.category !== 'DTV');
     const contribByMember = new Map<string, { total: number; month: number }>();
     for (const x of contribTx) {
       const key = x.contributor!;
@@ -769,7 +770,9 @@ export function useGuataca(): Guataca {
         const input = {
           kind: f.kind || 'in', amt: +(f.amt || 0), date: f.date || '2026-08-25', desc: f.desc || 'Movimiento', proof: f.proof || null,
           proofKind: f.proofKind || 'receipt', event: f.event || undefined, gear: f.gear || undefined,
-          category: (f.kind || 'in') === 'in' ? (f.category || undefined) : undefined, contributor: f.contributor || undefined,
+          category: (f.kind || 'in') === 'in' ? (f.category || undefined) : undefined,
+          // DTV income is the org's — never attribute it to a member.
+          contributor: f.category === 'DTV' ? undefined : f.contributor || undefined,
         };
         if (editingId) {
           await persistUpdateTransaction(editingId, input);
