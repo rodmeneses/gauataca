@@ -63,7 +63,6 @@ export interface Song {
   key: string;
   bpm: number;
   dur: string; // "m:ss"
-  last: string | null; // ISO date of last rehearsal, null = never
   /** Instrument catalog ids this song requires (optional). */
   instruments?: string[];
   /** Streaming + chart links (any number of each kind). */

@@ -111,14 +111,17 @@ export interface SongVm {
 
 export function songVm(s: Song, allEvents: BandEvent[], openSong: string | null, ctx: Ctx): SongVm {
   const { lang, t } = ctx;
-  const gap = s.last ? -days(s.last) : 9999;
+  const g = GENRES[s.genre];
+  // "Last rehearsed" is derived, not stored: the most recent past event whose
+  // setlist includes this song (see the "derived, not stored" handoff note).
+  const pastSetlists = allEvents
+    .filter((e) => (e.setlist || []).includes(s.id) && days(e.date) <= 0)
+    .sort((a, b) => d(b.date).getTime() - d(a.date).getTime());
+  const last = pastSetlists[0]?.date ?? null;
+  const gap = last ? -days(last) : 9999;
   const stale = gap > ctx.staleDays;
   const veryStale = gap > 90;
-  const g = GENRES[s.genre];
-  const logs = allEvents
-    .filter((e) => (e.setlist || []).includes(s.id) && days(e.date) <= 0)
-    .sort((a, b) => d(b.date).getTime() - d(a.date).getTime())
-    .map((e) => ({ id: e.id, title: L(lang, e.title), date: fmt(e.date, lang, true), typeLabel: t[e.type] }));
+  const logs = pastSetlists.map((e) => ({ id: e.id, title: L(lang, e.title), date: fmt(e.date, lang, true), typeLabel: t[e.type] }));
   const songInstruments = (s.instruments || []).map((id) => {
     const inst = ctx.instruments.find((x) => x.id === id);
     return inst ? L(lang, inst.name) : id;
@@ -144,8 +147,8 @@ export function songVm(s: Song, allEvents: BandEvent[], openSong: string | null,
     key: s.key,
     bpm: String(s.bpm),
     dur: s.dur,
-    lastLabel: s.last ? rel(s.last, lang) : t.neverRehearsed,
-    lastDate: s.last ? fmt(s.last, lang, true) : '—',
+    lastLabel: last ? rel(last, lang) : t.neverRehearsed,
+    lastDate: last ? fmt(last, lang, true) : '—',
     staleColor: veryStale ? 'var(--color-rose)' : stale ? 'var(--color-amber)' : 'var(--color-emerald)',
     staleBg: veryStale ? tint('var(--color-rose)') : stale ? tint('var(--color-amber)') : tint('var(--color-emerald)'),
     isStale: stale,
