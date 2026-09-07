@@ -274,7 +274,10 @@ export interface EventVm {
   hasSetlist: boolean;
   /** "Setlist" for gigs, "Canciones ensayadas" for practices. */
   setlistLabel: string;
-  media: { label: string; url: string }[];
+  /** Uploaded photos (thumbnail grid). */
+  photos: { id: number; url: string }[];
+  /** Video links (Google Drive). */
+  videos: { id: number; label: string; url: string }[];
   hasMedia: boolean;
   /** Recordings ("takes") made during this practice event. */
   takes: TakeVm[];
@@ -364,7 +367,8 @@ export function eventVm(e: BandEvent, allSongs: Song[], ctx: Ctx): EventVm {
     runtime: Math.floor(sec / 60) + ' min',
     hasSetlist: setlist.length > 0,
     setlistLabel: e.type === 'gig' ? t.setlist : t.rehearsed,
-    media: (e.media || []).map((m) => ({ label: L(lang, m.label), url: m.url })),
+    photos: (e.media || []).filter((m) => m.kind === 'photo').map((m) => ({ id: m.id, url: m.url })),
+    videos: (e.media || []).filter((m) => m.kind === 'video').map((m) => ({ id: m.id, label: L(lang, m.label), url: m.url })),
     hasMedia: (e.media || []).length > 0,
     takes,
     hasTakes: takes.length > 0,

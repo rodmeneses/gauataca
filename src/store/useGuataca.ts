@@ -16,6 +16,7 @@ import { writeLangPref, writeThemePref, type ThemePref } from '../lib/prefs';
 import { itemUrl } from '../lib/deepLink';
 import { useAuth } from '../lib/auth';
 import { useData } from '../lib/data';
+import { compressImage } from '../lib/image';
 import { useMediaQuery } from '../lib/useMediaQuery';
 import {
   L, contributionVm, eventVm, feedbackVm, gearVm, igCaption, memberById, memberVm, songVm, threadVm, txVm,
@@ -255,6 +256,12 @@ export interface Guataca {
   addTake: (eventId: string, songId: string, url: string) => Promise<void>;
   /** Remove a recording ("take"). */
   deleteTake: (id: string) => Promise<void>;
+  /** Add a video link (Google Drive) to an event. */
+  addEventVideo: (eventId: string, label: string, url: string) => Promise<void>;
+  /** Compress + upload a photo to an event. */
+  addEventPhoto: (eventId: string, file: File) => Promise<void>;
+  /** Remove a photo or video from an event. */
+  deleteEventMedia: (id: number) => Promise<void>;
   voteThread: (id: string) => Promise<void>;
   setCommentDraft: (s: string) => void;
   sendComment: () => Promise<void>;
@@ -306,6 +313,7 @@ export function useGuataca(): Guataca {
     createEvent, updateEvent, createSong, updateSong, setSongLinks: persistSongLinks, createTransaction, updateTransaction: persistUpdateTransaction, deleteTransaction: persistDeleteTransaction, createGear: persistGear, createInstrument: persistInstrument,
     onboard: persistOnboard, updateMemberInstruments: persistMemberInstruments, setSongInstruments: persistSongInstruments,
     addTake: persistTake, deleteTake: persistDeleteTake,
+    addEventMedia: persistAddEventMedia, deleteEventMedia: persistDeleteEventMedia, uploadEventPhoto: persistUploadEventPhoto,
     setRsvp: persistRsvp, voteThread: persistVote,
     addComment: persistComment, submitFeedback: persistFeedback, pickPoll: persistPoll, transferCustody: persistCustody,
     setEventSetlist: persistSetlist, settleEvent: persistSettle, uploadProof: persistUpload,
@@ -674,6 +682,25 @@ export function useGuataca(): Guataca {
         await persistDeleteTake(id);
         toast(t.recordingDeleted);
       },
+      addEventVideo: async (eventId, label, url) => {
+        await persistAddEventMedia(eventId, 'video', label, url);
+        toast(t.mediaAdded);
+      },
+      addEventPhoto: async (eventId, file) => {
+        try {
+          const blob = await compressImage(file);
+          const url = await persistUploadEventPhoto(blob);
+          if (!url) throw new Error('upload failed');
+          await persistAddEventMedia(eventId, 'photo', '', url);
+          toast(t.photoUploaded);
+        } catch {
+          toast(t.uploadFailed, 'err');
+        }
+      },
+      deleteEventMedia: async (id) => {
+        await persistDeleteEventMedia(id);
+        toast(t.mediaRemoved);
+      },
       voteThread: async (id) => {
         await persistVote(id);
         toast(t.voted);
@@ -788,5 +815,5 @@ export function useGuataca(): Guataca {
       toast,
       dismissToast,
     };
-  }, [st, props, set, toast, dismissToast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myThreadVotes, myPollPicks, loading, mutating, error, isPhoneViewport, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, updateEvent, createSong, updateSong, persistSongLinks, createTransaction, persistUpdateTransaction, persistDeleteTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
+  }, [st, props, set, toast, dismissToast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myThreadVotes, myPollPicks, loading, mutating, error, isPhoneViewport, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, updateEvent, createSong, updateSong, persistSongLinks, createTransaction, persistUpdateTransaction, persistDeleteTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistAddEventMedia, persistDeleteEventMedia, persistUploadEventPhoto, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
 }

@@ -7,11 +7,11 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useAuth } from './auth';
 import {
-  addComment as apiAddComment, addTake as apiAddTake, createEvent as apiCreateEvent, createGear as apiCreateGear, createInstrument as apiCreateInstrument,
-  createSong as apiCreateSong, createTransaction as apiCreateTransaction, deleteTake as apiDeleteTake, deleteTransaction as apiDeleteTransaction, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
+  addComment as apiAddComment, addEventMedia as apiAddEventMedia, addTake as apiAddTake, createEvent as apiCreateEvent, createGear as apiCreateGear, createInstrument as apiCreateInstrument,
+  createSong as apiCreateSong, createTransaction as apiCreateTransaction, deleteEventMedia as apiDeleteEventMedia, deleteTake as apiDeleteTake, deleteTransaction as apiDeleteTransaction, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
   setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, setSongInstruments as apiSetSongInstruments, setSongLinks as apiSetSongLinks,
   settleEvent as apiSettleEvent, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateEvent as apiUpdateEvent, updateMemberInstruments as apiUpdateMemberInstruments, updateSong as apiUpdateSong, updateTransaction as apiUpdateTransaction,
-  uploadProof as apiUploadProof, voteThread as apiVoteThread, type DataSnapshot,
+  uploadEventPhoto as apiUploadEventPhoto, uploadProof as apiUploadProof, voteThread as apiVoteThread, type DataSnapshot,
 } from './api';
 import type { EventType, GearCondition, GenreId, LinkKind, Proficiency, ProofKind, RsvpStatus, TxCategory, TxKind, VocalFlag } from '../types';
 
@@ -44,6 +44,10 @@ interface DataValue extends DataSnapshot {
   setSongInstruments: (songId: string, instrumentIds: string[]) => Promise<void>;
   addTake: (eventId: string, songId: string, url: string) => Promise<void>;
   deleteTake: (id: string) => Promise<void>;
+  addEventMedia: (eventId: string, kind: 'photo' | 'video', label: string, url: string) => Promise<void>;
+  deleteEventMedia: (id: number) => Promise<void>;
+  /** Upload an event photo (already compressed); resolves to its public URL. */
+  uploadEventPhoto: (blob: Blob) => Promise<string | undefined>;
   setRsvp: (eventId: string, status: RsvpStatus | null) => Promise<void>;
   voteThread: (threadId: string) => Promise<void>;
   addComment: (threadId: string, body: string) => Promise<void>;
@@ -149,6 +153,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setSongInstruments: (songId, instrumentIds) => run(() => apiSetSongInstruments(songId, instrumentIds)),
       addTake: (eventId, songId, url) => run(() => apiAddTake(eventId, songId, url)),
       deleteTake: (id) => run(() => apiDeleteTake(id)),
+      addEventMedia: (eventId, kind, label, url) => run(() => apiAddEventMedia(eventId, { kind, labelEs: label, labelEn: label, url }, uid)),
+      deleteEventMedia: (id) => run(() => apiDeleteEventMedia(id)),
+      uploadEventPhoto: async (blob) => {
+        return apiUploadEventPhoto(blob);
+      },
       setRsvp: (eventId, status) => run(() => apiSetRsvp(eventId, status, uid)),
       voteThread: (threadId) => run(() => apiVoteThread(threadId, uid)),
       addComment: (threadId, body) => run(() => apiAddComment(threadId, body, uid)),
