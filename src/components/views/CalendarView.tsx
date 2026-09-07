@@ -77,6 +77,28 @@ export function CalendarView() {
                 )}
               </div>
 
+              {/* photos — preview strip (up to 3) */}
+              {e.photos.length > 0 && (
+                <div className="grid grid-cols-3 gap-[8px]">
+                  {e.photos.slice(0, 3).map((p, i) => (
+                    <a
+                      key={p.id}
+                      href={p.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="relative block aspect-[4/3] rounded-[9px] overflow-hidden border border-line-soft bg-raised"
+                    >
+                      <img src={p.url} alt="" loading="lazy" className="w-full h-full object-cover" />
+                      {i === 2 && e.photos.length > 3 && (
+                        <span className="absolute inset-0 grid place-items-center bg-black/45 text-white font-sans font-semibold text-[13px]">
+                          +{e.photos.length - 3}
+                        </span>
+                      )}
+                    </a>
+                  ))}
+                </div>
+              )}
+
               {/* setlist + money chips */}
               <div className="flex gap-2 mt-auto pt-[6px]">
                 {e.hasSetlist && (
