@@ -231,14 +231,14 @@ export function AppleMusicIcon({ size = 19, strokeWidth = 1.8, className }: { si
 }
 
 /* -------------------------------------------------------------- BrandMark */
-/** Violet gradient tile with the music-note glyph (sidebar + phone header + tour). */
+/** Venezuelan tricolor tile with the music-note glyph (sidebar + phone header + tour). */
 export function BrandMark({ size = 38, radius = 11, icon = 20 }: { size?: number; radius?: number; icon?: number }) {
   return (
     <span
       className="grid place-items-center flex-none"
-      style={{ width: size, height: size, borderRadius: radius, background: 'linear-gradient(145deg,var(--color-violet),var(--color-violet-deeper))', boxShadow: size >= 36 ? '0 0 0 1px color-mix(in srgb,var(--color-violet-light) 27%,transparent),0 6px 18px -6px color-mix(in srgb,var(--color-violet-deep) 67%,transparent)' : undefined }}
+      style={{ width: size, height: size, borderRadius: radius, background: 'linear-gradient(to bottom, var(--color-flag-yellow) 0 33.33%, var(--color-flag-blue) 33.33% 66.66%, var(--color-flag-red) 66.66% 100%)', boxShadow: size >= 36 ? '0 0 0 1px color-mix(in srgb,var(--color-line-strong) 55%,transparent),0 6px 18px -6px color-mix(in srgb,var(--color-flag-blue) 60%,transparent)' : undefined }}
     >
-      <svg width={icon} height={icon} viewBox="0 0 24 24" fill="none" stroke="#f5f3ff" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+      <svg width={icon} height={icon} viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
         <path d="M9 18V5l12-2v13" />
         <circle cx="6" cy="18" r="3" />
         <circle cx="18" cy="16" r="3" />
