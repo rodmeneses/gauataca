@@ -69,7 +69,7 @@ export function Sidebar() {
         >
           <div className="font-display font-semibold text-[10px] leading-none tracking-[.12em] uppercase text-ink-muted hidden lg:block">{t.poolBalance}</div>
           <div className={`font-mono font-semibold text-[13px] lg:text-[22px] leading-none ${balanceNeg ? 'text-red' : 'text-emerald'} lg:mt-2 text-center lg:text-left`}>{balanceStr}</div>
-          <div className="text-[11px] text-ink-dim mt-[6px] hidden lg:block">{t.treasurer}: Diego S.</div>
+          <div className="text-[11px] text-ink-dim mt-[6px] hidden lg:block">{t.treasurer}: Rodrigo M.</div>
         </button>
         <div className="flex items-center gap-[9px] p-[2px_2px] justify-center lg:justify-start">
           <div className="avatar w-7 h-7 rounded-[9px] text-violet-light flex-none">{me.initial}</div>

@@ -34,7 +34,7 @@ export function Ledger() {
           <div className="font-display font-semibold text-[10.5px] tracking-[.12em] uppercase text-emerald-light">{t.poolBalance}</div>
           <div className={`font-mono font-semibold text-[clamp(26px,3.4vw,38px)] leading-none ${balanceNeg ? 'text-red' : 'text-emerald'} mt-[14px] tracking-[-.02em] whitespace-nowrap`}>{balanceStr}</div>
           <div className="text-[12px] text-ink-muted mt-[14px] leading-[1.6]">
-            {t.treasurer}: Diego Salazar · {txCount} {t.movements}
+            {t.treasurer}: Rodrigo Meneses · {txCount} {t.movements}
           </div>
         </div>
         <div className="bg-surface border border-line rounded-2xl p-[22px]">
