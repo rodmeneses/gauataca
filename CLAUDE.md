@@ -32,8 +32,6 @@ repertoire, ledger/gear, brainstorm, members, and a design-system view.
 
 - **Money:** cents in the DB, dollars in domain types (`money()` / `money0()` helpers).
 - **Localized text:** DB uses `_es`/`_en` column pairs; `L(lang, v)` picks.
-- **Demo mode:** `isDemo = !VITE_SUPABASE_URL || !VITE_SUPABASE_ANON_KEY` — in-memory
-  fallback, no Supabase.
 - **Migrations:** Flyway-style in `db/migrations/` (`V__*.sql` versioned, `R__*.sql`
   repeatable). Frontend-only changes need no migration.
 - **Theming:** `src/styles.css` — `--g-*` palette (dark default + light override) mapped

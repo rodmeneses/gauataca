@@ -1,4 +1,4 @@
-// Domain types for GUATACA (Phase 1 prototype — mock data, no persistence).
+// Domain types for GUATACA.
 // Field names mirror the suggested Phase 2 tables (see data/system.ts → handoff notes).
 
 export type Lang = 'es' | 'en';
@@ -284,7 +284,7 @@ export interface Profile {
   onboarded?: boolean;
 }
 
-/** Prototype knobs (the "tweaks" of the design). */
+/** App-level props (band name, initial lang/role/view, tour + stale-day settings). */
 export interface AppProps {
   bandName: string;
   initialLang: Lang;

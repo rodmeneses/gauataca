@@ -96,9 +96,9 @@ export interface Guataca {
   isMember: boolean;
   role: State['role'];
   roleLabel: string;
-  /** The signed-in member for the current role (admin → Rodrigo, member → Caro). */
+  /** The signed-in member (the current user's profile). */
   me: Member;
-  /** true when a real Supabase user is signed in (false in demo mode). */
+  /** true when a real Supabase user is signed in. */
   signedIn: boolean;
   bandName: string;
   view: View;

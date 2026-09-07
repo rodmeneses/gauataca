@@ -2,13 +2,13 @@
 -- Flyway V1. Single consolidated migration: the full final schema, the is_admin()
 -- helper, RLS policies, the auto-profile trigger, the receipts storage bucket and
 -- the basic instrument catalog. This replaces the earlier V1–V10 + R__seed chain
--- (2026-09-04 fresh start). No demo data lives here — see db/demo_data.sql.
+-- (2026-09-04 fresh start). No demo data lives here.
 
 -- ---------------------------------------------------------------------------
 -- Tables
 -- ---------------------------------------------------------------------------
 
--- profiles.id is uuid but NOT a foreign key to auth.users, so demo members can
+-- profiles.id is uuid but NOT a foreign key to auth.users, so members can
 -- be seeded with fixed UUIDs; real users still use their auth.uid().
 create table profiles (
   id uuid primary key,

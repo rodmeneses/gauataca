@@ -1,7 +1,6 @@
 import { useEffect, type ReactNode } from 'react';
 import { useGuataca } from '../../store';
 import { useAuth } from '../../lib/auth';
-import { isDemo } from '../../lib/data';
 import { LoginPage } from '../auth/LoginPage';
 import { DesktopShell } from './DesktopShell';
 import { MobileShell } from '../mobile/MobileShell';
@@ -45,11 +44,11 @@ export function Shell() {
 
   // First sign-in: open the instrument/vocal onboarding once, until completed or skipped.
   useEffect(() => {
-    if (!isDemo && user && profile && profile.onboarded === false && !bs.state.onboardDismissed && !modal) {
+    if (user && profile && profile.onboarded === false && !bs.state.onboardDismissed && !modal) {
       bs.openOnboard();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDemo, user, profile, bs.state.onboardDismissed, modal]);
+  }, [user, profile, bs.state.onboardDismissed, modal]);
 
   if (authLoading) {
     return (
@@ -61,7 +60,7 @@ export function Shell() {
       </div>
     );
   }
-  if (!isDemo && !user) {
+  if (!user) {
     return <LoginPage />;
   }
   if (bs.loading) {

@@ -9,7 +9,7 @@ import { readLangPref } from './lib/prefs';
 const VIEWS: View[] = ['dashboard', 'calendar', 'repertoire', 'ledger', 'brainstorm', 'members', 'system'];
 
 /**
- * Prototype knobs (the design's "tweaks"). Override via URL query, e.g.
+ * URL query overrides (deep links), e.g.
  *   ?lang=en&role=member&view=ledger&tour=1&stale=45&band=Mi%20Grupo
  */
 function readProps(): AppProps {
@@ -18,7 +18,7 @@ function readProps(): AppProps {
   const role = q.get('role');
   const view = q.get('view');
   const stale = Number(q.get('stale'));
-  // URL param wins (prototype knob); otherwise the stored choice; otherwise Spanish.
+  // URL param wins; otherwise the stored choice; otherwise Spanish.
   const initialLang: Lang = lang === 'en' ? 'en' : lang === 'es' ? 'es' : readLangPref() ?? 'es';
   return {
     bandName: q.get('band') || 'GUATACA',

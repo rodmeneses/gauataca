@@ -14,7 +14,7 @@ export interface Ctx {
   lang: Lang;
   t: Dict;
   staleDays: number;
-  /** Signed-in member (admin → m1, member → m2 in the prototype). */
+  /** Signed-in member id. */
   meId: string;
   /** true when the signed-in user is an admin (drives write affordances). */
   isAdmin: boolean;
@@ -248,7 +248,7 @@ export interface EventVm {
   attend: string;
   /** Band size, for "N / total". */
   total: string;
-  /** true when the event tracks RSVPs (upcoming events in the mock). */
+  /** true when the event tracks RSVPs (upcoming events). */
   hasAttendance: boolean;
   /** true when the signed-in member may answer (tracked, upcoming, not cancelled). */
   canRsvp: boolean;
