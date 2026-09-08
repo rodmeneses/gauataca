@@ -6,7 +6,7 @@
  * log entries link to their event.
  */
 import { useEffect } from 'react';
-import { ChevronDown, ChevronRight, Clock, FileText, Link, Mic, Pencil, Plus, Search, Youtube } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clock, FileText, Gauge, Link, Mic, Pencil, Plus, Search, Youtube } from 'lucide-react';
 import { AppleMusicIcon, Pill, Segment, SpotifyIcon } from '@/components/ui';
 import { useGuataca } from '@/store';
 import type { LinkKind } from '@/types';
@@ -20,6 +20,7 @@ const EYEBROW = 'font-display font-semibold text-[10.5px] tracking-[.12em] upper
 function streamIcon(kind: LinkKind) {
   if (kind === 'youtube') return <Youtube size={15} strokeWidth={1.9} className="flex-none" color="var(--color-red)" />;
   if (kind === 'apple') return <AppleMusicIcon size={15} strokeWidth={1.9} className="flex-none text-fuchsia" />;
+  if (kind === 'metronome') return <Gauge size={15} strokeWidth={1.9} className="flex-none" color="var(--color-amber)" />;
   return <SpotifyIcon size={15} strokeWidth={1.9} className="flex-none text-emerald" />;
 }
 

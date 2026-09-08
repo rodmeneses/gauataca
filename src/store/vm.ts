@@ -70,7 +70,7 @@ export interface SongLinkVm {
 }
 
 /** Stable display order for streaming links (chart links keep their position). */
-const KIND_ORDER: Record<LinkKind, number> = { youtube: 0, apple: 1, spotify: 2, chart: 3 };
+const KIND_ORDER: Record<LinkKind, number> = { youtube: 0, apple: 1, spotify: 2, metronome: 3, chart: 4 };
 
 export interface SongVm {
   id: string;
