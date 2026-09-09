@@ -1,6 +1,6 @@
 /** Mobile "Repertorio" tab: search + genre/sort filters + song cards with streaming links, chart links, takes and a collapsible rehearsal log. */
 import { useEffect } from 'react';
-import { ChevronDown, ChevronRight, Clock, FileText, Link, Mic, Pencil, Plus, Youtube } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clock, FileText, Gauge, Link, Mic, Pencil, Plus, Youtube } from 'lucide-react';
 import { useGuataca } from '../../store';
 import { AppleMusicIcon, Pill, Segment, SpotifyIcon } from '../ui';
 import type { LinkKind } from '../../types';
@@ -11,6 +11,7 @@ const chipLink = 'flex items-center gap-2 min-h-[44px] py-2 px-3 rounded-lg bord
 function streamIcon(kind: LinkKind) {
   if (kind === 'youtube') return <Youtube size={16} strokeWidth={1.9} className="flex-none" color="var(--color-red)" />;
   if (kind === 'apple') return <AppleMusicIcon size={16} strokeWidth={1.9} className="flex-none text-pink" />;
+  if (kind === 'metronome') return <Gauge size={16} strokeWidth={1.9} className="flex-none" color="var(--color-amber)" />;
   return <SpotifyIcon size={16} strokeWidth={1.9} className="flex-none text-emerald" />;
 }
 

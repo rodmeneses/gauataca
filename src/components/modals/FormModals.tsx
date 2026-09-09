@@ -317,6 +317,7 @@ function SongLinksEditor() {
                 <option value="youtube">{t.ytLink}</option>
                 <option value="apple">{t.amLink}</option>
                 <option value="spotify">{t.spLink}</option>
+                <option value="metronome">{t.metroLink}</option>
                 <option value="chart">{t.charts}</option>
               </Select>
               <button type="button" onClick={() => remove(i)} title={t.removeLink} aria-label={t.removeLink} className="grid place-items-center w-[28px] h-[28px] rounded-[8px] border border-line bg-raised text-ink-muted hover:text-ink-body hover:border-rose/40 cursor-pointer flex-none">

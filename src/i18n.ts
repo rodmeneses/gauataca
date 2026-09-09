@@ -115,7 +115,7 @@ const es = {
   recordingDeleted: 'Grabación eliminada', pickSong: 'Elegir canción',
   // repertoire dashboard: sort + song links
   sortRecorded: 'Más grabadas', sortName: 'Nombre', sortTakes: 'Menos grabadas',
-  amLink: 'Apple Music', charts: 'Partituras y tabs', takesCount: '%d tomas',
+  amLink: 'Apple Music', metroLink: 'Metrónomo', charts: 'Partituras y tabs', takesCount: '%d tomas',
   // song link editor
   links: 'Enlaces', addLink: 'Agregar enlace', linkLabel: 'Etiqueta', linkUrl: 'URL', removeLink: 'Quitar', editSong: 'Editar canción',
   openSong: 'Abrir canción',
@@ -245,7 +245,7 @@ const en: typeof es = {
   recordingDeleted: 'Recording deleted', pickSong: 'Pick a song',
   // repertoire dashboard: sort + song links
   sortRecorded: 'Most recorded', sortName: 'Name', sortTakes: 'Fewest takes',
-  amLink: 'Apple Music', charts: 'Charts & tabs', takesCount: '%d takes',
+  amLink: 'Apple Music', metroLink: 'Metronome', charts: 'Charts & tabs', takesCount: '%d takes',
   // song link editor
   links: 'Links', addLink: 'Add link', linkLabel: 'Label', linkUrl: 'URL', removeLink: 'Remove', editSong: 'Edit song',
   openSong: 'Open song',

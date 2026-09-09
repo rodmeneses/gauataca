@@ -47,7 +47,7 @@ export interface Genre {
 }
 
 /** What a song link points at — drives the icon and grouping on the card. */
-export type LinkKind = 'youtube' | 'apple' | 'spotify' | 'chart';
+export type LinkKind = 'youtube' | 'apple' | 'spotify' | 'metronome' | 'chart';
 
 /** A link attached to a song (real-version streaming or tabs/sheet music). */
 export interface SongLink {
