@@ -23,6 +23,7 @@ export function EventModal() {
   const [videoLabel, setVideoLabel] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [expandedRsvp, setExpandedRsvp] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   if (!ev) return null;
 
@@ -137,21 +138,40 @@ export function EventModal() {
           )}
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {rsvpGroups.map((g) => (
-              <div key={g.key} className={tile}>
-                <div className={tileLabel} style={{ color: g.color }}>
-                  {g.label} · {g.people.length}
+            {rsvpGroups.map((g) => {
+              const expanded = expandedRsvp === g.key;
+              return (
+                <div
+                  key={g.key}
+                  className={`${tile} ${g.people.length > 0 ? 'cursor-pointer' : ''}`}
+                  onClick={() => g.people.length > 0 && setExpandedRsvp(expanded ? null : g.key)}
+                  role={g.people.length > 0 ? 'button' : undefined}
+                  aria-expanded={g.people.length > 0 ? expanded : undefined}
+                >
+                  <div className={tileLabel} style={{ color: g.color }}>
+                    {g.label} · {g.people.length}
+                  </div>
+                  {expanded ? (
+                    <div className="flex flex-col gap-[4px] mt-[9px]">
+                      {g.people.map((p) => (
+                        <span key={p.id} className="font-sans text-[12.5px] leading-[normal] text-ink-body">
+                          {p.name}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex gap-[6px] flex-wrap mt-[9px] min-h-[26px]">
+                      {g.people.length === 0 && <span className="font-mono text-[11.5px] leading-[26px] text-ink-faint">—</span>}
+                      {g.people.map((p) => (
+                        <span key={p.id} title={p.name} aria-label={p.name}>
+                          <Avatar initial={p.initial} size={26} radius={8} tone={g.key === 'pending' ? 'muted' : 'violet'} style={{ background: g.key === 'pending' ? 'var(--color-line)' : `color-mix(in srgb, ${g.color} 15%, transparent)`, color: g.key === 'pending' ? 'var(--color-ink-muted)' : g.color }} />
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="flex gap-[6px] flex-wrap mt-[9px] min-h-[26px]">
-                  {g.people.length === 0 && <span className="font-mono text-[11.5px] leading-[26px] text-ink-faint">—</span>}
-                  {g.people.map((p) => (
-                    <span key={p.id} title={p.name} aria-label={p.name}>
-                      <Avatar initial={p.initial} size={26} radius={8} tone={g.key === 'pending' ? 'muted' : 'violet'} style={{ background: g.key === 'pending' ? 'var(--color-line)' : `color-mix(in srgb, ${g.color} 15%, transparent)`, color: g.key === 'pending' ? 'var(--color-ink-muted)' : g.color }} />
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
