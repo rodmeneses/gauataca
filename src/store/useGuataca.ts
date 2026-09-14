@@ -258,8 +258,8 @@ export interface Guataca {
   deleteTake: (id: string) => Promise<void>;
   /** Add a video link (Google Drive) to an event. */
   addEventVideo: (eventId: string, label: string, url: string) => Promise<void>;
-  /** Compress + upload a photo to an event. */
-  addEventPhoto: (eventId: string, file: File) => Promise<void>;
+  /** Compress + upload one or more photos to an event. */
+  addEventPhotos: (eventId: string, files: File[]) => Promise<void>;
   /** Remove a photo or video from an event. */
   deleteEventMedia: (id: number) => Promise<void>;
   voteThread: (id: string) => Promise<void>;
@@ -313,7 +313,7 @@ export function useGuataca(): Guataca {
     createEvent, updateEvent, createSong, updateSong, setSongLinks: persistSongLinks, createTransaction, updateTransaction: persistUpdateTransaction, deleteTransaction: persistDeleteTransaction, createGear: persistGear, createInstrument: persistInstrument,
     onboard: persistOnboard, updateMemberInstruments: persistMemberInstruments, setSongInstruments: persistSongInstruments,
     addTake: persistTake, deleteTake: persistDeleteTake,
-    addEventMedia: persistAddEventMedia, deleteEventMedia: persistDeleteEventMedia, uploadEventPhoto: persistUploadEventPhoto,
+    addEventMedia: persistAddEventMedia, addEventPhotos: persistAddEventPhotos, deleteEventMedia: persistDeleteEventMedia, uploadEventPhoto: persistUploadEventPhoto,
     setRsvp: persistRsvp, voteThread: persistVote,
     addComment: persistComment, submitFeedback: persistFeedback, pickPoll: persistPoll, transferCustody: persistCustody,
     setEventSetlist: persistSetlist, settleEvent: persistSettle, uploadProof: persistUpload,
@@ -691,16 +691,27 @@ export function useGuataca(): Guataca {
         await persistAddEventMedia(eventId, 'video', label, url);
         toast(t.mediaAdded);
       },
-      addEventPhoto: async (eventId, file) => {
-        try {
-          const blob = await compressImage(file);
-          const url = await persistUploadEventPhoto(blob);
-          if (!url) throw new Error('upload failed');
-          await persistAddEventMedia(eventId, 'photo', '', url);
-          toast(t.photoUploaded);
-        } catch {
-          toast(t.uploadFailed, 'err');
+      addEventPhotos: async (eventId, files) => {
+        const urls: string[] = [];
+        for (const file of files) {
+          try {
+            const blob = await compressImage(file);
+            const url = await persistUploadEventPhoto(blob);
+            if (url) urls.push(url);
+          } catch {
+            // skip this file; report at the end
+          }
         }
+        if (urls.length === 0) {
+          toast(t.uploadFailed, 'err');
+          return;
+        }
+        const ok = await persistAddEventPhotos(eventId, urls);
+        if (!ok) {
+          toast(t.uploadFailed, 'err');
+          return;
+        }
+        toast(urls.length === 1 ? t.photoUploaded : t.photosUploaded);
       },
       deleteEventMedia: async (id) => {
         await persistDeleteEventMedia(id);
