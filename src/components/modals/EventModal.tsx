@@ -8,6 +8,7 @@ import { RSVP_COLOR, RSVP_ORDER, RSVP_PENDING_COLOR, rsvpLabel, useGuataca } fro
 import { Avatar, Badge, Button, CloseButton, Input, Modal } from '@/components/ui';
 import { SetlistEditor } from './SetlistEditor';
 import { RecordingsSection } from './RecordingsSection';
+import { PhotoViewer } from './PhotoViewer';
 import type { RatingKey } from '@/types';
 
 const RATING_KEYS: RatingKey[] = ['sound', 'perf', 'log', 'energy'];
@@ -19,11 +20,12 @@ const textareaCls =
   'w-full py-[11px] px-[13px] rounded-[10px] border border-line bg-base text-ink-base font-sans font-normal text-[13px] leading-[normal] outline-none resize-y';
 
 export function EventModal() {
-  const { t, ev, fb, state, songs, isAdmin, closeModal, openShare, openSettle, openEditEvent, pickPoll, setRating, toggleAnon, setFbWell, setFbImprove, submitFb, setRsvp, setEventSetlist, addTake, deleteTake, addEventVideo, addEventPhoto, deleteEventMedia, goToSong, copyLink } = useGuataca();
+  const { t, ev, fb, state, songs, isAdmin, closeModal, openShare, openSettle, openEditEvent, pickPoll, setRating, toggleAnon, setFbWell, setFbImprove, submitFb, setRsvp, setEventSetlist, addTake, deleteTake, addEventVideo, addEventPhotos, deleteEventMedia, goToSong, copyLink } = useGuataca();
   const [videoLabel, setVideoLabel] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [uploading, setUploading] = useState(false);
   const [expandedRsvp, setExpandedRsvp] = useState<string | null>(null);
+  const [photoViewer, setPhotoViewer] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   if (!ev) return null;
 
@@ -37,11 +39,11 @@ export function EventModal() {
   };
 
   const onPickPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const files = Array.from(e.target.files ?? []);
     e.target.value = '';
-    if (!file) return;
+    if (!files.length) return;
     setUploading(true);
-    await addEventPhoto(ev.id, file);
+    await addEventPhotos(ev.id, files);
     setUploading(false);
   };
 
@@ -54,6 +56,7 @@ export function EventModal() {
   ];
 
   return (
+    <>
     <Modal onClose={closeModal} maxWidth={840} align="top">
       <div className="h-[3px]" style={{ background: ev.typeColor }} />
 
@@ -206,14 +209,19 @@ export function EventModal() {
         <div className="py-5 px-6 border-b border-line-soft">
           <h3 className="mt-0 mx-0 mb-[13px] font-display font-semibold text-[13px] leading-[normal] text-ink-body">{t.media}</h3>
 
-          {/* photos — thumbnail grid */}
+          {/* photos — thumbnail grid (click opens the carousel) */}
           {ev.photos.length > 0 && (
             <div className="grid grid-cols-3 md:grid-cols-4 gap-2 mb-[13px]">
-              {ev.photos.map((p) => (
+              {ev.photos.map((p, i) => (
                 <div key={p.id} className="relative aspect-square rounded-[10px] overflow-hidden border border-line-soft bg-raised">
-                  <a href={p.url} target="_blank" rel="noreferrer" className="block w-full h-full">
+                  <button
+                    type="button"
+                    onClick={() => setPhotoViewer(i)}
+                    aria-label={`${t.photo} ${i + 1}`}
+                    className="block w-full h-full cursor-pointer p-0"
+                  >
                     <img src={p.url} alt="" loading="lazy" className="w-full h-full object-cover" />
-                  </a>
+                  </button>
                   {isAdmin && (
                     <button
                       type="button"
@@ -265,10 +273,10 @@ export function EventModal() {
           {isAdmin && (
             <div className="flex flex-col gap-[9px]">
               <div className="flex gap-2 items-center">
-                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onPickPhoto} />
+                <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={onPickPhoto} />
                 <Button variant="surface" className="py-[9px] px-[12px] flex-none" onClick={() => fileRef.current?.click()} disabled={uploading}>
                   <Upload size={14} strokeWidth={2.2} />
-                  {uploading ? t.uploading : t.addPhoto}
+                  {uploading ? t.uploading : t.addPhotos}
                 </Button>
               </div>
               <div className="flex gap-2 items-center flex-wrap">
@@ -458,5 +466,7 @@ export function EventModal() {
         </Button>
       </div>
     </Modal>
+    {photoViewer !== null && <PhotoViewer photos={ev.photos} index={photoViewer} onClose={() => setPhotoViewer(null)} />}
+    </>
   );
 }

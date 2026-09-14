@@ -7,7 +7,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useAuth } from './auth';
 import {
-  addComment as apiAddComment, addEventMedia as apiAddEventMedia, addTake as apiAddTake, createEvent as apiCreateEvent, createGear as apiCreateGear, createInstrument as apiCreateInstrument,
+  addComment as apiAddComment, addEventMedia as apiAddEventMedia, addEventPhotos as apiAddEventPhotos, addTake as apiAddTake, createEvent as apiCreateEvent, createGear as apiCreateGear, createInstrument as apiCreateInstrument,
   createSong as apiCreateSong, createTransaction as apiCreateTransaction, deleteEventMedia as apiDeleteEventMedia, deleteTake as apiDeleteTake, deleteTransaction as apiDeleteTransaction, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
   setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, setSongInstruments as apiSetSongInstruments, setSongLinks as apiSetSongLinks,
   settleEvent as apiSettleEvent, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateEvent as apiUpdateEvent, updateMemberInstruments as apiUpdateMemberInstruments, updateSong as apiUpdateSong, updateTransaction as apiUpdateTransaction,
@@ -45,6 +45,8 @@ interface DataValue extends DataSnapshot {
   addTake: (eventId: string, songId: string, url: string) => Promise<void>;
   deleteTake: (id: string) => Promise<void>;
   addEventMedia: (eventId: string, kind: 'photo' | 'video', label: string, url: string) => Promise<void>;
+  /** Insert several uploaded photo URLs into an event in one write; resolves true on success. */
+  addEventPhotos: (eventId: string, urls: string[]) => Promise<boolean | undefined>;
   deleteEventMedia: (id: number) => Promise<void>;
   /** Upload an event photo (already compressed); resolves to its public URL. */
   uploadEventPhoto: (blob: Blob) => Promise<string | undefined>;
@@ -154,6 +156,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       addTake: (eventId, songId, url) => run(() => apiAddTake(eventId, songId, url)),
       deleteTake: (id) => run(() => apiDeleteTake(id)),
       addEventMedia: (eventId, kind, label, url) => run(() => apiAddEventMedia(eventId, { kind, labelEs: label, labelEn: label, url }, uid)),
+      addEventPhotos: (eventId, urls) => run(() => apiAddEventPhotos(eventId, urls, uid)),
       deleteEventMedia: (id) => run(() => apiDeleteEventMedia(id)),
       uploadEventPhoto: async (blob) => {
         return apiUploadEventPhoto(blob);

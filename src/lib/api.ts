@@ -535,6 +535,22 @@ export async function addEventMedia(
   });
 }
 
+/** Add several uploaded photo URLs to an event in a single insert; resolves true on success. */
+export async function addEventPhotos(eventId: string, urls: string[], userId: string): Promise<boolean> {
+  if (urls.length === 0) return false;
+  const { error } = await supabase.from('event_media').insert(
+    urls.map((url) => ({
+      event_id: eventId,
+      kind: 'photo',
+      label_es: '',
+      label_en: '',
+      url,
+      submitted_by: userId || null,
+    })),
+  );
+  return !error;
+}
+
 /** Remove an event media row; also deletes the storage object when it's an uploaded photo. */
 export async function deleteEventMedia(id: number): Promise<void> {
   const { data: row } = await supabase.from('event_media').select('url').eq('id', id).single();
