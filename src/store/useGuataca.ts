@@ -695,11 +695,19 @@ export function useGuataca(): Guataca {
         const urls: string[] = [];
         for (const file of files) {
           try {
-            const blob = await compressImage(file);
+            let blob: Blob;
+            try {
+              blob = await compressImage(file);
+            } catch (err) {
+              // Compression can fail (unsupported format, oversized image, etc.).
+              // Upload the original rather than silently dropping the photo.
+              console.warn('Photo compression failed, uploading original:', file.name, err);
+              blob = file;
+            }
             const url = await persistUploadEventPhoto(blob);
             if (url) urls.push(url);
-          } catch {
-            // skip this file; report at the end
+          } catch (err) {
+            console.error('Photo upload failed:', file.name, err);
           }
         }
         if (urls.length === 0) {

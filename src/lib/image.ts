@@ -4,9 +4,13 @@
  */
 export async function compressImage(file: File, maxDim = 1600, quality = 0.82): Promise<Blob> {
   const bitmap = await loadBitmap(file);
-  const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
-  const w = Math.max(1, Math.round(bitmap.width * scale));
-  const h = Math.max(1, Math.round(bitmap.height * scale));
+  // HTMLImageElement.width/height reflect the (absent) width/height attributes and
+  // are 0 for a detached image; read the intrinsic size instead.
+  const srcW = 'naturalWidth' in bitmap ? bitmap.naturalWidth : bitmap.width;
+  const srcH = 'naturalHeight' in bitmap ? bitmap.naturalHeight : bitmap.height;
+  const scale = Math.min(1, maxDim / Math.max(srcW, srcH));
+  const w = Math.max(1, Math.round(srcW * scale));
+  const h = Math.max(1, Math.round(srcH * scale));
   const canvas = document.createElement('canvas');
   canvas.width = w;
   canvas.height = h;
