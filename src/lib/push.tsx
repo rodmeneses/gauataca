@@ -74,7 +74,8 @@ export function PushProvider({ children }: { children: ReactNode }) {
       const reg = await navigator.serviceWorker.getRegistration();
       if (cancelled) return;
       if (!reg) {
-        // No SW installed (e.g. `npm run dev`) — push isn't possible here.
+        // No SW installed yet (e.g. `npm run dev`, or first load before the
+        // registration finished) — push isn't possible here.
         setPermission('unsupported');
         return;
       }
@@ -83,6 +84,13 @@ export function PushProvider({ children }: { children: ReactNode }) {
       if (!cancelled) setSubscribed(!!sub && Notification.permission === 'granted');
     };
     void probe();
+    // Registration is async on the first install, so the probe above can win the
+    // race and report unsupported until a reload. Re-probe once `ready` settles.
+    if ('serviceWorker' in navigator && vapid) {
+      navigator.serviceWorker.ready
+        .then(() => { if (!cancelled) void probe(); })
+        .catch(() => { /* insecure origin or no SW — stays unsupported */ });
+    }
     return () => { cancelled = true; };
   }, [vapid]);
 
