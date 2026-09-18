@@ -66,7 +66,11 @@ export function PhotoViewer({ photos, index, onClose }: {
       aria-label={t.media}
     >
       {/* top bar: counter + close */}
-      <div className="flex items-center justify-between px-4 pt-3 pb-2" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="flex items-center justify-between px-4 pb-2 pl-[max(16px,env(safe-area-inset-left))] pr-[max(16px,env(safe-area-inset-right))]"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <span className="font-mono font-medium text-[12px] text-white/70">{i + 1} / {count}</span>
         <button
           ref={closeRef}
