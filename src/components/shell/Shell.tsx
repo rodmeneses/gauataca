@@ -64,7 +64,8 @@ export function Shell() {
     clearDeepLink();
     if (dl.kind === 'event') bs.openEvent(dl.id);
     else if (dl.kind === 'song') bs.goToSong(dl.id);
-    else bs.goToTx(dl.id);
+    else if (dl.kind === 'tx') bs.goToTx(dl.id);
+    else bs.openThread(dl.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bs.loading]);
 

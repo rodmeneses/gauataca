@@ -1,17 +1,17 @@
 /**
- * Shareable deep links: `?event=<id>`, `?song=<id>`, `?tx=<id>`.
+ * Shareable deep links: `?event=<id>`, `?song=<id>`, `?tx=<id>`, `?thread=<id>`.
  * Parsed once after data loads (see Shell's useDeepLink effect) and then
  * stripped from the URL so a refresh doesn't re-open the item.
  */
 
-export type DeepLinkKind = 'event' | 'song' | 'tx';
+export type DeepLinkKind = 'event' | 'song' | 'tx' | 'thread';
 
 export interface DeepLink {
   kind: DeepLinkKind;
   id: string;
 }
 
-const KINDS: DeepLinkKind[] = ['event', 'song', 'tx'];
+const KINDS: DeepLinkKind[] = ['event', 'song', 'tx', 'thread'];
 
 /** Read the first shareable-item param present in the current URL, if any. */
 export function readDeepLink(): DeepLink | null {

@@ -65,6 +65,7 @@ export default async function handler(req: { method?: string; body?: Record<stri
   // Build the notification payload from the DB (never trust the request text).
   let title = 'GUATACA';
   let bodyText = '';
+  let targetUrl = '/';
   let exclude: string | null = null;
   let notifyId: string | null = null; // reaction pushes go to this member only
   try {
@@ -73,30 +74,34 @@ export default async function handler(req: { method?: string; body?: Record<stri
       if (!data) return send(404, 'event not found');
       title = data.title_es || 'GUATACA';
       bodyText = data.venue ? `${data.venue} · ${dateLabel(data.starts_at)}` : dateLabel(data.starts_at);
+      targetUrl = `/?view=calendar&event=${encodeURIComponent(String(body.id))}`;
       exclude = actor;
     } else if (kind === 'thread') {
       const { data } = await admin.from('threads').select('title_es, author_id').eq('id', body.id).single();
       if (!data) return send(404, 'thread not found');
       title = data.title_es || 'GUATACA';
       bodyText = 'Nuevo tema del foro';
+      targetUrl = `/?view=brainstorm&thread=${encodeURIComponent(String(body.id))}`;
       exclude = data.author_id;
     } else if (kind === 'reaction') {
       const commentId = typeof body.commentId === 'number' ? body.commentId : null;
       if (commentId) {
         const { data } = await admin
           .from('thread_comments')
-          .select('author_id, body_es, threads!inner(title_es)')
+          .select('author_id, body_es, thread_id, threads!inner(title_es)')
           .eq('id', commentId)
           .single();
         if (!data) return send(404, 'comment not found');
         title = data.threads?.title_es || 'GUATACA';
         bodyText = 'Le gustó tu comentario';
+        targetUrl = `/?view=brainstorm&thread=${encodeURIComponent(data.thread_id)}`;
         notifyId = data.author_id;
       } else {
         const { data } = await admin.from('threads').select('title_es, author_id').eq('id', body.id).single();
         if (!data) return send(404, 'thread not found');
         title = data.title_es || 'GUATACA';
         bodyText = 'Le gustó tu idea';
+        targetUrl = `/?view=brainstorm&thread=${encodeURIComponent(String(body.id))}`;
         notifyId = data.author_id;
       }
       exclude = actor;
@@ -104,19 +109,19 @@ export default async function handler(req: { method?: string; body?: Record<stri
       const commentId = typeof body.commentId === 'number' ? body.commentId : body.id;
       const { data } = await admin
         .from('thread_comments')
-        .select('author_id, body_es, threads!inner(title_es)')
+        .select('author_id, body_es, thread_id, threads!inner(title_es)')
         .eq('id', commentId)
         .single();
       if (!data) return send(404, 'comment not found');
       title = data.threads?.title_es || 'GUATACA';
       bodyText = (data.body_es || '').slice(0, 120) || 'Nuevo comentario';
+      targetUrl = `/?view=brainstorm&thread=${encodeURIComponent(data.thread_id)}`;
       exclude = data.author_id;
     }
   } catch {
     return send(500, 'db error');
   }
 
-  const targetUrl = kind === 'event' ? '/?view=calendar' : '/?view=brainstorm';
   const payload = JSON.stringify({ title, body: bodyText, url: targetUrl });
 
   // Recipients: subscriptions whose owner has the category pref on, minus the
