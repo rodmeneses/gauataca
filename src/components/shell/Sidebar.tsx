@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Calendar, LayoutDashboard, Lightbulb, Music, Palette, Receipt, Users } from 'lucide-react';
+import { Bell, Calendar, LayoutDashboard, Lightbulb, Music, Palette, Receipt, Users } from 'lucide-react';
 import { useGuataca } from '../../store';
 import type { View } from '../../types';
 import { BrandMark, cx } from '../ui';
@@ -33,7 +33,7 @@ function NavItem({ active, onClick, icon, label, badge }: { active: boolean; onC
 
 /** Sticky sidebar: 252px with labels on desktop, a 64px icon rail on tablet. */
 export function Sidebar() {
-  const { t, view, bandName, statUpcoming, statSongs, balanceStr, balanceNeg, me, roleLabel, go } = useGuataca();
+  const { t, view, bandName, statUpcoming, statSongs, balanceStr, balanceNeg, me, roleLabel, go, openNotifications } = useGuataca();
   const is = (v: View) => view === v;
   const upBadge = <span className="font-mono font-semibold text-[11px] leading-normal text-emerald bg-[var(--color-tint-emerald)] p-[2px_7px] rounded-[20px]">{statUpcoming}</span>;
   const songBadge = <span className="font-mono font-semibold text-[11px] leading-normal text-ink-muted">{statSongs}</span>;
@@ -70,6 +70,16 @@ export function Sidebar() {
           <div className="font-display font-semibold text-[10px] leading-none tracking-[.12em] uppercase text-ink-muted hidden lg:block">{t.poolBalance}</div>
           <div className={`font-mono font-semibold text-[13px] lg:text-[22px] leading-none ${balanceNeg ? 'text-red' : 'text-emerald'} lg:mt-2 text-center lg:text-left`}>{balanceStr}</div>
           <div className="text-[11px] text-ink-dim mt-[6px] hidden lg:block">{t.treasurer}: Rodrigo M.</div>
+        </button>
+        <button
+          type="button"
+          onClick={openNotifications}
+          title={t.notifications}
+          aria-label={t.notifications}
+          className="flex items-center gap-[9px] w-full min-h-[44px] rounded-[9px] border border-line bg-surface px-[10px] justify-center lg:justify-start cursor-pointer hover:border-emerald/40 transition-colors"
+        >
+          <Bell size={16} strokeWidth={1.9} className="flex-none text-ink-muted" />
+          <span className="hidden lg:inline font-sans font-medium text-[12.5px] text-ink-muted">{t.notifications}</span>
         </button>
         <div className="flex items-center gap-[9px] p-[2px_2px] justify-center lg:justify-start">
           <div className="avatar w-7 h-7 rounded-[9px] text-violet-light flex-none">{me.initial}</div>

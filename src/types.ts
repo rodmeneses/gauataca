@@ -236,7 +236,8 @@ export type Modal =
   | { kind: 'newTx'; id?: string }
   | { kind: 'newGear' }
   | { kind: 'onboard' }
-  | { kind: 'signin' };
+  | { kind: 'signin' }
+  | { kind: 'notifications' };
 
 export interface ShareSheet {
   title: string;
@@ -311,6 +312,9 @@ export interface Profile {
   joined_at: string;
   /** false until the member completes sign-up onboarding. */
   onboarded?: boolean;
+  /** Web Push category preferences (default true; the opt-in gate is the browser permission grant). */
+  notify_events?: boolean;
+  notify_forum?: boolean;
 }
 
 /** App-level props (band name, initial lang/role/view, tour + stale-day settings). */

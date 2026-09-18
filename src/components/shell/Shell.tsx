@@ -12,6 +12,7 @@ import { ThreadModal } from '../modals/ThreadModal';
 import { MemberModal } from '../modals/MemberModal';
 import { OnboardModal } from '../modals/OnboardModal';
 import { SignInModal } from '../modals/SignInModal';
+import { NotificationPrefsModal } from '../notifications/NotificationPrefsModal';
 import { ShareSheet } from '../modals/ShareSheet';
 import { CustodyDialog } from '../modals/CustodyDialog';
 import { SettleDialog } from '../modals/SettleDialog';
@@ -127,6 +128,7 @@ export function Shell() {
       {modal?.kind === 'thread' && bs.th && <ThreadModal />}
       {modal?.kind === 'member' && bs.mb && <MemberModal />}
       {modal?.kind === 'signin' && <SignInModal />}
+      {modal?.kind === 'notifications' && <NotificationPrefsModal />}
 
       {bs.sheet && <ShareSheet />}
       {bs.custody && <CustodyDialog />}

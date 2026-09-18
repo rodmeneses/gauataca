@@ -281,5 +281,34 @@ export function Pill({ active, color = 'var(--color-violet-light)', activeText, 
   );
 }
 
+/* ----------------------------------------------------------------- Switch */
+/**
+ * Accessible boolean toggle, themed with the emerald accent when on. Used for
+ * the per-category notification opt-ins.
+ */
+export function Switch({ checked, onChange, label, ...rest }: { checked: boolean; onChange: (checked: boolean) => void; label?: string } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onChange'>) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={() => onChange(!checked)}
+      className={cx(
+        'relative inline-flex h-[26px] w-[46px] flex-none rounded-full border transition-colors cursor-pointer',
+        checked ? 'border-emerald/50 bg-[var(--color-tint-emerald)]' : 'border-line bg-raised',
+      )}
+      {...rest}
+    >
+      <span
+        className={cx(
+          'absolute top-[2px] h-[20px] w-[20px] rounded-full transition-all',
+          checked ? 'left-[22px] bg-emerald shadow-pop' : 'left-[2px] bg-ink-muted',
+        )}
+      />
+    </button>
+  );
+}
+
 export { cx };
 export { DatePicker } from './DatePicker';
