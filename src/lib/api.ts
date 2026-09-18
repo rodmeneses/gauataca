@@ -794,6 +794,7 @@ export async function setThreadReaction(threadId: string, kind: ReactionKind | n
       { thread_id: threadId, profile_id: userId, kind },
       { onConflict: 'thread_id,profile_id' },
     );
+    if (kind === 'like') void notifyCreated({ kind: 'reaction', id: threadId });
   }
 }
 
@@ -806,6 +807,7 @@ export async function setCommentReaction(commentId: number, kind: ReactionKind |
       { comment_id: commentId, profile_id: userId, kind },
       { onConflict: 'comment_id,profile_id' },
     );
+    if (kind === 'like') void notifyCreated({ kind: 'reaction', commentId });
   }
 }
 
