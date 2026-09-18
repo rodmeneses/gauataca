@@ -8,13 +8,13 @@
  */
 import { supabase } from './supabase';
 
-export type NotifyKind = 'event' | 'thread' | 'comment';
+export type NotifyKind = 'event' | 'thread' | 'comment' | 'reaction';
 
 export interface NotifyPayload {
   kind: NotifyKind;
-  /** events.id / threads.id — for comments, the thread id. */
-  id: string;
-  /** comment id, only for kind 'comment'. */
+  /** events.id / threads.id; for comments, the thread id. Absent for a comment reaction (commentId is used). */
+  id?: string;
+  /** comment id — for a comment push ('comment') or a like on a comment ('reaction'). */
   commentId?: number;
 }
 

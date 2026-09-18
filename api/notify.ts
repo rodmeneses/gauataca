@@ -2,10 +2,11 @@
  * Vercel serverless function (`api/notify.ts`) — the fan-out half of Web Push.
  *
  * Triggered app-side after a write (src/lib/notify.ts → POST /api/notify with
- * `{ kind: 'event' | 'thread' | 'comment', id, commentId? }`). It:
+ * `{ kind: 'event' | 'thread' | 'comment' | 'reaction', id, commentId? }`). It:
  *   1. re-reads the row from Supabase (service role) so the payload reflects the
  *      DB, never the request;
- *   2. excludes the author;
+ *   2. excludes the author — and for `reaction` targets only the author (whoever
+ *      the liker is is excluded);
  *   3. sends a Web Push notification to every subscription whose category pref
  *      is on, pruning subscriptions the push service reports as expired.
  *
@@ -44,15 +45,15 @@ export default async function handler(req: { method?: string; body?: Record<stri
   // Vercel parses the JSON body when the client sends application/json.
   const body = req.body ?? {};
   const kind = body.kind;
-  if (kind !== 'event' && kind !== 'thread' && kind !== 'comment') return send(400, 'unknown kind');
-  if (!body.id) return send(400, 'missing id');
+  if (kind !== 'event' && kind !== 'thread' && kind !== 'comment' && kind !== 'reaction') return send(400, 'unknown kind');
+  if (!body.id && body.commentId === undefined) return send(400, 'missing id');
   if (!publicKey || !privateKey) return send(500, 'VAPID keys not configured');
 
   // Event pushes go to everyone except the acting member; thread/comment
   // pushes exclude by row author_id instead (resolved from the DB below).
   const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
   let actor: string | null = null;
-  if (token && kind === 'event') {
+  if (token && (kind === 'event' || kind === 'reaction')) {
     try {
       const { data, error } = await admin.auth.getUser(token);
       actor = error ? null : (data.user?.id ?? null);
@@ -64,47 +65,76 @@ export default async function handler(req: { method?: string; body?: Record<stri
   // Build the notification payload from the DB (never trust the request text).
   let title = 'GUATACA';
   let bodyText = '';
+  let targetUrl = '/';
   let exclude: string | null = null;
+  let notifyId: string | null = null; // reaction pushes go to this member only
   try {
     if (kind === 'event') {
       const { data } = await admin.from('events').select('title_es, starts_at, venue').eq('id', body.id).single();
       if (!data) return send(404, 'event not found');
       title = data.title_es || 'GUATACA';
       bodyText = data.venue ? `${data.venue} · ${dateLabel(data.starts_at)}` : dateLabel(data.starts_at);
+      targetUrl = `/?view=calendar&event=${encodeURIComponent(String(body.id))}`;
       exclude = actor;
     } else if (kind === 'thread') {
       const { data } = await admin.from('threads').select('title_es, author_id').eq('id', body.id).single();
       if (!data) return send(404, 'thread not found');
       title = data.title_es || 'GUATACA';
       bodyText = 'Nuevo tema del foro';
+      targetUrl = `/?view=brainstorm&thread=${encodeURIComponent(String(body.id))}`;
       exclude = data.author_id;
+    } else if (kind === 'reaction') {
+      const commentId = typeof body.commentId === 'number' ? body.commentId : null;
+      if (commentId) {
+        const { data } = await admin
+          .from('thread_comments')
+          .select('author_id, body_es, thread_id, threads!inner(title_es)')
+          .eq('id', commentId)
+          .single();
+        if (!data) return send(404, 'comment not found');
+        title = data.threads?.title_es || 'GUATACA';
+        bodyText = 'Le gustó tu comentario';
+        targetUrl = `/?view=brainstorm&thread=${encodeURIComponent(data.thread_id)}`;
+        notifyId = data.author_id;
+      } else {
+        const { data } = await admin.from('threads').select('title_es, author_id').eq('id', body.id).single();
+        if (!data) return send(404, 'thread not found');
+        title = data.title_es || 'GUATACA';
+        bodyText = 'Le gustó tu idea';
+        targetUrl = `/?view=brainstorm&thread=${encodeURIComponent(String(body.id))}`;
+        notifyId = data.author_id;
+      }
+      exclude = actor;
     } else {
       const commentId = typeof body.commentId === 'number' ? body.commentId : body.id;
       const { data } = await admin
         .from('thread_comments')
-        .select('author_id, body_es, threads!inner(title_es)')
+        .select('author_id, body_es, thread_id, threads!inner(title_es)')
         .eq('id', commentId)
         .single();
       if (!data) return send(404, 'comment not found');
       title = data.threads?.title_es || 'GUATACA';
       bodyText = (data.body_es || '').slice(0, 120) || 'Nuevo comentario';
+      targetUrl = `/?view=brainstorm&thread=${encodeURIComponent(data.thread_id)}`;
       exclude = data.author_id;
     }
   } catch {
     return send(500, 'db error');
   }
 
-  const targetUrl = kind === 'event' ? '/?view=calendar' : '/?view=brainstorm';
   const payload = JSON.stringify({ title, body: bodyText, url: targetUrl });
 
   // Recipients: subscriptions whose owner has the category pref on, minus the
   // author. The pref lives on `profiles`, the device rows on `push_subscriptions`
-  // — one inner-join query filters by both.
+  // — one inner-join query filters by both. Reaction pushes are targeted: only
+  // the author's devices, and only if the liker isn't the author themselves.
   const prefColumn = kind === 'event' ? 'notify_events' : 'notify_forum';
   let query = admin
     .from('push_subscriptions')
     .select('endpoint, p256dh, auth, profiles!inner(id)')
     .eq(`profiles.${prefColumn}`, true);
+  if (!notifyId && kind === 'reaction') return send(200);
+  if (kind === 'reaction') query = query.eq('profiles.id', notifyId);
   if (exclude) query = query.neq('profiles.id', exclude);
   const { data: subscriptions } = await query;
   if (!subscriptions?.length) return send(200);
