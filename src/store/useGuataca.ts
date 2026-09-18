@@ -245,6 +245,8 @@ export interface Guataca {
   setTxFilter: (f: TxFilter) => void;
   setTxDate: (d: TxDate) => void;
   openSignIn: () => void;
+  /** Open the Web Push notification preferences modal (desktop). */
+  openNotifications: () => void;
   signOut: () => Promise<void>;
   closeModal: () => void;
   /** Instagram flow: builds caption and opens the bottom sheet. */
@@ -679,6 +681,7 @@ export function useGuataca(): Guataca {
       setTxFilter: (f) => set({ txFilter: f }),
       setTxDate: (d) => set({ txDate: d }),
       openSignIn: () => set({ modal: { kind: 'signin' } }),
+      openNotifications: () => set({ modal: { kind: 'notifications' } }),
       signOut,
       closeModal: () => set({ modal: null }),
       openShare,

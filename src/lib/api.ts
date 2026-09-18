@@ -4,6 +4,7 @@
  * no React. `data.tsx` wraps these with a reload hook.
  */
 import { supabase } from './supabase';
+import { notifyCreated } from './notify';
 import type {
   BandEvent, EventFeedback, EventType, Gear, GearCondition, GenreId, Instrument, LinkKind, Member, Proficiency, ProofKind, ReactionKind, RsvpStatus, Song, Take, Thread, ThreadComment, Transaction, TxCategory, TxKind, VocalFlag,
 } from '../types';
@@ -385,6 +386,7 @@ export async function createEvent(
     note_es: input.note,
     note_en: input.note,
   });
+  void notifyCreated({ kind: 'event', id });
   return id;
 }
 
@@ -765,6 +767,7 @@ export async function createThread(input: { title: string; body: string }, userI
     body_es: input.body,
     body_en: input.body,
   });
+  void notifyCreated({ kind: 'thread', id });
   return id;
 }
 
@@ -777,7 +780,9 @@ export async function addComment(threadId: string, body: string, userId: string,
     body_es: body,
     body_en: body,
   }).select('id').single();
-  return data?.id ?? 0;
+  const cid = data?.id ?? 0;
+  if (cid) void notifyCreated({ kind: 'comment', id: threadId, commentId: cid });
+  return cid;
 }
 
 /** Set the signed-in member's like/dislike on an idea; `null` removes it. */

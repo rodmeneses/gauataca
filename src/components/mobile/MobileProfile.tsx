@@ -3,6 +3,7 @@ import { LogOut, Pencil } from 'lucide-react';
 import { useGuataca } from '../../store';
 import { Pill, Segment } from '../ui';
 import { ThemeToggle } from '../ui/ThemeToggle';
+import { NotificationPrefs } from '../notifications/NotificationPrefs';
 
 export function MobileProfile() {
   const { t, lang, setLang, signedIn, signOut, openSignIn, me, roleLabel, members, isAdmin, openMember } = useGuataca();
@@ -30,6 +31,13 @@ export function MobileProfile() {
           </button>
         </div>
       </section>
+
+      {signedIn && (
+        <section className="flex flex-col gap-2.5">
+          <span className="font-display font-semibold text-[12px] tracking-[.08em] uppercase text-ink-muted">{t.notifications}</span>
+          <NotificationPrefs />
+        </section>
+      )}
 
       <div className="bg-surface border border-line rounded-2xl p-5 flex flex-col items-center gap-3 text-center">
         <span

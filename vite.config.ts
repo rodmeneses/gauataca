@@ -9,6 +9,11 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'prompt', // never swap the running build silently — UpdatePrompt asks first
+      // Custom SW (injectManifest) so we can add the Web Push handlers that a
+      // generated SW cannot carry. The offline rules live in src/sw.js.
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.js',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'fonts/*.woff2', 'fonts/fonts.css'],
       manifest: {
         name: 'GUATACA',
@@ -29,28 +34,8 @@ export default defineConfig({
           { src: '/icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
-      workbox: {
+      injectManifest: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2,webmanifest}'],
-        navigateFallback: '/index.html',
-        cleanupOutdatedCaches: true,
-        runtimeCaching: [
-          {
-            // Supabase reads: last-known data when offline, fresh when online.
-            urlPattern: /^https:\/\/[a-z0-9]+\.supabase\.co\/rest\/v1\//i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'supabase-api',
-              networkTimeoutSeconds: 5,
-              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-          {
-            // Supabase auth / writes are never served from cache.
-            urlPattern: /^https:\/\/[a-z0-9]+\.supabase\.co\/(auth|storage)\//i,
-            handler: 'NetworkOnly',
-          },
-        ],
       },
       devOptions: { enabled: false },
     }),

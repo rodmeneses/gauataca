@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { GuatacaProvider } from './store';
 import { AuthProvider } from './lib/auth';
 import { DataProvider } from './lib/data';
+import { PushProvider } from './lib/push';
 import type { AppProps, Lang, Role, View } from './types';
 import { Shell } from './components/shell/Shell';
 import { readLangPref } from './lib/prefs';
@@ -34,11 +35,13 @@ export default function App() {
   const props = useMemo(readProps, []);
   return (
     <AuthProvider>
-      <DataProvider>
-        <GuatacaProvider props={props}>
-          <Shell />
-        </GuatacaProvider>
-      </DataProvider>
+      <PushProvider>
+        <DataProvider>
+          <GuatacaProvider props={props}>
+            <Shell />
+          </GuatacaProvider>
+        </DataProvider>
+      </PushProvider>
     </AuthProvider>
   );
 }

@@ -134,6 +134,14 @@ const es = {
   settings: 'Ajustes', appearance: 'Apariencia',
   themeLight: 'Claro', themeDark: 'Oscuro', themeSystem: 'Sistema',
   language: 'Idioma',
+  // notifications (Web Push)
+  notifications: 'Notificaciones',
+  notifyEnable: 'Activar notificaciones',
+  notifyDisable: 'Desactivar notificaciones',
+  notifyEvents: 'Nuevos eventos',
+  notifyForum: 'Actividad del foro',
+  notifyBlocked: 'Notificaciones bloqueadas — habilítalas en la configuración del navegador.',
+  notifyUnsupported: 'Las notificaciones no están disponibles en este navegador o dispositivo.',
   // PWA: update prompt + offline state
   updateReady: 'Nueva versión disponible',
   updateNow: 'Actualizar',
@@ -275,6 +283,14 @@ const en: typeof es = {
   settings: 'Settings', appearance: 'Appearance',
   themeLight: 'Light', themeDark: 'Dark', themeSystem: 'System',
   language: 'Language',
+  // notifications (Web Push)
+  notifications: 'Notifications',
+  notifyEnable: 'Enable notifications',
+  notifyDisable: 'Disable notifications',
+  notifyEvents: 'New events',
+  notifyForum: 'Forum activity',
+  notifyBlocked: 'Notifications are blocked — enable them in your browser settings.',
+  notifyUnsupported: 'Notifications aren’t available in this browser or device.',
   // PWA: update prompt + offline state
   updateReady: 'A new version is available',
   updateNow: 'Update',
