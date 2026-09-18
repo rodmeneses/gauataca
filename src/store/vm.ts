@@ -7,7 +7,7 @@ import type { Dict } from '../i18n';
 import { GENRES } from '../data';
 import { d, days, durationSeconds, fmt, money, money0, monthShort, rel } from '../lib/format';
 import type {
-  BandEvent, EventFeedback, Gear, GenreId, Instrument, Lang, LinkKind, LocalComment, Localized, Member, Proficiency, RatingKey, RsvpStatus, Song, Take, Thread, Transaction,
+  BandEvent, EventFeedback, Gear, GenreId, Instrument, Lang, LinkKind, Localized, Member, Proficiency, RatingKey, ReactionKind, RsvpStatus, Song, Take, Thread, ThreadComment, ThreadMedia, ThreadRef, Transaction,
 } from '../types';
 
 export interface Ctx {
@@ -22,6 +22,8 @@ export interface Ctx {
   members: Member[];
   /** All events, for resolving a transaction's linked event id. */
   events: BandEvent[];
+  /** All songs, for resolving forum references to song names. */
+  songs: Song[];
   /** All gear, for resolving a transaction's linked gear id. */
   gear: Gear[];
   /** Instrument catalog, for resolving instrument ids to names. */
@@ -499,6 +501,31 @@ export function gearVm(g: Gear, holderId: string, ctx: Ctx): GearVm {
 }
 
 /* ---------------------------------------------------------------- threads */
+export interface ResolvedRef {
+  id: number;
+  kind: 'song' | 'event';
+  /** Target song/event id (the raw ThreadRef.refId), for navigation. */
+  refId: string;
+  /** Display label of the referenced song/event (unresolvable ids are dropped). */
+  label: string;
+}
+
+export interface CommentVm {
+  id: number;
+  parentId: number | null;
+  author: string;
+  initial: string;
+  text: string;
+  dateStr: string;
+  likes: number;
+  dislikes: number;
+  myReaction: ReactionKind | null;
+  media: ThreadMedia[];
+  refs: ResolvedRef[];
+  /** Flat, one level deep. */
+  replies: CommentVm[];
+}
+
 export interface ThreadVm {
   id: string;
   title: string;
@@ -506,30 +533,67 @@ export interface ThreadVm {
   author: string;
   initial: string;
   dateStr: string;
-  /** total votes as string (base + mine). */
-  votes: string;
-  voted: boolean;
+  likes: number;
+  dislikes: number;
+  myReaction: ReactionKind | null;
+  media: ThreadMedia[];
+  refs: ResolvedRef[];
+  /** Top-level comments + replies. */
   commentCount: string;
-  comments: LocalComment[];
+  comments: CommentVm[];
 }
 
-export function threadVm(b: Thread, voted: boolean, ctx: Ctx): ThreadVm {
-  const { lang } = ctx;
-  const a = memberById(ctx.members, b.by);
-  const comments: LocalComment[] = b.comments.map((c) => {
-    const m = memberById(ctx.members, c.by);
-    return { by: m.short, initial: m.initial, text: L(lang, c.text) };
+function resolveRefs(refs: ThreadRef[], ctx: Ctx): ResolvedRef[] {
+  const out: ResolvedRef[] = [];
+  for (const r of refs) {
+    if (r.kind === 'song') {
+      const song = ctx.songs.find((s) => s.id === r.refId);
+      if (song) out.push({ id: r.id, kind: 'song', refId: r.refId, label: song.title });
+    } else {
+      const ev = ctx.events.find((e) => e.id === r.refId);
+      if (ev) out.push({ id: r.id, kind: 'event', refId: r.refId, label: L(ctx.lang, ev.title) });
+    }
+  }
+  return out;
+}
+
+function commentVm(c: ThreadComment, ctx: Ctx): CommentVm {
+  return {
+    id: c.id,
+    parentId: c.parentId,
+    author: memberById(ctx.members, c.by).short,
+    initial: memberById(ctx.members, c.by).initial,
+    text: L(ctx.lang, c.text),
+    dateStr: rel(c.createdAt.slice(0, 10), ctx.lang),
+    likes: c.reactions.like,
+    dislikes: c.reactions.dislike,
+    myReaction: c.myReaction,
+    media: c.media,
+    refs: resolveRefs(c.refs, ctx),
+    replies: [],
+  };
+}
+
+export function threadVm(b: Thread, ctx: Ctx): ThreadVm {
+  const comments = b.comments.map((c) => {
+    const vm = commentVm(c, ctx);
+    vm.replies = c.replies.map((r) => commentVm(r, ctx));
+    return vm;
   });
+  const flat = b.comments.reduce((n, c) => n + 1 + c.replies.length, 0);
   return {
     id: b.id,
-    title: L(lang, b.title),
-    body: L(lang, b.body),
-    author: a.short,
-    initial: a.initial,
-    dateStr: fmt(b.date, lang, true),
-    votes: String(b.votes),
-    voted,
-    commentCount: String(comments.length),
+    title: L(ctx.lang, b.title),
+    body: L(ctx.lang, b.body),
+    author: memberById(ctx.members, b.by).short,
+    initial: memberById(ctx.members, b.by).initial,
+    dateStr: fmt(b.date, ctx.lang, true),
+    likes: b.reactions.like,
+    dislikes: b.reactions.dislike,
+    myReaction: b.myReaction,
+    media: b.media,
+    refs: resolveRefs(b.refs, ctx),
+    commentCount: String(flat),
     comments,
   };
 }

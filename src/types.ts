@@ -170,26 +170,51 @@ export interface Gear {
   boughtBy?: string;
 }
 
-export interface ThreadComment {
-  by: string; // member id
-  text: Localized;
+export type ReactionKind = 'like' | 'dislike';
+export interface ReactionTally {
+  like: number;
+  dislike: number;
 }
 
+/** A referenced song/event attached to an idea or comment (picker chips AND @-mentions). */
+export interface ThreadRef {
+  id: number;
+  kind: 'song' | 'event';
+  refId: string;
+}
+
+export interface ThreadMedia {
+  id: number;
+  url: string;
+  authorId: string;
+}
+
+/** A comment on an idea. Replies are flat — a reply holds `parentId` and no nested replies. */
+export interface ThreadComment {
+  id: number;
+  parentId: number | null;
+  by: string; // member id
+  text: Localized;
+  createdAt: string; // ISO timestamp
+  reactions: ReactionTally;
+  myReaction: ReactionKind | null;
+  media: ThreadMedia[];
+  refs: ThreadRef[];
+  replies: ThreadComment[];
+}
+
+/** A forum idea. `comments` holds top-level comments only (replies live inside each). */
 export interface Thread {
   id: string;
   by: string;
   date: string;
-  votes: number;
   title: Localized;
   body: Localized;
+  reactions: ReactionTally;
+  myReaction: ReactionKind | null;
+  media: ThreadMedia[];
+  refs: ThreadRef[];
   comments: ThreadComment[];
-}
-
-/** Comment added at runtime (already localized, author resolved). */
-export interface LocalComment {
-  by: string;
-  initial: string;
-  text: string;
 }
 
 export type ToastTone = 'ok' | 'violet' | 'err';
@@ -205,6 +230,7 @@ export type Modal =
   | { kind: 'event'; id: string }
   | { kind: 'thread'; id: string }
   | { kind: 'member'; id: string; edit?: boolean }
+  | { kind: 'newThread' }
   | { kind: 'newEvent'; id?: string }
   | { kind: 'newSong'; id?: string }
   | { kind: 'newTx'; id?: string }
@@ -270,6 +296,10 @@ export interface FormState {
   boughtBy?: string;
   /** Song form: required instrument ids. */
   songInstruments?: string[];
+  /** New idea form: title + body + structured song/event refs. */
+  threadTitle?: string;
+  threadBody?: string;
+  threadRefs?: { kind: 'song' | 'event'; id: string }[];
 }
 
 /** Supabase profile (extends auth.users). */

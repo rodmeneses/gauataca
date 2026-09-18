@@ -8,13 +8,14 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { useAuth } from './auth';
 import {
   addComment as apiAddComment, addEventMedia as apiAddEventMedia, addEventPhotos as apiAddEventPhotos, addTake as apiAddTake, createEvent as apiCreateEvent, createGear as apiCreateGear, createInstrument as apiCreateInstrument,
-  createSong as apiCreateSong, createTransaction as apiCreateTransaction, deleteEventMedia as apiDeleteEventMedia, deleteTake as apiDeleteTake, deleteTransaction as apiDeleteTransaction, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
+  createSong as apiCreateSong, createThread as apiCreateThread, createTransaction as apiCreateTransaction, deleteEventMedia as apiDeleteEventMedia, deleteTake as apiDeleteTake, deleteThreadMedia as apiDeleteThreadMedia, deleteTransaction as apiDeleteTransaction, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
   setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, setSongInstruments as apiSetSongInstruments, setSongLinks as apiSetSongLinks,
-  settleEvent as apiSettleEvent, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateEvent as apiUpdateEvent, updateMemberInstruments as apiUpdateMemberInstruments, updateSong as apiUpdateSong, updateTransaction as apiUpdateTransaction,
-  uploadEventPhoto as apiUploadEventPhoto, uploadProof as apiUploadProof, voteThread as apiVoteThread, type DataSnapshot,
+  addThreadMedia as apiAddThreadMedia, addThreadRefs as apiAddThreadRefs, settleEvent as apiSettleEvent, setCommentReaction as apiSetCommentReaction, setThreadReaction as apiSetThreadReaction, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateEvent as apiUpdateEvent, updateMemberInstruments as apiUpdateMemberInstruments, updateSong as apiUpdateSong, updateTransaction as apiUpdateTransaction,
+  uploadEventPhoto as apiUploadEventPhoto, uploadForumPhoto as apiUploadForumPhoto, uploadProof as apiUploadProof, type DataSnapshot,
 } from './api';
-import type { EventType, GearCondition, GenreId, LinkKind, Proficiency, ProofKind, RsvpStatus, TxCategory, TxKind, VocalFlag } from '../types';
+import type { EventType, GearCondition, GenreId, LinkKind, Proficiency, ProofKind, ReactionKind, RsvpStatus, TxCategory, TxKind, VocalFlag } from '../types';
 
+export interface CreateThreadInput { title: string; body: string; }
 export interface CreateEventInput { title: string; venue: string; date: string; time: string; hours: number; fee: number; cost: number; note: string; type: EventType; }
 export interface CreateSongInput { title: string; genre: GenreId; key: string; bpm: number; dur: string; }
 export interface SongLinkInput { kind: LinkKind; label: string; url: string; }
@@ -51,8 +52,16 @@ interface DataValue extends DataSnapshot {
   /** Upload an event photo (already compressed); resolves to its public URL. */
   uploadEventPhoto: (blob: Blob) => Promise<string | undefined>;
   setRsvp: (eventId: string, status: RsvpStatus | null) => Promise<void>;
-  voteThread: (threadId: string) => Promise<void>;
-  addComment: (threadId: string, body: string) => Promise<void>;
+  createThread: (input: CreateThreadInput) => Promise<string | undefined>;
+  /** Add a comment — or, with `parentId`, a one-level reply. Resolves to the new comment id. */
+  addComment: (threadId: string, body: string, parentId?: number | null) => Promise<number | undefined>;
+  setThreadReaction: (threadId: string, kind: ReactionKind | null) => Promise<void>;
+  setCommentReaction: (commentId: number, kind: ReactionKind | null) => Promise<void>;
+  addThreadMedia: (threadId: string, urls: string[], commentId?: number | null) => Promise<boolean | undefined>;
+  deleteThreadMedia: (id: number) => Promise<void>;
+  addThreadRefs: (threadId: string, refs: { kind: 'song' | 'event'; id: string }[], commentId?: number | null) => Promise<boolean | undefined>;
+  /** Upload a forum photo (already compressed); resolves to its public URL. */
+  uploadForumPhoto: (blob: Blob) => Promise<string | undefined>;
   submitFeedback: (eventId: string, input: FeedbackInput) => Promise<void>;
   pickPoll: (eventId: string, optionIndex: number) => Promise<void>;
   transferCustody: (gearId: string, toMemberId: string) => Promise<void>;
@@ -73,7 +82,6 @@ const EMPTY: DataSnapshot = {
   members: [],
   instruments: [],
   takes: [],
-  myThreadVotes: [],
   myPollPicks: {},
 };
 
@@ -162,8 +170,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
         return apiUploadEventPhoto(blob);
       },
       setRsvp: (eventId, status) => run(() => apiSetRsvp(eventId, status, uid)),
-      voteThread: (threadId) => run(() => apiVoteThread(threadId, uid)),
-      addComment: (threadId, body) => run(() => apiAddComment(threadId, body, uid)),
+      createThread: (input) => run(() => apiCreateThread(input, uid)),
+      addComment: (threadId, body, parentId = null) => run(() => apiAddComment(threadId, body, uid, parentId)),
+      setThreadReaction: (threadId, kind) => run(() => apiSetThreadReaction(threadId, kind, uid)),
+      setCommentReaction: (commentId, kind) => run(() => apiSetCommentReaction(commentId, kind, uid)),
+      addThreadMedia: (threadId, urls, commentId = null) => run(() => apiAddThreadMedia(threadId, urls, uid, commentId)),
+      deleteThreadMedia: (id) => run(() => apiDeleteThreadMedia(id)),
+      addThreadRefs: (threadId, refs, commentId = null) => run(() => apiAddThreadRefs(threadId, refs, uid, commentId)),
+      uploadForumPhoto: async (blob) => {
+        return apiUploadForumPhoto(blob);
+      },
       submitFeedback: (eventId, input) => run(() => apiSubmitFeedback(eventId, input, uid)),
       pickPoll: (eventId, optionIndex) => run(() => apiPickPoll(eventId, optionIndex, uid)),
       transferCustody: (gearId, toMemberId) => run(() => apiTransferCustody(gearId, toMemberId, uid)),

@@ -1,29 +1,39 @@
-/** Mobile "Ideas" tab: the brainstorm thread list (vote, open, convert-to-event). */
-import { ArrowUp, CalendarPlus, MessageSquare } from 'lucide-react';
+/** Mobile "Ideas" tab: the brainstorm thread list (reactions, open, convert). */
+import { CalendarPlus, Lightbulb, MessageSquare } from 'lucide-react';
 import { useGuataca } from '../../store';
+import { ReactionButtons } from '../ReactionButtons';
 
 export function MobileBrainstorm() {
-  const { t, isAdmin, threads, voteThread, openThread, convertThread } = useGuataca();
+  const { t, isAdmin, threads, setThreadReaction, openThread, convertThread, openNewThread } = useGuataca();
 
   return (
     <div className="flex flex-col gap-3">
-      {threads.map((b) => (
-        <article key={b.id} className="bg-surface border border-line rounded-2xl p-4 flex gap-3">
+      <div className="flex items-center justify-between gap-3 px-1">
+        <h2 className="m-0 font-display font-semibold text-[17px] leading-normal text-ink-bright flex items-center gap-2">
+          <Lightbulb size={17} strokeWidth={2} style={{ color: 'var(--color-violet)' }} />
+          {t.brainstorm}
+        </h2>
+        {isAdmin && (
           <button
             type="button"
-            onClick={() => voteThread(b.id)}
-            aria-pressed={b.voted}
-            aria-label={`${t.upvote} — ${b.votes}`}
-            className="flex flex-col items-center justify-center gap-0.5 min-w-[44px] min-h-[44px] px-2.5 rounded-xl cursor-pointer flex-none transition-colors"
-            style={{
-              border: '1px solid ' + (b.voted ? 'color-mix(in srgb, var(--color-emerald) 40%, transparent)' : 'var(--color-line)'),
-              background: b.voted ? 'var(--color-tint-emerald)' : 'var(--color-raised)',
-              color: b.voted ? 'var(--color-emerald)' : 'var(--color-ink-meta)',
-            }}
+            onClick={openNewThread}
+            className="min-h-[44px] px-4 rounded-xl border border-violet/40 bg-[var(--color-tint-violet)] text-violet font-sans font-semibold text-[13px] cursor-pointer"
           >
-            <ArrowUp size={17} strokeWidth={2.2} />
-            <span className="font-mono font-semibold text-[13px]">{b.votes}</span>
+            {t.newThread}
           </button>
+        )}
+      </div>
+      {threads.length === 0 && <p className="m-0 font-sans font-normal text-[14px] text-ink-dim bg-surface border border-line rounded-2xl p-4">{t.noResults}</p>}
+      {threads.map((b) => (
+        <article key={b.id} className="bg-surface border border-line rounded-2xl p-4 flex gap-3">
+          <ReactionButtons
+            likes={b.likes}
+            dislikes={b.dislikes}
+            my={b.myReaction}
+            onPick={(k) => setThreadReaction(b.id, k)}
+            vertical
+            className="flex-none"
+          />
           <div className="min-w-0 flex-1">
             <button type="button" onClick={() => openThread(b.id)} className="border-none bg-transparent p-0 text-left cursor-pointer block w-full">
               <h3 className="m-0 font-display font-semibold text-[17px] leading-snug text-ink">{b.title}</h3>

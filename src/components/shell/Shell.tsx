@@ -7,6 +7,7 @@ import { DesktopShell } from './DesktopShell';
 import { MobileShell } from '../mobile/MobileShell';
 import { EventModal } from '../modals/EventModal';
 import { NewEventModal, NewGearModal, NewSongModal, NewTxModal } from '../modals/FormModals';
+import { NewThreadModal } from '../modals/NewThreadModal';
 import { ThreadModal } from '../modals/ThreadModal';
 import { MemberModal } from '../modals/MemberModal';
 import { OnboardModal } from '../modals/OnboardModal';
@@ -121,6 +122,7 @@ export function Shell() {
       {modal?.kind === 'newTx' && <NewTxModal />}
       {modal?.kind === 'newSong' && <NewSongModal />}
       {modal?.kind === 'newGear' && <NewGearModal />}
+      {modal?.kind === 'newThread' && <NewThreadModal />}
       {modal?.kind === 'onboard' && <OnboardModal />}
       {modal?.kind === 'thread' && bs.th && <ThreadModal />}
       {modal?.kind === 'member' && bs.mb && <MemberModal />}

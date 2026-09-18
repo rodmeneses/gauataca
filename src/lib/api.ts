@@ -5,7 +5,7 @@
  */
 import { supabase } from './supabase';
 import type {
-  BandEvent, EventFeedback, EventType, Gear, GearCondition, GenreId, Instrument, LinkKind, Member, Proficiency, ProofKind, RsvpStatus, Song, Take, Thread, Transaction, TxCategory, TxKind, VocalFlag,
+  BandEvent, EventFeedback, EventType, Gear, GearCondition, GenreId, Instrument, LinkKind, Member, Proficiency, ProofKind, ReactionKind, RsvpStatus, Song, Take, Thread, ThreadComment, Transaction, TxCategory, TxKind, VocalFlag,
 } from '../types';
 
 type Row = Record<string, any>;
@@ -21,8 +21,6 @@ export interface DataSnapshot {
   instruments: Instrument[];
   /** Song recordings ("takes") on practice events. */
   takes: Take[];
-  /** Thread ids the current user has upvoted. */
-  myThreadVotes: string[];
   /** event id → poll option index the current user picked. */
   myPollPicks: Record<string, number>;
 }
@@ -226,27 +224,83 @@ function mapGear(rows: Row[], transactions: Row[]): Gear[] {
 }
 
 /* ----------------------------------------------------------------- threads */
-function mapThreads(threads: Row[], votes: Row[], comments: Row[]): Thread[] {
-  const votesByThread = groupBy(votes, 'thread_id');
+function tallyReactions(rows: Row[], userId: string | null): { tally: { like: number; dislike: number }; mine: ReactionKind | null } {
+  let like = 0;
+  let dislike = 0;
+  let mine: ReactionKind | null = null;
+  for (const r of rows) {
+    if (r.kind === 'like') like += 1;
+    else dislike += 1;
+    if (userId && r.profile_id === userId) mine = r.kind;
+  }
+  return { tally: { like, dislike }, mine };
+}
+
+function mapThreads(
+  threads: Row[],
+  threadReactions: Row[],
+  commentReactions: Row[],
+  comments: Row[],
+  media: Row[],
+  refs: Row[],
+  userId: string | null,
+): Thread[] {
+  const reactionsByThread = groupBy(threadReactions, 'thread_id');
+  const reactionsByComment = groupBy(commentReactions, 'comment_id');
+  const mediaByThread = groupBy(media, 'thread_id');
+  const refsByThread = groupBy(refs, 'thread_id');
   const commentsByThread = groupBy(comments, 'thread_id');
-  return threads.map((b) => ({
-    id: b.id,
-    by: b.author_id,
-    date: (b.created_at ?? '').slice(0, 10),
-    votes: (votesByThread.get(b.id) ?? []).length,
-    title: { es: b.title_es, en: b.title_en },
-    body: { es: b.body_es, en: b.body_en },
-    comments: (commentsByThread.get(b.id) ?? [])
-      .sort((a, b) => a.id - b.id)
-      .map((c) => ({ by: c.author_id, text: { es: c.body_es, en: c.body_en } })),
-  }));
+
+  const commentVm = (c: Row): ThreadComment => {
+    const r = tallyReactions(reactionsByComment.get(c.id) ?? [], userId);
+    return {
+      id: c.id,
+      parentId: c.parent_id,
+      by: c.author_id,
+      text: { es: c.body_es, en: c.body_en },
+      createdAt: c.created_at,
+      reactions: r.tally,
+      myReaction: r.mine,
+      media: (mediaByThread.get(c.thread_id) ?? [])
+        .filter((m) => m.comment_id === c.id)
+        .map((m) => ({ id: m.id, url: m.url, authorId: m.author_id })),
+      refs: (refsByThread.get(c.thread_id) ?? [])
+        .filter((r2) => r2.comment_id === c.id)
+        .map((r2) => ({ id: r2.id, kind: r2.ref_kind, refId: r2.ref_id })),
+      replies: [],
+    };
+  };
+
+  return threads.map((b) => {
+    const sorted = (commentsByThread.get(b.id) ?? []).sort((a, c) => a.id - c.id);
+    const r = tallyReactions(reactionsByThread.get(b.id) ?? [], userId);
+    return {
+      id: b.id,
+      by: b.author_id,
+      date: (b.created_at ?? '').slice(0, 10),
+      title: { es: b.title_es, en: b.title_en },
+      body: { es: b.body_es, en: b.body_en },
+      reactions: r.tally,
+      myReaction: r.mine,
+      media: (mediaByThread.get(b.id) ?? []).filter((m) => m.comment_id == null).map((m) => ({ id: m.id, url: m.url, authorId: m.author_id })),
+      refs: (refsByThread.get(b.id) ?? []).filter((m) => m.comment_id == null).map((m) => ({ id: m.id, kind: m.ref_kind, refId: m.ref_id })),
+      comments: sorted
+        .filter((c) => c.parent_id == null)
+        .map((c) => {
+          const cm = commentVm(c);
+          cm.replies = sorted.filter((r2) => r2.parent_id === c.id).map(commentVm);
+          return cm;
+        }),
+    };
+  });
 }
 
 /* ------------------------------------------------------------------ fetch */
 export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
   const [
     profiles, profileInstruments, vocals, songs, songInstruments, songLinks, events, eventSongs, eventMedia, attendance,
-    feedback, polls, pollOptions, pollVotes, gear, transactions, threads, threadVotes, threadComments, instruments, takes,
+    feedback, polls, pollOptions, pollVotes, gear, transactions, threads, threadReactions, threadComments, threadCommentReactions,
+    threadMedia, threadRefs, instruments, takes,
   ] = await Promise.all([
     supabase.from('profiles').select('*'),
     supabase.from('profile_instruments').select('*'),
@@ -265,18 +319,17 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
     supabase.from('gear').select('*'),
     supabase.from('transactions').select('*'),
     supabase.from('threads').select('*'),
-    supabase.from('thread_votes').select('*'),
+    supabase.from('thread_reactions').select('*'),
     supabase.from('thread_comments').select('*'),
+    supabase.from('thread_comment_reactions').select('*'),
+    supabase.from('thread_media').select('*'),
+    supabase.from('thread_refs').select('*'),
     supabase.from('instruments').select('*'),
     supabase.from('takes').select('*'),
   ]);
 
   const members = mapMembers(profiles.data ?? [], profileInstruments.data ?? [], vocals.data ?? []);
   const tx = mapTransactions(transactions.data ?? []);
-
-  const myThreadVotes = userId
-    ? (threadVotes.data ?? []).filter((v) => v.profile_id === userId).map((v) => v.thread_id)
-    : [];
 
   const myPollPicks: Record<string, number> = {};
   if (userId) {
@@ -299,11 +352,13 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
     ),
     transactions: tx,
     gear: mapGear(gear.data ?? [], transactions.data ?? []),
-    threads: mapThreads(threads.data ?? [], threadVotes.data ?? [], threadComments.data ?? []),
+    threads: mapThreads(
+      threads.data ?? [], threadReactions.data ?? [], threadCommentReactions.data ?? [], threadComments.data ?? [],
+      threadMedia.data ?? [], threadRefs.data ?? [], userId,
+    ),
     members,
     instruments: mapInstruments(instruments.data ?? []),
     takes: mapTakes(takes.data ?? []),
-    myThreadVotes,
     myPollPicks,
   };
 }
@@ -699,22 +754,108 @@ export async function setRsvp(eventId: string, status: RsvpStatus | null, userId
   }
 }
 
-export async function voteThread(threadId: string, userId: string): Promise<void> {
-  const { data } = await supabase.from('thread_votes').select('thread_id').eq('thread_id', threadId).eq('profile_id', userId);
-  if (data && data.length > 0) {
-    await supabase.from('thread_votes').delete().eq('thread_id', threadId).eq('profile_id', userId);
-  } else {
-    await supabase.from('thread_votes').insert({ thread_id: threadId, profile_id: userId });
-  }
+/** Create a forum idea; returns its id. */
+export async function createThread(input: { title: string; body: string }, userId: string): Promise<string> {
+  const id = newId('t');
+  await supabase.from('threads').insert({
+    id,
+    author_id: userId,
+    title_es: input.title,
+    title_en: input.title,
+    body_es: input.body,
+    body_en: input.body,
+  });
+  return id;
 }
 
-export async function addComment(threadId: string, body: string, userId: string): Promise<void> {
-  await supabase.from('thread_comments').insert({
+/** Add a comment (or, with `parentId`, a one-level reply) to an idea; returns the new comment id. */
+export async function addComment(threadId: string, body: string, userId: string, parentId: number | null = null): Promise<number> {
+  const { data } = await supabase.from('thread_comments').insert({
     thread_id: threadId,
+    parent_id: parentId,
     author_id: userId,
     body_es: body,
     body_en: body,
-  });
+  }).select('id').single();
+  return data?.id ?? 0;
+}
+
+/** Set the signed-in member's like/dislike on an idea; `null` removes it. */
+export async function setThreadReaction(threadId: string, kind: ReactionKind | null, userId: string): Promise<void> {
+  if (kind === null) {
+    await supabase.from('thread_reactions').delete().eq('thread_id', threadId).eq('profile_id', userId);
+  } else {
+    await supabase.from('thread_reactions').upsert(
+      { thread_id: threadId, profile_id: userId, kind },
+      { onConflict: 'thread_id,profile_id' },
+    );
+  }
+}
+
+/** Set the signed-in member's like/dislike on a comment; `null` removes it. */
+export async function setCommentReaction(commentId: number, kind: ReactionKind | null, userId: string): Promise<void> {
+  if (kind === null) {
+    await supabase.from('thread_comment_reactions').delete().eq('comment_id', commentId).eq('profile_id', userId);
+  } else {
+    await supabase.from('thread_comment_reactions').upsert(
+      { comment_id: commentId, profile_id: userId, kind },
+      { onConflict: 'comment_id,profile_id' },
+    );
+  }
+}
+
+/** Attach uploaded photo URLs to an idea or one of its comments; true on success. */
+export async function addThreadMedia(threadId: string, urls: string[], userId: string, commentId: number | null = null): Promise<boolean> {
+  if (urls.length === 0) return false;
+  const { error } = await supabase.from('thread_media').insert(
+    urls.map((url) => ({ thread_id: threadId, comment_id: commentId, url, author_id: userId })),
+  );
+  return !error;
+}
+
+/** Remove a thread-media row; also deletes the storage object when it's an uploaded photo. */
+export async function deleteThreadMedia(id: number): Promise<void> {
+  const { data: row } = await supabase.from('thread_media').select('url').eq('id', id).single();
+  await supabase.from('thread_media').delete().eq('id', id);
+  if (row?.url) {
+    const marker = '/storage/v1/object/public/forum-photos/';
+    const idx = row.url.indexOf(marker);
+    if (idx >= 0) {
+      const path = row.url.slice(idx + marker.length);
+      await supabase.storage.from('forum-photos').remove([path]);
+    }
+  }
+}
+
+/** Attach song/event references to an idea or one of its comments, skipping dups; true on success. */
+export async function addThreadRefs(
+  threadId: string,
+  refs: { kind: 'song' | 'event'; id: string }[],
+  userId: string,
+  commentId: number | null = null,
+): Promise<boolean> {
+  if (refs.length === 0) return false;
+  const { data: existing } = await supabase
+    .from('thread_refs')
+    .select('ref_kind, ref_id')
+    .eq('thread_id', threadId)
+    .eq('comment_id', commentId);
+  const have = new Set((existing ?? []).map((r) => `${r.ref_kind}:${r.ref_id}`));
+  const fresh = refs.filter((r) => !have.has(`${r.kind}:${r.id}`));
+  if (fresh.length === 0) return true;
+  const { error } = await supabase.from('thread_refs').insert(
+    fresh.map((r) => ({ thread_id: threadId, comment_id: commentId, ref_kind: r.kind, ref_id: r.id, author_id: userId })),
+  );
+  return !error;
+}
+
+/** Upload a forum photo to the public `forum-photos` bucket; returns its public URL. */
+export async function uploadForumPhoto(blob: Blob): Promise<string> {
+  const path = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+  const { error } = await supabase.storage.from('forum-photos').upload(path, blob, { cacheControl: '3600', upsert: false });
+  if (error) throw error;
+  const { data } = supabase.storage.from('forum-photos').getPublicUrl(path);
+  return data.publicUrl;
 }
 
 export async function submitFeedback(
