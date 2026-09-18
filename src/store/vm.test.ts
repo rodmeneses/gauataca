@@ -58,7 +58,7 @@ afterEach(() => {
 function baseCtx(overrides: Partial<Ctx> = {}): Ctx {
   return {
     lang: 'en', t: T.en, staleDays: 14, meId: 'm1', isAdmin: true,
-    members, events: [], gear: [], instruments, takes: [],
+    members, songs, events: [], gear: [], instruments, takes: [],
     ...overrides,
   };
 }
@@ -386,19 +386,57 @@ describe('gearVm', () => {
 });
 
 describe('threadVm', () => {
-  it('resolves the author, comment authors and vote state', () => {
+  it('resolves authors, reactions and one-level replies', () => {
     const th: Thread = {
-      id: 'th1', by: 'm1', date: '2026-09-01', votes: 3,
+      id: 'th1', by: 'm1', date: '2026-09-01',
       title: { es: '', en: 'New venue idea' }, body: { es: '', en: 'What about downtown?' },
-      comments: [{ by: 'm2', text: { es: '', en: 'Love it' } }],
+      reactions: { like: 2, dislike: 1 }, myReaction: 'like',
+      media: [], refs: [],
+      comments: [
+        {
+          id: 10, parentId: null, by: 'm2', text: { es: '', en: 'Love it' }, createdAt: '2026-09-02T10:00:00Z',
+          reactions: { like: 1, dislike: 0 }, myReaction: null, media: [], refs: [],
+          replies: [
+            {
+              id: 11, parentId: 10, by: 'm1', text: { es: '', en: 'Thanks!' }, createdAt: '2026-09-02T11:00:00Z',
+              reactions: { like: 0, dislike: 0 }, myReaction: null, media: [], refs: [], replies: [],
+            },
+          ],
+        },
+      ],
     };
-    const vm = threadVm(th, true, baseCtx());
+    const vm = threadVm(th, baseCtx());
     expect(vm.author).toBe('Ana');
     expect(vm.title).toBe('New venue idea');
-    expect(vm.voted).toBe(true);
-    expect(vm.votes).toBe('3');
-    expect(vm.commentCount).toBe('1');
-    expect(vm.comments).toEqual([{ by: 'Beto', initial: 'B', text: 'Love it' }]);
+    expect(vm.likes).toBe(2);
+    expect(vm.dislikes).toBe(1);
+    expect(vm.myReaction).toBe('like');
+    expect(vm.commentCount).toBe('2'); // 1 top-level + 1 reply
+    expect(vm.comments).toHaveLength(1);
+    expect(vm.comments[0].author).toBe('Beto');
+    expect(vm.comments[0].initial).toBe('B');
+    expect(vm.comments[0].text).toBe('Love it');
+    expect(vm.comments[0].replies).toEqual([expect.objectContaining({ author: 'Ana', text: 'Thanks!', parentId: 10 })]);
+  });
+
+  it('resolves song/event references and drops unresolvable ids', () => {
+    const ev = baseEvent({ id: 'e1', title: { es: 'Fiesta', en: 'Party' } });
+    const th: Thread = {
+      id: 'th2', by: 'm1', date: '2026-09-01',
+      title: { es: '', en: 'Idea' }, body: { es: '', en: 'Body' },
+      reactions: { like: 0, dislike: 0 }, myReaction: null, media: [],
+      refs: [
+        { id: 1, kind: 'song', refId: 's1' },
+        { id: 2, kind: 'event', refId: 'e1' },
+        { id: 3, kind: 'song', refId: 'ghost' }, // unresolvable → dropped
+      ],
+      comments: [],
+    };
+    const vm = threadVm(th, baseCtx({ events: [ev] }));
+    expect(vm.refs).toEqual([
+      { id: 1, kind: 'song', refId: 's1', label: 'Alma Llanera' },
+      { id: 2, kind: 'event', refId: 'e1', label: 'Party' },
+    ]);
   });
 });
 

@@ -38,6 +38,9 @@ export interface State {
   fbWell: string;
   fbImprove: string;
   commentDraft: string;
+  /** Comment id a reply is being written to (null = no active reply composer). */
+  replyTarget: number | null;
+  replyDraft: string;
   form: FormState;
   txFilter: TxFilter;
   txDate: TxDate;
@@ -91,6 +94,8 @@ export function initialState(props: AppProps): State {
     fbWell: '',
     fbImprove: '',
     commentDraft: '',
+    replyTarget: null,
+    replyDraft: '',
     form: {},
     txFilter: 'all',
     txDate: 'all',

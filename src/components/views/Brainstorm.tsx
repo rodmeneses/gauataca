@@ -1,31 +1,42 @@
 /**
- * Brainstorm view — the ideas thread list (design lines 553–587).
- * Each thread card: vote toggle, title (opens thread), body, author/date/comments footer,
- * and (admin only) the "convert to event" action.
+ * Brainstorm view — the ideas thread list (design lines 553–587). Each thread
+ * card: like/dislike reactions, title (opens thread), body, author/date,
+ * comment count, and (admin only) the "convert to event" action.
  */
-import { ArrowUp, CalendarPlus, MessageSquare } from 'lucide-react';
+import { CalendarPlus, Lightbulb, MessageSquare } from 'lucide-react';
 import { useGuataca } from '@/store';
+import { Button } from '@/components/ui';
+import { ReactionButtons } from '@/components/ReactionButtons';
 
 export function Brainstorm() {
-  const { t, isAdmin, threads, voteThread, openThread, convertThread } = useGuataca();
+  const { t, isAdmin, threads, setThreadReaction, openThread, convertThread, openNewThread } = useGuataca();
 
   return (
     <div className="flex flex-col gap-[14px] max-w-[900px] animate-fade">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="m-0 font-display font-semibold text-[16px] leading-[normal] text-ink-bright flex items-center gap-[8px]">
+          <Lightbulb size={17} strokeWidth={2} style={{ color: 'var(--color-violet-light)' }} />
+          {t.brainstorm}
+        </h2>
+        {isAdmin && (
+          <Button variant="brand" onClick={openNewThread} className="py-[9px] px-[14px] rounded-[10px] text-[12.5px]">
+            {t.newThread}
+          </Button>
+        )}
+      </div>
+      {threads.length === 0 && (
+        <p className="m-0 font-sans font-normal text-[13.5px] text-ink-meta bg-surface border border-line rounded-[14px] p-[18px]">{t.noResults}</p>
+      )}
       {threads.map((b) => (
         <article key={b.id} className="bg-surface border border-line rounded-[14px] p-[18px] flex gap-4">
-          <button
-            type="button"
-            onClick={() => voteThread(b.id)}
-            className="flex flex-col items-center gap-[3px] py-2 px-[11px] rounded-[10px] cursor-pointer flex-none"
-            style={{
-              border: '1px solid ' + (b.voted ? 'color-mix(in srgb, var(--color-emerald) 40%, transparent)' : 'var(--color-line)'),
-              background: b.voted ? 'color-mix(in srgb, var(--color-emerald) 11%, transparent)' : 'var(--color-raised)',
-              color: b.voted ? 'var(--color-emerald-light)' : 'var(--color-ink-meta)',
-            }}
-          >
-            <ArrowUp size={16} strokeWidth={2.2} />
-            <span className="font-mono font-semibold text-[13px]">{b.votes}</span>
-          </button>
+          <ReactionButtons
+            likes={b.likes}
+            dislikes={b.dislikes}
+            my={b.myReaction}
+            onPick={(k) => setThreadReaction(b.id, k)}
+            vertical
+            className="flex-none mt-[2px]"
+          />
           <div className="min-w-0 flex-1">
             <button
               type="button"
@@ -34,7 +45,7 @@ export function Brainstorm() {
             >
               <h3 className="m-0 font-display font-semibold text-[16px] leading-[1.35] text-ink">{b.title}</h3>
             </button>
-            <p className="mt-[9px] mb-0 text-[13.5px] text-ink-meta leading-[1.65]">{b.body}</p>
+            <p className="mt-[9px] mb-0 text-[13.5px] text-ink-meta leading-[1.65] line-clamp-3">{b.body}</p>
             <div className="flex items-center gap-[14px] mt-[14px] flex-wrap">
               <span className="flex items-center gap-2">
                 <span className="w-[23px] h-[23px] rounded-[7px] bg-line grid place-items-center font-display font-semibold text-[9.5px] text-ink-meta">

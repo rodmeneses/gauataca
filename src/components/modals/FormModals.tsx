@@ -12,7 +12,7 @@ import { InstrumentPicker } from './InstrumentPicker';
 import type { EventType, GearCondition, GenreId, LinkKind, ProofKind, TxCategory, TxKind } from '@/types';
 
 /* ------------------------------------------------------------ shared frame */
-function FormHeader({ title, onClose }: { title: string; onClose: () => void }) {
+export function FormHeader({ title, onClose }: { title: string; onClose: () => void }) {
   return (
     <div className="p-[20px_22px] border-b border-line-soft flex items-center gap-[14px]">
       <h2 className="m-0 flex-1 font-display font-semibold text-[17px] leading-[normal] text-ink-bright">{title}</h2>
@@ -24,11 +24,11 @@ function FormHeader({ title, onClose }: { title: string; onClose: () => void }) 
   );
 }
 
-function FormBody({ children }: { children: ReactNode }) {
+export function FormBody({ children }: { children: ReactNode }) {
   return <div className="p-[20px_22px] flex flex-col gap-[14px]">{children}</div>;
 }
 
-function FormFooter({ cancel, save, onCancel, onSave }: { cancel: string; save: string; onCancel: () => void; onSave: () => void }) {
+export function FormFooter({ cancel, save, onCancel, onSave }: { cancel: string; save: string; onCancel: () => void; onSave: () => void }) {
   return (
     <div className="p-[16px_22px] border-t border-line-soft flex gap-[10px] justify-end">
       {/* Inline (not Button surface): the design's cancel has no hover; `.btn-surface` adds one. */}

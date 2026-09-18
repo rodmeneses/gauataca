@@ -1,13 +1,157 @@
 /**
- * Brainstorm thread modal (design lines 1267–1307): title + author meta + vote pill,
- * body paragraph, comment list and the comment composer footer.
+ * Forum idea modal: header (author, date, reactions, convert), body + ref chips +
+ * photo strip, the comment list with one-level replies, and the composers (root
+ * comment + per-comment reply) — each with @-mentions and photo attach.
  */
+import { useRef, useState } from 'react';
+import { CalendarDays, ImagePlus, MessageCircle, Music, X } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { Avatar, Button, CloseButton, Modal } from '@/components/ui';
+import { PhotoStrip } from '@/components/ui/PhotoStrip';
+import { ReactionButtons } from '@/components/ReactionButtons';
+import { Composer } from './Composer';
+import { RichText } from './RichText';
+import type { CommentVm } from '@/store/vm';
+
+/* ------------------------------------------------------------ ref chips row */
+function RefChips({ refs, onOpen }: { refs: CommentVm['refs']; onOpen: (kind: 'song' | 'event', id: string) => void }) {
+  if (refs.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-[6px] mt-[10px]">
+      {refs.map((r) => (
+        <button
+          key={r.id}
+          type="button"
+          onClick={() => onOpen(r.kind, r.refId)}
+          className="inline-flex items-center gap-[6px] py-[4px] px-[10px] rounded-[20px] border-none font-sans font-semibold text-[11.5px] leading-[normal] cursor-pointer hover:brightness-[1.08]"
+          style={{
+            background: r.kind === 'song' ? 'color-mix(in srgb, var(--color-emerald) 13%, transparent)' : 'color-mix(in srgb, var(--color-violet) 13%, transparent)',
+            color: r.kind === 'song' ? 'var(--color-emerald-light)' : 'var(--color-violet-lighter)',
+            border: '1px solid color-mix(in srgb, ' + (r.kind === 'song' ? 'var(--color-emerald)' : 'var(--color-violet)') + ' 30%, transparent)',
+          }}
+        >
+          {r.kind === 'song' ? <Music size={12} strokeWidth={2.2} /> : <CalendarDays size={12} strokeWidth={2.2} />}
+          {r.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ------------------------------------------------- composer with photo attach */
+function ComposerRow({
+  value,
+  onChange,
+  onSend,
+  placeholder,
+  sendLabel,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  /** Called with the photos attached in this composer. */
+  onSend: (photos: File[]) => void;
+  placeholder: string;
+  sendLabel: string;
+}) {
+  const { t } = useGuataca();
+  const [files, setFiles] = useState<File[]>([]);
+  const fileRef = useRef<HTMLInputElement>(null);
+  return (
+    <div className="flex flex-col gap-[6px]">
+      {files.length > 0 && (
+        <div className="flex gap-[6px]">
+          {files.map((f, i) => (
+            <div key={i} className="relative w-[58px] h-[44px] rounded-[8px] overflow-hidden border border-line-soft bg-raised">
+              <img src={URL.createObjectURL(f)} alt="" className="w-full h-full object-cover" />
+              <button
+                type="button"
+                onClick={() => setFiles((cur) => cur.filter((_, n) => n !== i))}
+                aria-label={t.removeRef}
+                className="absolute top-[2px] right-[2px] grid place-items-center w-[18px] h-[18px] rounded-full bg-black/55 text-white cursor-pointer p-0 border-none hover:bg-black/75"
+              >
+                <X size={11} strokeWidth={2.4} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="flex gap-[8px] items-end">
+        <Composer
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          sendLabel={sendLabel}
+          onSend={() => {
+            onSend(files);
+            setFiles([]);
+          }}
+          className="flex-1"
+        />
+        <button
+          type="button"
+          title={t.attachPhoto}
+          onClick={() => fileRef.current?.click()}
+          className="flex-none grid place-items-center min-w-[42px] min-h-[42px] rounded-[10px] border border-line bg-surface text-ink-muted hover:text-ink-body hover:border-emerald/40 cursor-pointer"
+        >
+          <ImagePlus size={17} strokeWidth={2} />
+        </button>
+      </div>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={(e) => {
+          const picked = Array.from(e.target.files ?? []);
+          e.target.value = '';
+          if (picked.length) setFiles((cur) => [...cur, ...picked]);
+        }}
+      />
+    </div>
+  );
+}
 
 export function ThreadModal() {
-  const { th, t, isAdmin, state, closeModal, setCommentDraft, sendComment, convertThread } = useGuataca();
+  const {
+    t, state, th, isAdmin, closeModal,
+    setCommentDraft, sendComment, setReplyDraft, setReplyTarget, sendReply,
+    setThreadReaction, setCommentReaction, addThreadPhotos, convertThread, goToSong, openEvent,
+  } = useGuataca();
+  const ideaFileRef = useRef<HTMLInputElement>(null);
   if (!th) return null;
+
+  const openRef = (kind: 'song' | 'event', id: string) => (kind === 'song' ? goToSong(id) : openEvent(id));
+
+  const renderComment = (c: CommentVm, isReply: boolean) => (
+    <div className="bg-surface border border-line-soft rounded-[12px] p-[13px_14px]">
+      <div className="flex items-center gap-[9px]">
+        <Avatar initial={c.initial} size={26} radius={8} style={{ fontSize: 9.5 }} />
+        <span className="font-sans font-semibold text-[12.5px] text-ink">{c.author}</span>
+        <span className="text-[11.5px] text-ink-dim">{c.dateStr}</span>
+        <span className="ml-auto flex-none">
+          <ReactionButtons likes={c.likes} dislikes={c.dislikes} my={c.myReaction} onPick={(k) => setCommentReaction(c.id, k)} />
+        </span>
+      </div>
+      <p className="m-0 mt-[10px] text-[13px] text-ink-body leading-[1.65]">
+        <RichText text={c.text} />
+      </p>
+      <RefChips refs={c.refs} onOpen={openRef} />
+      <div className="mt-[10px]">
+        <PhotoStrip photos={c.media} />
+      </div>
+      {!isReply && (
+        <button
+          type="button"
+          onClick={() => setReplyTarget(state.replyTarget === c.id ? null : c.id)}
+          className="mt-[10px] inline-flex items-center gap-[6px] py-[6px] px-[10px] rounded-[9px] border border-line bg-raised text-ink-muted font-sans font-semibold text-[12px] leading-[normal] cursor-pointer hover:text-violet-light hover:border-violet/40"
+        >
+          <MessageCircle size={13} strokeWidth={2} />
+          {t.reply}
+        </button>
+      )}
+    </div>
+  );
 
   return (
     <Modal onClose={closeModal} maxWidth={660} align="top">
@@ -15,51 +159,97 @@ export function ThreadModal() {
       <div className="p-[22px_24px] border-b border-line-soft flex gap-4 items-start">
         <div className="min-w-0 flex-1">
           <h2 className="m-0 font-display font-semibold text-[20px] leading-[1.3] text-ink-bright">{th.title}</h2>
-          <div className="flex items-center gap-3 mt-[11px]">
+          <div className="flex items-center gap-3 mt-[11px] flex-wrap">
             <Avatar initial={th.initial} size={23} radius={7} style={{ fontSize: 9.5 }} />
             <span className="text-[12px] text-ink-meta">{th.author}</span>
             <span className="text-[12px] text-ink-dim">{th.dateStr}</span>
-            <span className="font-mono font-semibold text-[11.5px] text-emerald-light bg-[var(--color-tint-emerald)] py-[3px] px-[9px] rounded-[20px]">▲ {th.votes}</span>
+            <ReactionButtons
+              likes={th.likes}
+              dislikes={th.dislikes}
+              my={th.myReaction}
+              onPick={(k) => setThreadReaction(th.id, k)}
+              className="flex-none"
+            />
+            {isAdmin && (
+              <Button variant="brand" onClick={() => convertThread(th.id)} className="py-2 px-[14px] rounded-[9px] text-[12px]">
+                {t.convert}
+              </Button>
+            )}
           </div>
         </div>
-        <CloseButton onClick={closeModal} size={34} />
+        <div className="flex flex-col items-end gap-[8px] flex-none">
+          <CloseButton onClick={closeModal} size={34} />
+          <button
+            type="button"
+            title={t.addPhotos}
+            onClick={() => ideaFileRef.current?.click()}
+            className="grid place-items-center min-w-[40px] min-h-[40px] rounded-[10px] border border-line bg-surface text-ink-muted hover:text-ink-body hover:border-emerald/40 cursor-pointer"
+          >
+            <ImagePlus size={16} strokeWidth={2} />
+          </button>
+        </div>
+        <input
+          ref={ideaFileRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(e) => {
+            const picked = Array.from(e.target.files ?? []);
+            e.target.value = '';
+            if (picked.length) addThreadPhotos(th.id, picked);
+          }}
+        />
       </div>
 
       {/* body */}
       <div className="p-[20px_24px] border-b border-line-soft">
-        <p className="m-0 font-sans text-[14px] leading-[1.7] text-ink-body">{th.body}</p>
+        <p className="m-0 font-sans text-[14px] leading-[1.7] text-ink-body">
+          <RichText text={th.body} />
+        </p>
+        <RefChips refs={th.refs} onOpen={openRef} />
+        <div className="mt-[12px]">
+          <PhotoStrip photos={th.media} />
+        </div>
       </div>
 
       {/* comments */}
-      <div className="p-[20px_24px] flex flex-col gap-[11px]">
-        {th.comments.map((c, i) => (
-          <div key={c.by + '-' + i} className="flex gap-3">
-            <Avatar initial={c.initial} size={30} radius={9} style={{ fontSize: 10.5 }} />
-            <div className="min-w-0 flex-1 bg-surface border border-line-soft rounded-[12px] p-[12px_14px]">
-              <div className="font-sans font-semibold text-[12px] text-violet-lighter mb-[6px]">{c.by}</div>
-              <p className="m-0 text-[13px] text-ink-body leading-[1.65]">{c.text}</p>
-            </div>
+      <div className="p-[20px_24px] border-b border-line-soft flex flex-col gap-[12px]">
+        {th.comments.length === 0 && (
+          <p className="m-0 font-sans font-normal text-[13px] text-ink-dim">{t.noCommentsYet}</p>
+        )}
+        {th.comments.map((c) => (
+          <div key={c.id} className="flex flex-col gap-[8px]">
+            {renderComment(c, false)}
+            {c.replies.length > 0 && (
+              <div className="flex flex-col gap-[8px] ml-[30px] border-l border-line-soft pl-[14px]">
+                {c.replies.map((r) => renderComment(r, true))}
+              </div>
+            )}
+            {state.replyTarget === c.id && (
+              <div className="ml-[30px]">
+                <ComposerRow
+                  value={state.replyDraft}
+                  onChange={setReplyDraft}
+                  onSend={(photos) => sendReply(photos)}
+                  placeholder={t.replyPlaceholder}
+                  sendLabel={t.send}
+                />
+              </div>
+            )}
           </div>
         ))}
       </div>
 
-      {/* composer */}
-      <div className="p-[18px_24px] border-t border-line-soft flex gap-[10px] items-end">
-        <textarea
+      {/* root comment composer */}
+      <div className="p-[18px_24px]">
+        <ComposerRow
           value={state.commentDraft}
-          onChange={(e) => setCommentDraft(e.target.value)}
-          rows={2}
+          onChange={setCommentDraft}
+          onSend={(photos) => sendComment(photos)}
           placeholder={t.addComment}
-          className="flex-1 p-[11px_13px] rounded-[11px] border border-line bg-base text-ink-base font-sans text-[13.5px] outline-none resize-none"
+          sendLabel={t.send}
         />
-        <Button variant="primary" onClick={sendComment} className="py-3 px-[17px] rounded-[11px]">
-          {t.send}
-        </Button>
-        {isAdmin && (
-          <Button variant="brand" onClick={() => convertThread(th.id)} className="py-3 px-[17px] rounded-[11px]">
-            {t.convert}
-          </Button>
-        )}
       </div>
     </Modal>
   );

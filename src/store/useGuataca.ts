@@ -9,7 +9,7 @@ import {
 } from '../data';
 import { d, days, money, money0, sameMonth } from '../lib/format';
 import type {
-  AppProps, BandEvent, CustodyDialog, FormState, GearCondition, GenreId, Instrument, Lang, LinkKind, Member, MobileTab, Modal, Profile, Proficiency, ProofKind, RatingKey, RsvpStatus, SettleDialog, ShareSheet, Song, SongSort, Toast, Transaction, TxCategory, TxDate, TxFilter, View, VocalFlag,
+  AppProps, BandEvent, CustodyDialog, FormState, GearCondition, GenreId, Instrument, Lang, LinkKind, Member, MobileTab, Modal, Profile, Proficiency, ProofKind, RatingKey, ReactionKind, RsvpStatus, SettleDialog, ShareSheet, Song, SongSort, Toast, Transaction, TxCategory, TxDate, TxFilter, View, VocalFlag,
 } from '../types';
 import { useStore, type State } from './store';
 import { writeLangPref, writeThemePref, type ThemePref } from '../lib/prefs';
@@ -84,6 +84,10 @@ export interface FormVm {
   cond: GearCondition;
   boughtBy: string;
   songInstruments: string[];
+  /** New idea form: title + body + structured song/event refs. */
+  threadTitle: string;
+  threadBody: string;
+  threadRefs: { kind: 'song' | 'event'; id: string }[];
 }
 
 export interface Guataca {
@@ -219,6 +223,15 @@ export interface Guataca {
   openNewTx: () => void;
   openEditTx: (id: string) => void;
   openNewGear: () => void;
+  openNewThread: () => void;
+  /** Create a forum idea (title/body/refs) and upload its photos. */
+  saveThread: (photos: File[]) => Promise<void>;
+  setThreadReaction: (threadId: string, kind: ReactionKind | null) => Promise<void>;
+  setCommentReaction: (commentId: number, kind: ReactionKind | null) => Promise<void>;
+  /** Attach photos to a forum idea (or, with `commentId`, to one of its comments). */
+  addThreadPhotos: (threadId: string, files: File[], commentId?: number | null) => Promise<void>;
+  deleteThreadMedia: (id: number) => Promise<void>;
+  addThreadRefs: (threadId: string, refs: { kind: 'song' | 'event'; id: string }[], commentId?: number | null) => Promise<void>;
   /** Complete sign-up onboarding (instruments + vocals). */
   onboard: (instruments: { id: string; lv: Proficiency }[], vocals: VocalFlag[]) => Promise<void>;
   /** Replace a member's instruments + vocals (admin, or the member editing themselves). */
@@ -262,9 +275,14 @@ export interface Guataca {
   addEventPhotos: (eventId: string, files: File[]) => Promise<void>;
   /** Remove a photo or video from an event. */
   deleteEventMedia: (id: number) => Promise<void>;
-  voteThread: (id: string) => Promise<void>;
   setCommentDraft: (s: string) => void;
-  sendComment: () => Promise<void>;
+  /** Post a top-level comment (optionally with photos). */
+  sendComment: (photos?: File[]) => Promise<void>;
+  /** Begin replying to a specific comment id (null clears the reply composer). */
+  setReplyTarget: (target: number | null) => void;
+  setReplyDraft: (s: string) => void;
+  /** Post a one-level reply to the active reply target (optionally with photos). */
+  sendReply: (photos?: File[]) => Promise<void>;
   convertThread: (id: string) => void;
   pickPoll: (i: number) => Promise<void>;
   setRating: (k: RatingKey, n: number) => void;
@@ -309,13 +327,15 @@ export function useGuataca(): Guataca {
   const { user, profile, signOut, refreshProfile } = useAuth();
   const {
     songs: dbSongs, events: dbEvents, transactions: dbTx, gear: dbGear, threads: dbThreads, members: dbMembers,
-    instruments: dbInstruments, takes: dbTakes, myThreadVotes, myPollPicks, loading, mutating, error,
+    instruments: dbInstruments, takes: dbTakes, myPollPicks, loading, mutating, error,
     createEvent, updateEvent, createSong, updateSong, setSongLinks: persistSongLinks, createTransaction, updateTransaction: persistUpdateTransaction, deleteTransaction: persistDeleteTransaction, createGear: persistGear, createInstrument: persistInstrument,
     onboard: persistOnboard, updateMemberInstruments: persistMemberInstruments, setSongInstruments: persistSongInstruments,
     addTake: persistTake, deleteTake: persistDeleteTake,
     addEventMedia: persistAddEventMedia, addEventPhotos: persistAddEventPhotos, deleteEventMedia: persistDeleteEventMedia, uploadEventPhoto: persistUploadEventPhoto,
-    setRsvp: persistRsvp, voteThread: persistVote,
-    addComment: persistComment, submitFeedback: persistFeedback, pickPoll: persistPoll, transferCustody: persistCustody,
+    setRsvp: persistRsvp,
+    createThread: persistCreateThread, addComment: persistComment, setThreadReaction: persistThreadReaction, setCommentReaction: persistCommentReaction,
+    addThreadMedia: persistAddThreadMedia, deleteThreadMedia: persistDeleteThreadMedia, addThreadRefs: persistThreadRefs, uploadForumPhoto: persistUploadForumPhoto,
+    submitFeedback: persistFeedback, pickPoll: persistPoll, transferCustody: persistCustody,
     setEventSetlist: persistSetlist, settleEvent: persistSettle, uploadProof: persistUpload,
   } = useData();
   const isPhoneViewport = useMediaQuery('(max-width: 767.98px)');
@@ -343,7 +363,7 @@ export function useGuataca(): Guataca {
       const seen = new Set(dbInstruments.map((i) => i.id));
       return [...dbInstruments, ...st.customInstruments.filter((c) => !seen.has(c.id)).map((c) => ({ ...c, isBasic: false }))];
     })();
-    const ctx: Ctx = { lang, t, staleDays, meId: me.id, isAdmin, members: dbMembers, events: dbEvents, gear: dbGear, instruments, takes: dbTakes };
+    const ctx: Ctx = { lang, t, staleDays, meId: me.id, isAdmin, members: dbMembers, events: dbEvents, songs: dbSongs, gear: dbGear, instruments, takes: dbTakes };
     const Lx = (v: { es: string; en: string } | string | null | undefined) => L(lang, v);
 
     /* ---- raw collections (from the data layer) */
@@ -414,7 +434,7 @@ export function useGuataca(): Guataca {
       .sort((a, b) => a.name.localeCompare(b.name));
 
     const gear = dbGear.map((g) => gearVm(g, g.holder, ctx));
-    const threads = dbThreads.map((b) => threadVm(b, myThreadVotes.includes(b.id), ctx));
+    const threads = dbThreads.map((b) => threadVm(b, ctx));
     const members = dbMembers.map((m) => memberVm(m, ctx));
 
     /* ---- modal selections */
@@ -423,7 +443,7 @@ export function useGuataca(): Guataca {
     const ev = evSel ? evm(evSel) : null;
     const fb = evSel?.feedback ? feedbackVm(evSel.feedback, myPollPicks[evSel.id] ?? null, ctx) : null;
     const thSel = modal?.kind === 'thread' ? dbThreads.find((x) => x.id === modal.id) ?? null : null;
-    const th = thSel ? threadVm(thSel, myThreadVotes.includes(thSel.id), ctx) : null;
+    const th = thSel ? threadVm(thSel, ctx) : null;
     const mbSel = modal?.kind === 'member' ? dbMembers.find((x) => x.id === modal.id) ?? null : null;
     const mb = mbSel ? memberVm(mbSel, ctx) : null;
 
@@ -497,9 +517,43 @@ export function useGuataca(): Guataca {
       setlist: f.setlist || [],
       name: f.name || '', custodian: f.custodian || '', cond: f.cond || 'good', boughtBy: f.boughtBy || '',
       songInstruments: f.songInstruments || [],
+      threadTitle: f.threadTitle || '', threadBody: f.threadBody || '', threadRefs: f.threadRefs || [],
     };
 
     const viewSubKey = ('sub' + st.view.charAt(0).toUpperCase() + st.view.slice(1)) as keyof Dict;
+
+    /* ---- forum photo upload (compress → bucket → attach); shared by idea
+    /*      creation, the idea composer and the reply composer. */
+    const uploadToThread = async (threadId: string, files: File[], commentId: number | null = null) => {
+      const urls: string[] = [];
+      for (const file of files) {
+        try {
+          let blob: Blob;
+          try {
+            blob = await compressImage(file);
+          } catch (err) {
+            // Compression can fail (unsupported format, oversized image, etc.).
+            // Upload the original rather than silently dropping the photo.
+            console.warn('Photo compression failed, uploading original:', file.name, err);
+            blob = file;
+          }
+          const url = await persistUploadForumPhoto(blob);
+          if (url) urls.push(url);
+        } catch (err) {
+          console.error('Photo upload failed:', file.name, err);
+        }
+      }
+      if (urls.length === 0) {
+        toast(t.uploadFailed, 'err');
+        return;
+      }
+      const ok = await persistAddThreadMedia(threadId, urls, commentId);
+      if (!ok) {
+        toast(t.uploadFailed, 'err');
+        return;
+      }
+      toast(urls.length === 1 ? t.photoUploaded : t.photosUploaded);
+    };
 
     return {
       state: st, props, t, lang, L: Lx, isAdmin, isMember: !isAdmin, role: st.role,
@@ -604,6 +658,7 @@ export function useGuataca(): Guataca {
         });
       },
       openNewGear: () => set({ modal: { kind: 'newGear' }, form: { custodian: me.id, boughtBy: me.id } }),
+      openNewThread: () => set({ modal: { kind: 'newThread' }, form: {} }),
       onboard: async (instruments, vocals) => {
         await persistOnboard(instruments, vocals);
         await refreshProfile();
@@ -725,17 +780,55 @@ export function useGuataca(): Guataca {
         await persistDeleteEventMedia(id);
         toast(t.mediaRemoved);
       },
-      voteThread: async (id) => {
-        await persistVote(id);
-        toast(t.voted);
-      },
       setCommentDraft: (v) => set({ commentDraft: v }),
-      sendComment: async () => {
+      setReplyTarget: (target) => set({ replyTarget: target, replyDraft: '' }),
+      setReplyDraft: (s) => set({ replyDraft: s }),
+      // compress → upload → attach to a thread or one of its comments; shared by
+      // idea creation, the idea composer and the reply composer.
+      addThreadPhotos: async (threadId, files, commentId = null) => {
+        await uploadToThread(threadId, files, commentId);
+      },
+      deleteThreadMedia: async (id) => {
+        await persistDeleteThreadMedia(id);
+        toast(t.mediaRemoved);
+      },
+      addThreadRefs: async (threadId, refs, commentId = null) => {
+        if (refs.length) await persistThreadRefs(threadId, refs, commentId);
+      },
+      setThreadReaction: async (threadId, kind) => {
+        await persistThreadReaction(threadId, kind);
+      },
+      setCommentReaction: async (commentId, kind) => {
+        await persistCommentReaction(commentId, kind);
+      },
+      sendComment: async (photos) => {
         const txt = st.commentDraft.trim();
         if (!txt || !thSel) return;
         set({ commentDraft: '' });
-        await persistComment(thSel.id, txt);
+        const cid = await persistComment(thSel.id, txt, null);
+        if (cid && photos && photos.length) await uploadToThread(thSel.id, photos, cid);
         toast(t.commentPosted);
+      },
+      sendReply: async (photos) => {
+        const txt = st.replyDraft.trim();
+        const target = st.replyTarget;
+        if (!txt || !thSel || target == null) return;
+        set({ replyDraft: '', replyTarget: null });
+        const cid = await persistComment(thSel.id, txt, target);
+        if (cid && photos && photos.length) await uploadToThread(thSel.id, photos, cid);
+        toast(t.replyPosted);
+      },
+      saveThread: async (photos) => {
+        const title = (f.threadTitle || '').trim();
+        const body = f.threadBody || '';
+        const refs = f.threadRefs || [];
+        set({ modal: null, form: {} });
+        if (!title && !body) return;
+        const id = await persistCreateThread({ title: title || '…', body });
+        if (!id) return;
+        if (refs.length) await persistThreadRefs(id, refs);
+        if (photos.length) await uploadToThread(id, photos);
+        toast(t.ideaCreated);
       },
       convertThread,
       pickPoll: async (i) => {
@@ -841,5 +934,5 @@ export function useGuataca(): Guataca {
       toast,
       dismissToast,
     };
-  }, [st, props, set, toast, dismissToast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myThreadVotes, myPollPicks, loading, mutating, error, isPhoneViewport, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, updateEvent, createSong, updateSong, persistSongLinks, createTransaction, persistUpdateTransaction, persistDeleteTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistAddEventMedia, persistDeleteEventMedia, persistUploadEventPhoto, persistRsvp, persistVote, persistComment, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
+  }, [st, props, set, toast, dismissToast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myPollPicks, loading, mutating, error, isPhoneViewport, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, updateEvent, createSong, updateSong, persistSongLinks, createTransaction, persistUpdateTransaction, persistDeleteTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistAddEventMedia, persistAddEventPhotos, persistDeleteEventMedia, persistUploadEventPhoto, persistRsvp, persistCreateThread, persistComment, persistThreadReaction, persistCommentReaction, persistAddThreadMedia, persistDeleteThreadMedia, persistThreadRefs, persistUploadForumPhoto, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
 }
