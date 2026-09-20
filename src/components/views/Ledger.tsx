@@ -4,7 +4,7 @@
  */
 import { useEffect, useState } from 'react';
 import { ArrowLeftRight, ExternalLink, Link, Package, Pencil, Plus, Trash2 } from 'lucide-react';
-import { Badge, Button, Select } from '@/components/ui';
+import { Badge, Button, Select, useConfirm } from '@/components/ui';
 import { useGuataca } from '@/store';
 import type { TxDate, TxFilter } from '@/types';
 
@@ -25,6 +25,8 @@ export function Ledger() {
   const TX_GRID = isAdmin
     ? 'min-w-[860px] grid grid-cols-[120px_1fr_130px_150px_120px_72px] gap-3'
     : 'min-w-[800px] grid grid-cols-[120px_1fr_130px_150px_120px] gap-3';
+
+  const { confirm, dialog } = useConfirm();
 
   return (
     <div className="flex flex-col gap-5 animate-fade">
@@ -160,7 +162,7 @@ export function Ledger() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => deleteTx(x.id)}
+                    onClick={() => confirm({ message: t.confirmDeleteTx, onConfirm: () => deleteTx(x.id) })}
                     aria-label={t.deleteTx}
                     title={t.deleteTx}
                     className="grid place-items-center w-[26px] h-[26px] rounded-[7px] border border-line bg-raised text-ink-muted hover:text-ink-body hover:border-rose/40 cursor-pointer"
@@ -251,6 +253,7 @@ export function Ledger() {
           ))}
         </div>
       </section>
+      {dialog}
     </div>
   );
 }

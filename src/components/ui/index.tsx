@@ -312,3 +312,4 @@ export function Switch({ checked, onChange, label, ...rest }: { checked: boolean
 
 export { cx };
 export { DatePicker } from './DatePicker';
+export { useConfirm } from './ConfirmDialog';

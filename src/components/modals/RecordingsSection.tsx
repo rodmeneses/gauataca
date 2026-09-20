@@ -15,7 +15,7 @@ interface RecordingsSectionProps {
   isAdmin: boolean;
   t: Dict;
   onAdd: (songId: string, url: string) => Promise<void>;
-  onDelete: (id: string) => Promise<void>;
+  onDelete: (id: string) => void;
 }
 
 export function RecordingsSection({ setlist, takes, isAdmin, t, onAdd, onDelete }: RecordingsSectionProps) {

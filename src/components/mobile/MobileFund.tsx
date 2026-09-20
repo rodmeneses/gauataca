@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeftRight, ExternalLink, Link, Package, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useGuataca } from '../../store';
+import { useConfirm } from '../ui';
 import type { TxDate, TxFilter } from '../../types';
 
 const SECTION = 'font-display font-semibold text-[12px] tracking-[.08em] uppercase text-ink-muted';
@@ -20,6 +21,7 @@ export function MobileFund() {
     }
     clearScrollToTx();
   }, [state.scrollToTx, clearScrollToTx]);
+  const { confirm, dialog } = useConfirm();
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
@@ -107,7 +109,7 @@ export function MobileFund() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => deleteTx(x.id)}
+                    onClick={() => confirm({ message: t.confirmDeleteTx, onConfirm: () => deleteTx(x.id) })}
                     aria-label={t.deleteTx}
                     className="grid place-items-center w-[44px] h-[44px] rounded-lg border border-line bg-raised text-ink-muted cursor-pointer"
                   >
@@ -203,6 +205,7 @@ export function MobileFund() {
           </div>
         ))}
       </section>
+      {dialog}
     </div>
   );
 }
