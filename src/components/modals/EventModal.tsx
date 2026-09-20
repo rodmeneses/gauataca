@@ -5,7 +5,7 @@
 import { useRef, useState } from 'react';
 import { ChartColumn, Check, EyeOff, ExternalLink, Film, Instagram, Link, Pencil, Plus, Star, Trash2, Upload } from 'lucide-react';
 import { RSVP_COLOR, RSVP_ORDER, RSVP_PENDING_COLOR, rsvpLabel, useGuataca } from '@/store';
-import { Avatar, Badge, Button, CloseButton, Input, Modal } from '@/components/ui';
+import { Avatar, Badge, Button, CloseButton, Input, Modal, useConfirm } from '@/components/ui';
 import { SetlistEditor } from './SetlistEditor';
 import { RecordingsSection } from './RecordingsSection';
 import { PhotoViewer } from './PhotoViewer';
@@ -27,6 +27,7 @@ export function EventModal() {
   const [expandedRsvp, setExpandedRsvp] = useState<string | null>(null);
   const [photoViewer, setPhotoViewer] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const { confirm, dialog } = useConfirm();
   if (!ev) return null;
 
   const addVideo = async () => {
@@ -200,7 +201,7 @@ export function EventModal() {
           isAdmin={isAdmin}
           t={t}
           onAdd={(songId, url) => addTake(ev.id, songId, url)}
-          onDelete={deleteTake}
+          onDelete={(id) => confirm({ message: t.confirmDeleteTake, onConfirm: () => deleteTake(id) })}
         />
       )}
 
@@ -225,7 +226,7 @@ export function EventModal() {
                   {isAdmin && (
                     <button
                       type="button"
-                      onClick={() => deleteEventMedia(p.id)}
+                      onClick={() => confirm({ message: t.confirmDeleteMedia, onConfirm: () => deleteEventMedia(p.id) })}
                       aria-label={t.mediaRemoved}
                       title={t.mediaRemoved}
                       className="absolute top-[6px] right-[6px] grid place-items-center w-7 h-7 rounded-[8px] border border-line bg-base/85 text-ink-muted hover:text-ink-body cursor-pointer"
@@ -256,7 +257,7 @@ export function EventModal() {
                   {isAdmin && (
                     <button
                       type="button"
-                      onClick={() => deleteEventMedia(m.id)}
+                      onClick={() => confirm({ message: t.confirmDeleteMedia, onConfirm: () => deleteEventMedia(m.id) })}
                       aria-label={t.mediaRemoved}
                       title={t.mediaRemoved}
                       className="grid place-items-center w-[24px] h-[24px] rounded-[7px] border border-line bg-raised text-ink-muted hover:text-ink-body cursor-pointer flex-none"
@@ -466,6 +467,7 @@ export function EventModal() {
         </Button>
       </div>
     </Modal>
+    {dialog}
     {photoViewer !== null && <PhotoViewer photos={ev.photos} index={photoViewer} onClose={() => setPhotoViewer(null)} />}
     </>
   );

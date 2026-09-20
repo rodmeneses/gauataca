@@ -124,6 +124,7 @@ const es = {
   recordings: 'Grabaciones', addRecording: 'Agregar grabación', takeN: 'Toma %d',
   recordingUrl: 'Enlace de la grabación', recordingAdded: 'Grabación agregada',
   recordingDeleted: 'Grabación eliminada', pickSong: 'Elegir canción',
+  delete: 'Eliminar', confirmDeleteTitle: '¿Eliminar?', confirmDeleteTake: 'Se eliminará esta grabación. No se puede deshacer.', confirmDeleteTx: 'Se eliminará este movimiento del fondo. No se puede deshacer.', confirmDeleteMedia: 'Se eliminará este elemento del evento. No se puede deshacer.',
   // repertoire dashboard: sort + song links
   sortRecorded: 'Más grabadas', sortName: 'Nombre', sortTakes: 'Menos grabadas',
   amLink: 'Apple Music', metroLink: 'Metrónomo', charts: 'Partituras y tabs', takesCount: '%d tomas',
@@ -273,6 +274,7 @@ const en: typeof es = {
   recordings: 'Recordings', addRecording: 'Add recording', takeN: 'Take %d',
   recordingUrl: 'Recording link', recordingAdded: 'Recording added',
   recordingDeleted: 'Recording deleted', pickSong: 'Pick a song',
+  delete: 'Delete', confirmDeleteTitle: 'Delete?', confirmDeleteTake: 'This recording will be deleted. This can\'t be undone.', confirmDeleteTx: 'This movement will be removed from the fund. This can\'t be undone.', confirmDeleteMedia: 'This item will be removed from the event. This can\'t be undone.',
   // repertoire dashboard: sort + song links
   sortRecorded: 'Most recorded', sortName: 'Name', sortTakes: 'Fewest takes',
   amLink: 'Apple Music', metroLink: 'Metronome', charts: 'Charts & tabs', takesCount: '%d takes',
