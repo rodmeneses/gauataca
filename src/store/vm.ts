@@ -7,7 +7,7 @@ import type { Dict } from '../i18n';
 import { GENRES } from '../data';
 import { d, days, durationSeconds, fmt, money, money0, monthShort, rel } from '../lib/format';
 import type {
-  BandEvent, EventFeedback, Gear, GenreId, Instrument, Lang, LinkKind, Localized, Member, Proficiency, RatingKey, ReactionKind, RsvpStatus, Song, Take, Thread, ThreadComment, ThreadMedia, ThreadRef, Transaction,
+  BandEvent, EventFeedback, Gear, GenreId, Instrument, Lang, LinkKind, Localized, Member, Proficiency, RatingKey, ReactionKind, RsvpStatus, Song, Take, Thread, ThreadComment, ThreadMedia, ThreadPoll, ThreadRef, Transaction,
 } from '../types';
 
 export interface Ctx {
@@ -541,6 +541,8 @@ export interface ThreadVm {
   /** Top-level comments + replies. */
   commentCount: string;
   comments: CommentVm[];
+  /** Optional poll attached at creation time (null when the idea has none). */
+  poll: ThreadPollVm | null;
 }
 
 function resolveRefs(refs: ThreadRef[], ctx: Ctx): ResolvedRef[] {
@@ -574,6 +576,42 @@ function commentVm(c: ThreadComment, ctx: Ctx): CommentVm {
   };
 }
 
+/* ----------------------------------------------------------------- polls */
+export interface ThreadPollOptionVm {
+  /** The option row id, for voting. */
+  id: number;
+  label: string;
+  /** Vote count, as text. */
+  v: string;
+  /** "%" share. */
+  pct: string;
+  picked: boolean;
+}
+
+export interface ThreadPollVm {
+  question: string;
+  /** Total votes, as text. */
+  total: string;
+  options: ThreadPollOptionVm[];
+}
+
+export function threadPollVm(p: ThreadPoll, ctx: Ctx): ThreadPollVm {
+  const { lang } = ctx;
+  const total = p.options.reduce((a, b) => a + b.votes, 0);
+  const denom = total || 1;
+  return {
+    question: L(lang, p.question),
+    total: String(total),
+    options: p.options.map((o) => ({
+      id: o.id,
+      label: L(lang, o.label),
+      v: String(o.votes),
+      pct: Math.round((o.votes / denom) * 100) + '%',
+      picked: p.myOptionId === o.id,
+    })),
+  };
+}
+
 export function threadVm(b: Thread, ctx: Ctx): ThreadVm {
   const comments = b.comments.map((c) => {
     const vm = commentVm(c, ctx);
@@ -595,6 +633,7 @@ export function threadVm(b: Thread, ctx: Ctx): ThreadVm {
     refs: resolveRefs(b.refs, ctx),
     commentCount: String(flat),
     comments,
+    poll: b.poll ? threadPollVm(b.poll, ctx) : null,
   };
 }
 

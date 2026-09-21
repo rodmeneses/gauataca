@@ -8,9 +8,9 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { useAuth } from './auth';
 import {
   addComment as apiAddComment, addEventMedia as apiAddEventMedia, addEventPhotos as apiAddEventPhotos, addTake as apiAddTake, createEvent as apiCreateEvent, createGear as apiCreateGear, createInstrument as apiCreateInstrument,
-  createSong as apiCreateSong, createThread as apiCreateThread, createTransaction as apiCreateTransaction, deleteEventMedia as apiDeleteEventMedia, deleteTake as apiDeleteTake, deleteThreadMedia as apiDeleteThreadMedia, deleteTransaction as apiDeleteTransaction, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
+  createSong as apiCreateSong, createThread as apiCreateThread, createThreadPoll as apiCreateThreadPoll, createTransaction as apiCreateTransaction, deleteEventMedia as apiDeleteEventMedia, deleteTake as apiDeleteTake, deleteThreadMedia as apiDeleteThreadMedia, deleteTransaction as apiDeleteTransaction, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
   setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, setSongInstruments as apiSetSongInstruments, setSongLinks as apiSetSongLinks,
-  addThreadMedia as apiAddThreadMedia, addThreadRefs as apiAddThreadRefs, settleEvent as apiSettleEvent, setCommentReaction as apiSetCommentReaction, setThreadReaction as apiSetThreadReaction, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateEvent as apiUpdateEvent, updateMemberInstruments as apiUpdateMemberInstruments, updateSong as apiUpdateSong, updateTransaction as apiUpdateTransaction,
+  addThreadMedia as apiAddThreadMedia, addThreadRefs as apiAddThreadRefs, settleEvent as apiSettleEvent, setCommentReaction as apiSetCommentReaction, setThreadReaction as apiSetThreadReaction, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateEvent as apiUpdateEvent, updateMemberInstruments as apiUpdateMemberInstruments, updateSong as apiUpdateSong, updateTransaction as apiUpdateTransaction, voteThreadPoll as apiVoteThreadPoll,
   uploadEventPhoto as apiUploadEventPhoto, uploadForumPhoto as apiUploadForumPhoto, uploadProof as apiUploadProof, type DataSnapshot,
 } from './api';
 import type { EventType, GearCondition, GenreId, LinkKind, Proficiency, ProofKind, ReactionKind, RsvpStatus, TxCategory, TxKind, VocalFlag } from '../types';
@@ -67,6 +67,10 @@ interface DataValue extends DataSnapshot {
   transferCustody: (gearId: string, toMemberId: string) => Promise<void>;
   setEventSetlist: (eventId: string, songIds: string[]) => Promise<void>;
   settleEvent: (eventId: string, input: { happened: boolean; fee: number; cost: number }) => Promise<void>;
+  /** Attach a poll to an idea (created alongside it). */
+  createThreadPoll: (threadId: string, question: string, options: string[]) => Promise<void>;
+  /** Set the signed-in member's vote on a poll option. */
+  voteThreadPoll: (optionId: number) => Promise<void>;
   /** Upload a receipt/invoice file; resolves to its public URL. */
   uploadProof: (file: File) => Promise<string | undefined>;
 }
@@ -185,6 +189,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
       transferCustody: (gearId, toMemberId) => run(() => apiTransferCustody(gearId, toMemberId, uid)),
       setEventSetlist: (eventId, songIds) => run(() => apiSetEventSetlist(eventId, songIds, uid)),
       settleEvent: (eventId, input) => run(() => apiSettleEvent(eventId, input, uid)),
+      createThreadPoll: (threadId, question, options) => run(() => apiCreateThreadPoll(threadId, question, options, uid)),
+      voteThreadPoll: (optionId) => run(() => apiVoteThreadPoll(optionId, uid)),
       uploadProof: async (file) => {
         return apiUploadProof(file);
       },

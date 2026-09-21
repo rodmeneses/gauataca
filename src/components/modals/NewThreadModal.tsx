@@ -4,7 +4,7 @@
  * are compressed + uploaded on save, then attached to the new idea.
  */
 import { useMemo, useRef, useState } from 'react';
-import { ImagePlus, X } from 'lucide-react';
+import { BarChart3, ImagePlus, Plus, X } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { Field, Input, Modal } from '@/components/ui';
 import { FormBody, FormFooter, FormHeader } from './FormModals';
@@ -16,6 +16,12 @@ export function NewThreadModal() {
   const [files, setFiles] = useState<File[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
   const previews = useMemo(() => files.map((f) => URL.createObjectURL(f)), [files]);
+
+  // Optional poll, built at save time if the composer is on and complete.
+  const [pollOn, setPollOn] = useState(false);
+  const [pollQ, setPollQ] = useState('');
+  const [pollOpts, setPollOpts] = useState<string[]>(['', '']);
+  const poll = pollOn ? { question: pollQ, options: pollOpts } : null;
 
   const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const picked = Array.from(e.target.files ?? []);
@@ -45,7 +51,7 @@ export function NewThreadModal() {
             onChange={(v) => setForm('threadBody', v)}
             onSend={() => {
               if (canSave) {
-                saveThread(files);
+                saveThread(files, poll);
                 setFiles([]);
               }
             }}
@@ -55,6 +61,53 @@ export function NewThreadModal() {
           />
         </Field>
         <RefPicker selected={form.threadRefs || []} onChange={setRefs} />
+
+        {/* optional poll */}
+        <div>
+          <button
+            type="button"
+            onClick={() => setPollOn((v) => !v)}
+            className="inline-flex items-center gap-[6px] py-[8px] px-[12px] rounded-[9px] border border-violet/40 bg-[var(--color-tint-violet)] text-violet-lighter font-sans font-semibold text-[12.5px] leading-[normal] cursor-pointer hover:bg-[var(--color-tint-violet)]"
+          >
+            <BarChart3 size={14} strokeWidth={2} />
+            {t.addPoll}
+          </button>
+          {pollOn && (
+            <div className="mt-[9px] flex flex-col gap-[8px] p-[12px] rounded-[12px] border border-line-soft bg-raised">
+              <Field label={t.pollQuestion}>
+                <Input value={pollQ} onChange={(e) => setPollQ(e.target.value)} placeholder={t.pollQuestionPh} />
+              </Field>
+              {pollOpts.map((o, i) => (
+                <div key={i} className="flex gap-2 items-center">
+                  <Input
+                    value={o}
+                    onChange={(e) => setPollOpts((cur) => cur.map((x, n) => (n === i ? e.target.value : x)))}
+                    placeholder={t.pollOptionPh.replace('%d', String(i + 1))}
+                    className="flex-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setPollOpts((cur) => (cur.length > 2 ? cur.filter((_, n) => n !== i) : cur))}
+                    title={t.removeRef}
+                    aria-label={t.removeRef}
+                    disabled={pollOpts.length <= 2}
+                    className="grid place-items-center flex-none w-[30px] h-[38px] rounded-[9px] border border-line bg-surface text-ink-muted hover:text-ink-body hover:border-rose/40 cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+                  >
+                    <X size={14} strokeWidth={2.2} />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setPollOpts((cur) => [...cur, ''])}
+                className="self-start inline-flex items-center gap-[6px] py-[7px] px-[11px] rounded-[9px] border border-emerald/40 bg-[var(--color-tint-emerald)] text-emerald-light font-sans font-semibold text-[12px] leading-[normal] cursor-pointer hover:bg-[var(--color-tint-emerald)]"
+              >
+                <Plus size={13} strokeWidth={2.2} />
+                {t.addOption}
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* photo attach */}
         <div>
@@ -95,7 +148,7 @@ export function NewThreadModal() {
         onCancel={closeModal}
         onSave={() => {
           if (canSave) {
-            saveThread(files);
+            saveThread(files, poll);
             setFiles([]);
           }
         }}
