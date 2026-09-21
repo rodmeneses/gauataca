@@ -6,7 +6,7 @@
 import { supabase } from './supabase';
 import { notifyCreated } from './notify';
 import type {
-  BandEvent, EventFeedback, EventType, Gear, GearCondition, GenreId, Instrument, LinkKind, Member, Proficiency, ProofKind, ReactionKind, RsvpStatus, Song, Take, Thread, ThreadComment, Transaction, TxCategory, TxKind, VocalFlag,
+  BandEvent, EventFeedback, EventType, Gear, GearCondition, GenreId, Instrument, LinkKind, Member, Proficiency, ProofKind, ReactionKind, RsvpStatus, Song, Take, Thread, ThreadComment, ThreadPoll, Transaction, TxCategory, TxKind, VocalFlag,
 } from '../types';
 
 type Row = Record<string, any>;
@@ -244,6 +244,9 @@ function mapThreads(
   comments: Row[],
   media: Row[],
   refs: Row[],
+  threadPolls: Row[],
+  threadPollOptions: Row[],
+  threadPollVotes: Row[],
   userId: string | null,
 ): Thread[] {
   const reactionsByThread = groupBy(threadReactions, 'thread_id');
@@ -251,6 +254,22 @@ function mapThreads(
   const mediaByThread = groupBy(media, 'thread_id');
   const refsByThread = groupBy(refs, 'thread_id');
   const commentsByThread = groupBy(comments, 'thread_id');
+  const pollsByThread = groupBy(threadPolls, 'thread_id');
+  const optsByPoll = groupBy(threadPollOptions, 'poll_id');
+  const votesByOpt = groupBy(threadPollVotes, 'option_id');
+
+  const pollFor = (threadId: string): ThreadPoll | undefined => {
+    const poll = pollsByThread.get(threadId)?.[0];
+    if (!poll) return undefined;
+    const opts = (optsByPoll.get(poll.id) ?? []).sort((a, b) => a.id - b.id);
+    let myOptionId: number | null = null;
+    const options = opts.map((o) => {
+      const rows = votesByOpt.get(o.id) ?? [];
+      if (userId && rows.some((v) => v.profile_id === userId)) myOptionId = o.id;
+      return { id: o.id, label: { es: o.label_es, en: o.label_en }, votes: rows.length };
+    });
+    return { question: { es: poll.question_es, en: poll.question_en }, options, myOptionId };
+  };
 
   const commentVm = (c: Row): ThreadComment => {
     const r = tallyReactions(reactionsByComment.get(c.id) ?? [], userId);
@@ -292,6 +311,7 @@ function mapThreads(
           cm.replies = sorted.filter((r2) => r2.parent_id === c.id).map(commentVm);
           return cm;
         }),
+      poll: pollFor(b.id),
     };
   });
 }
@@ -301,7 +321,7 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
   const [
     profiles, profileInstruments, vocals, songs, songInstruments, songLinks, events, eventSongs, eventMedia, attendance,
     feedback, polls, pollOptions, pollVotes, gear, transactions, threads, threadReactions, threadComments, threadCommentReactions,
-    threadMedia, threadRefs, instruments, takes,
+    threadMedia, threadRefs, threadPolls, threadPollOptions, threadPollVotes, instruments, takes,
   ] = await Promise.all([
     supabase.from('profiles').select('*'),
     supabase.from('profile_instruments').select('*'),
@@ -325,6 +345,9 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
     supabase.from('thread_comment_reactions').select('*'),
     supabase.from('thread_media').select('*'),
     supabase.from('thread_refs').select('*'),
+    supabase.from('thread_polls').select('*'),
+    supabase.from('thread_poll_options').select('*'),
+    supabase.from('thread_poll_votes').select('*'),
     supabase.from('instruments').select('*'),
     supabase.from('takes').select('*'),
   ]);
@@ -355,7 +378,7 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
     gear: mapGear(gear.data ?? [], transactions.data ?? []),
     threads: mapThreads(
       threads.data ?? [], threadReactions.data ?? [], threadCommentReactions.data ?? [], threadComments.data ?? [],
-      threadMedia.data ?? [], threadRefs.data ?? [], userId,
+      threadMedia.data ?? [], threadRefs.data ?? [], threadPolls.data ?? [], threadPollOptions.data ?? [], threadPollVotes.data ?? [], userId,
     ),
     members,
     instruments: mapInstruments(instruments.data ?? []),
@@ -783,6 +806,37 @@ export async function addComment(threadId: string, body: string, userId: string,
   const cid = data?.id ?? 0;
   if (cid) void notifyCreated({ kind: 'comment', id: threadId, commentId: cid });
   return cid;
+}
+
+/** Attach a poll (question + options) to an idea, created alongside it. */
+export async function createThreadPoll(
+  threadId: string,
+  question: string,
+  options: string[],
+  _userId: string,
+): Promise<void> {
+  const { data } = await supabase.from('thread_polls').insert({
+    thread_id: threadId,
+    question_es: question,
+    question_en: question,
+  }).select('id').single();
+  const pollId = data?.id;
+  if (pollId && options.length) {
+    await supabase.from('thread_poll_options').insert(
+      options.map((o) => ({ poll_id: pollId, label_es: o, label_en: o })),
+    );
+  }
+}
+
+/** Set the signed-in member's vote on a poll option; re-picking moves the vote. */
+export async function voteThreadPoll(optionId: number, userId: string): Promise<void> {
+  const { data: opt } = await supabase.from('thread_poll_options').select('poll_id').eq('id', optionId).single();
+  const pollId = opt?.poll_id;
+  if (!pollId) return;
+  const { data: opts } = await supabase.from('thread_poll_options').select('id').eq('poll_id', pollId);
+  const optIds = (opts ?? []).map((o) => o.id);
+  await supabase.from('thread_poll_votes').delete().in('option_id', optIds).eq('profile_id', userId);
+  await supabase.from('thread_poll_votes').insert({ option_id: optionId, profile_id: userId });
 }
 
 /** Set the signed-in member's like/dislike on an idea; `null` removes it. */

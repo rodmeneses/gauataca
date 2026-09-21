@@ -4,7 +4,7 @@
  * comment + per-comment reply) — each with @-mentions and photo attach.
  */
 import { useRef, useState } from 'react';
-import { CalendarDays, ImagePlus, MessageCircle, Music, X } from 'lucide-react';
+import { CalendarDays, ChartColumn, ImagePlus, MessageCircle, Music, X } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { Avatar, Button, CloseButton, Modal } from '@/components/ui';
 import { PhotoStrip } from '@/components/ui/PhotoStrip';
@@ -116,7 +116,7 @@ export function ThreadModal() {
   const {
     t, state, th, isAdmin, closeModal,
     setCommentDraft, sendComment, setReplyDraft, setReplyTarget, sendReply,
-    setThreadReaction, setCommentReaction, addThreadPhotos, convertThread, goToSong, openEvent,
+    setThreadReaction, setCommentReaction, voteThreadPoll, addThreadPhotos, convertThread, goToSong, openEvent,
   } = useGuataca();
   const ideaFileRef = useRef<HTMLInputElement>(null);
   if (!th) return null;
@@ -211,6 +211,36 @@ export function ThreadModal() {
         <div className="mt-[12px]">
           <PhotoStrip photos={th.media} />
         </div>
+
+        {/* poll */}
+        {th.poll && (
+          <div className="mt-[14px] bg-raised border border-line-soft rounded-[12px] p-4">
+            <div className="flex items-center gap-[10px] mb-[13px]">
+              <ChartColumn size={15} strokeWidth={1.9} style={{ color: 'var(--color-violet-light)' }} />
+              <span className="font-sans font-semibold text-[12.5px] leading-[normal] text-ink-base">{th.poll.question}</span>
+              <span className="ml-auto font-mono font-medium text-[11px] leading-[normal] text-ink-dim">{th.poll.total} {t.votes}</span>
+            </div>
+            <div className="flex flex-col gap-2">
+              {th.poll.options.map((o) => (
+                <button
+                  key={o.id}
+                  type="button"
+                  onClick={() => voteThreadPoll(o.id)}
+                  className="flex items-center gap-3 w-full py-[11px] px-[13px] rounded-[10px] border text-ink-body cursor-pointer text-left font-sans font-medium text-[13px] leading-[normal]"
+                  style={{ borderColor: o.picked ? 'color-mix(in srgb, var(--color-emerald) 40%, transparent)' : 'var(--color-line)', background: o.picked ? 'color-mix(in srgb, var(--color-emerald) 11%, transparent)' : 'var(--color-raised)' }}
+                >
+                  <span className="flex-1 min-w-0">
+                    <span className="block">{o.label}</span>
+                    <span className="block h-[6px] rounded-[4px] bg-line-soft mt-2 overflow-hidden">
+                      <span className="block h-[6px] rounded-[4px] transition-[width] duration-300" style={{ background: o.picked ? 'var(--color-emerald)' : 'var(--color-ink-faint)', width: o.pct }} />
+                    </span>
+                  </span>
+                  <span className="font-mono font-semibold text-[13px] leading-[normal] text-ink-meta flex-none min-w-[52px] text-right">{o.v} · {o.pct}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* comments */}

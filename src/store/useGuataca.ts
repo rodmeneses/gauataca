@@ -232,10 +232,12 @@ export interface Guataca {
   openEditTx: (id: string) => void;
   openNewGear: () => void;
   openNewThread: () => void;
-  /** Create a forum idea (title/body/refs) and upload its photos. */
-  saveThread: (photos: File[]) => Promise<void>;
+  /** Create a forum idea (title/body/refs) and upload its photos; an optional poll rides along. */
+  saveThread: (photos: File[], poll?: { question: string; options: string[] } | null) => Promise<void>;
   setThreadReaction: (threadId: string, kind: ReactionKind | null) => Promise<void>;
   setCommentReaction: (commentId: number, kind: ReactionKind | null) => Promise<void>;
+  /** Set the signed-in member's vote on a poll option; re-picking moves the vote. */
+  voteThreadPoll: (optionId: number) => Promise<void>;
   /** Attach photos to a forum idea (or, with `commentId`, to one of its comments). */
   addThreadPhotos: (threadId: string, files: File[], commentId?: number | null) => Promise<void>;
   deleteThreadMedia: (id: number) => Promise<void>;
@@ -348,6 +350,7 @@ export function useGuataca(): Guataca {
     setRsvp: persistRsvp,
     createThread: persistCreateThread, addComment: persistComment, setThreadReaction: persistThreadReaction, setCommentReaction: persistCommentReaction,
     addThreadMedia: persistAddThreadMedia, deleteThreadMedia: persistDeleteThreadMedia, addThreadRefs: persistThreadRefs, uploadForumPhoto: persistUploadForumPhoto,
+    createThreadPoll: persistCreateThreadPoll, voteThreadPoll: persistVoteThreadPoll,
     submitFeedback: persistFeedback, pickPoll: persistPoll, transferCustody: persistCustody,
     setEventSetlist: persistSetlist, settleEvent: persistSettle, uploadProof: persistUpload,
   } = useData();
@@ -857,7 +860,7 @@ export function useGuataca(): Guataca {
         if (cid && photos && photos.length) await uploadToThread(thSel.id, photos, cid);
         toast(t.replyPosted);
       },
-      saveThread: async (photos) => {
+      saveThread: async (photos, poll) => {
         const title = (f.threadTitle || '').trim();
         const body = f.threadBody || '';
         const refs = f.threadRefs || [];
@@ -866,10 +869,18 @@ export function useGuataca(): Guataca {
         const id = await persistCreateThread({ title: title || '…', body });
         if (!id) return;
         if (refs.length) await persistThreadRefs(id, refs);
+        const pollOpts = (poll?.options ?? []).map((o) => o.trim()).filter(Boolean);
+        if (poll && (poll.question || '').trim() && pollOpts.length >= 2) {
+          await persistCreateThreadPoll(id, poll.question.trim(), pollOpts);
+        }
         if (photos.length) await uploadToThread(id, photos);
         toast(t.ideaCreated);
       },
       convertThread,
+      voteThreadPoll: async (optionId) => {
+        await persistVoteThreadPoll(optionId);
+        toast(t.voted);
+      },
       pickPoll: async (i) => {
         if (!evSel) return;
         await persistPoll(evSel.id, i);
@@ -976,5 +987,5 @@ export function useGuataca(): Guataca {
       toast,
       dismissToast,
     };
-  }, [st, props, set, toast, dismissToast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myPollPicks, loading, mutating, error, isPhoneViewport, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, updateEvent, createSong, updateSong, persistSongLinks, createTransaction, persistUpdateTransaction, persistDeleteTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistAddEventMedia, persistAddEventPhotos, persistDeleteEventMedia, persistUploadEventPhoto, persistRsvp, persistCreateThread, persistComment, persistThreadReaction, persistCommentReaction, persistAddThreadMedia, persistDeleteThreadMedia, persistThreadRefs, persistUploadForumPhoto, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
+  }, [st, props, set, toast, dismissToast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myPollPicks, loading, mutating, error, isPhoneViewport, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, updateEvent, createSong, updateSong, persistSongLinks, createTransaction, persistUpdateTransaction, persistDeleteTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistAddEventMedia, persistAddEventPhotos, persistDeleteEventMedia, persistUploadEventPhoto, persistRsvp, persistCreateThread, persistComment, persistThreadReaction, persistCommentReaction, persistAddThreadMedia, persistDeleteThreadMedia, persistThreadRefs, persistUploadForumPhoto, persistCreateThreadPoll, persistVoteThreadPoll, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
 }

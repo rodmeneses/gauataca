@@ -189,6 +189,14 @@ export interface ThreadMedia {
   authorId: string;
 }
 
+/** A poll attached to a forum idea. One poll per idea, created with the idea. */
+export interface ThreadPoll {
+  question: Localized;
+  options: { id: number; label: Localized; votes: number }[];
+  /** Option id the signed-in member picked, or null. */
+  myOptionId: number | null;
+}
+
 /** A comment on an idea. Replies are flat — a reply holds `parentId` and no nested replies. */
 export interface ThreadComment {
   id: number;
@@ -215,6 +223,8 @@ export interface Thread {
   media: ThreadMedia[];
   refs: ThreadRef[];
   comments: ThreadComment[];
+  /** Optional poll attached at creation time. */
+  poll?: ThreadPoll;
 }
 
 export type ToastTone = 'ok' | 'violet' | 'err';

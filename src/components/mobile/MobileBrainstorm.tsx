@@ -1,5 +1,5 @@
 /** Mobile "Ideas" tab: the brainstorm thread list (reactions, open, convert). */
-import { CalendarPlus, Lightbulb, MessageSquare } from 'lucide-react';
+import { BarChart3, CalendarPlus, Lightbulb, MessageSquare } from 'lucide-react';
 import { useGuataca } from '../../store';
 import { ReactionButtons } from '../ReactionButtons';
 
@@ -55,6 +55,12 @@ export function MobileBrainstorm() {
                 <MessageSquare size={15} strokeWidth={1.9} />
                 {b.commentCount} {t.comments}
               </button>
+              {b.poll && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--color-tint-violet)] text-violet-lighter font-sans font-semibold text-[12px]">
+                  <BarChart3 size={13} strokeWidth={2} />
+                  {b.poll.total} {t.votes}
+                </span>
+              )}
               {isAdmin && (
                 <button
                   type="button"

@@ -3,7 +3,7 @@
  * card: like/dislike reactions, title (opens thread), body, author/date,
  * comment count, and (admin only) the "convert to event" action.
  */
-import { CalendarPlus, Lightbulb, MessageSquare } from 'lucide-react';
+import { BarChart3, CalendarPlus, Lightbulb, MessageSquare } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { Button } from '@/components/ui';
 import { ReactionButtons } from '@/components/ReactionButtons';
@@ -62,6 +62,12 @@ export function Brainstorm() {
                 <MessageSquare size={14} strokeWidth={1.9} />
                 {b.commentCount} {t.comments}
               </button>
+              {b.poll && (
+                <span className="inline-flex items-center gap-[6px] py-[4px] px-[9px] rounded-[7px] bg-[var(--color-tint-violet)] text-violet-lighter font-sans font-semibold text-[11px] leading-[normal]">
+                  <BarChart3 size={12} strokeWidth={2} />
+                  {b.poll.total} {t.votes}
+                </span>
+              )}
               {isAdmin && (
                 <button
                   type="button"
