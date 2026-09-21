@@ -14,6 +14,7 @@ import type {
 import { useStore, type State } from './store';
 import { writeLangPref, writeThemePref, type ThemePref } from '../lib/prefs';
 import { itemUrl } from '../lib/deepLink';
+import { searchAll, type SearchHit } from '../lib/search';
 import { useAuth } from '../lib/auth';
 import { useData } from '../lib/data';
 import { compressImage } from '../lib/image';
@@ -36,6 +37,11 @@ export interface PaletteItem {
   sub: string;
   /** "1".."9" */
   idx: string;
+  run: () => void;
+}
+
+/** A global-search hit plus the action that navigates to it. */
+export interface SearchResult extends SearchHit {
   run: () => void;
 }
 
@@ -182,6 +188,8 @@ export interface Guataca {
   settle: SettleDialog | null;
   form: FormVm;
   paletteResults: PaletteItem[];
+  /** Global search hits for `state.sq` (empty until the query is non-blank). */
+  searchResults: SearchResult[];
   tour: TourVm;
   toasts: ToastVm[];
   tokens: { name: string; varName: string; tw: string; use: string }[];
@@ -301,6 +309,9 @@ export interface Guataca {
   openPalette: () => void;
   closePalette: () => void;
   setPq: (s: string) => void;
+  openSearch: () => void;
+  closeSearch: () => void;
+  setSq: (s: string) => void;
   tourNext: () => void;
   tourEnd: () => void;
   toggleHandoff: () => void;
@@ -498,6 +509,31 @@ export function useGuataca(): Guataca {
       .slice(0, 9)
       .map((i, n) => ({ ...i, idx: String(n + 1) }));
 
+    /* ---- global search (mobile): events, songs, fund movements, ideas */
+    const searchResults: SearchResult[] = st.search
+      ? searchAll(st.sq, {
+          events: allEvents.map((e) => ({ ...evm(e), date: e.date })),
+          songs,
+          tx: allTx.map((x) => ({ ...txVm(x, ctx), date: x.date })),
+          threads: dbThreads.map((b) => ({
+            ...threadVm(b, ctx),
+            date: b.date,
+            comments: b.comments.flatMap((c) => [c, ...c.replies]).map((c) => ({
+              text: Lx(c.text),
+              author: memberById(dbMembers, c.by).short,
+              date: c.createdAt.slice(0, 10),
+            })),
+          })),
+        }).map((h) => ({
+          ...h,
+          run:
+            h.kind === 'event' ? () => set({ search: false, modal: { kind: 'event', id: h.id } })
+            : h.kind === 'idea' ? () => set({ search: false, mobileTab: 'brainstorm', view: 'brainstorm', modal: { kind: 'thread', id: h.id } })
+            : h.kind === 'song' ? () => set({ search: false, modal: null, view: 'repertoire', mobileTab: 'repertoire', openSong: h.id, scrollToSong: h.id, q: '', genre: 'all', staleOnly: false })
+            : () => set({ search: false, modal: null, view: 'ledger', mobileTab: 'fund', scrollToTx: h.id, txFilter: 'all', txDate: 'all' }),
+        }))
+      : [];
+
     /* ---- tour */
     const step = TOUR_STEPS[st.tour] ?? TOUR_STEPS[0];
     const tour: TourVm = {
@@ -577,7 +613,7 @@ export function useGuataca(): Guataca {
       statStale: String(staleSongs.length), staleHint: t.staleHint.replace('%d', String(staleDays)),
 
       modal, ev, fb, th, mb, mbRaw: mbSel,
-      sheet: st.sheet, custody: st.custody, custodyTargets: dbMembers, settle: st.settle, form, paletteResults, tour,
+      sheet: st.sheet, custody: st.custody, custodyTargets: dbMembers, settle: st.settle, form, paletteResults, searchResults, tour,
       toasts: st.toasts.map((x) => ({
         ...x,
         color: x.tone === 'violet' ? 'var(--color-violet-light)' : x.tone === 'err' ? 'var(--color-rose)' : 'var(--color-emerald)',
@@ -930,6 +966,9 @@ export function useGuataca(): Guataca {
       openPalette: () => set({ palette: true, pq: '' }),
       closePalette: () => set({ palette: false }),
       setPq: (v) => set({ pq: v }),
+      openSearch: () => set({ search: true, sq: '' }),
+      closeSearch: () => set({ search: false }),
+      setSq: (v) => set({ sq: v }),
       tourNext: () => set((s) => ({ tour: s.tour + 1 })),
       tourEnd: () => set({ tour: -1 }),
       toggleHandoff: () => set((s) => ({ handoff: !s.handoff })),
