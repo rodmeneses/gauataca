@@ -30,6 +30,9 @@ export interface State {
   toasts: Toast[];
   palette: boolean;
   pq: string;
+  /** Mobile global search overlay (events, songs, fund, ideas) and its query. */
+  search: boolean;
+  sq: string;
   /** Tour step index, -1 = dismissed. */
   tour: number;
   handoff: boolean;
@@ -87,6 +90,8 @@ export function initialState(props: AppProps): State {
     toasts: [],
     palette: false,
     pq: '',
+    search: false,
+    sq: '',
     tour: props.showTour === false ? -1 : 0,
     handoff: false,
     anon: false,
@@ -149,7 +154,7 @@ export function GuatacaProvider({ props, children }: { props: AppProps; children
         setState((s) => ({ ...s, palette: !s.palette, pq: '' }));
       }
       if (e.key === 'Escape') {
-        setState((s) => ({ ...s, palette: false, modal: null, handoff: false, sheet: null, custody: null, settle: null }));
+        setState((s) => ({ ...s, palette: false, search: false, modal: null, handoff: false, sheet: null, custody: null, settle: null }));
       }
     };
     window.addEventListener('keydown', onKey);

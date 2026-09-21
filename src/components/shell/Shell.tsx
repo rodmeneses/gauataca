@@ -17,6 +17,7 @@ import { ShareSheet } from '../modals/ShareSheet';
 import { CustodyDialog } from '../modals/CustodyDialog';
 import { SettleDialog } from '../modals/SettleDialog';
 import { CommandPalette } from '../modals/CommandPalette';
+import { SearchOverlay } from '../modals/SearchOverlay';
 import { HandoffPanel } from '../modals/HandoffPanel';
 import { TourOverlay } from '../modals/TourOverlay';
 import { Toasts } from '../modals/Toasts';
@@ -135,6 +136,7 @@ export function Shell() {
       {bs.custody && <CustodyDialog />}
       {bs.settle && <SettleDialog />}
       {bs.state.palette && <CommandPalette />}
+      {bs.state.search && <SearchOverlay />}
       {bs.state.handoff && <HandoffPanel />}
       {bs.tour.on && <TourOverlay />}
       {bs.toasts.length > 0 && <Toasts />}

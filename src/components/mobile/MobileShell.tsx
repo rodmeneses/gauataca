@@ -6,7 +6,7 @@
  * 392px phone-preview frame with the dev controls.
  */
 import { useEffect, useState, type ReactNode } from 'react';
-import { Calendar, Lightbulb, Monitor, Music, Receipt, Smartphone, User, WifiHigh } from 'lucide-react';
+import { Calendar, Lightbulb, Monitor, Music, Receipt, Search, Smartphone, User, WifiHigh } from 'lucide-react';
 import { useGuataca } from '../../store';
 import { BrandMark, Pill, Segment } from '../ui';
 import { ThemeToggle } from '../ui/ThemeToggle';
@@ -58,7 +58,7 @@ function useKeyboardOpen(): boolean {
 
 /** The actual mobile app: header + scroll area + bottom tab bar. */
 function MobileApp({ banner }: { banner?: ReactNode }) {
-  const { t, bandName, balanceStr, balanceNeg, state, setMobileTab } = useGuataca();
+  const { t, bandName, balanceStr, balanceNeg, state, setMobileTab, openSearch } = useGuataca();
   const tab: MobileTab = state.mobileTab;
   const keyboardOpen = useKeyboardOpen();
 
@@ -81,6 +81,14 @@ function MobileApp({ banner }: { banner?: ReactNode }) {
         >
           {balanceStr}
         </span>
+        <button
+          type="button"
+          aria-label={t.search}
+          onClick={openSearch}
+          className="grid place-items-center w-11 h-11 -mr-2 rounded-full border-none bg-transparent text-ink-muted cursor-pointer flex-none"
+        >
+          <Search size={21} strokeWidth={2} />
+        </button>
       </div>
 
       {/* scroll area */}
