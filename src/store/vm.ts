@@ -232,6 +232,10 @@ export interface EventVm {
   title: string;
   venue: string;
   note: string;
+  /** Raw ISO date / "HH:mm" / duration in hours, for .ics export. */
+  date: string;
+  time: string;
+  hours: number | undefined;
   dateStr: string;
   timeStr: string;
   /** "2.5h" or null when no duration is set. */
@@ -341,6 +345,9 @@ export function eventVm(e: BandEvent, allSongs: Song[], ctx: Ctx): EventVm {
     title: L(lang, e.title),
     venue: e.venue,
     note: L(lang, e.note),
+    date: e.date,
+    time: e.time,
+    hours: e.hours,
     dateStr: fmt(e.date, lang, true),
     timeStr: e.time,
     hoursStr: e.hours != null ? String(e.hours) + 'h' : null,

@@ -3,9 +3,10 @@
  * media gallery, retrospective (ratings, well/improve, poll, my ratings) and footer.
  */
 import { useRef, useState } from 'react';
-import { ChartColumn, Check, EyeOff, ExternalLink, Film, Instagram, Link, Pencil, Pin, Plus, Star, Trash2, Upload } from 'lucide-react';
+import { CalendarPlus, ChartColumn, Check, EyeOff, ExternalLink, Film, Instagram, Link, Pencil, Pin, Plus, Star, Trash2, Upload } from 'lucide-react';
 import { RSVP_COLOR, RSVP_ORDER, RSVP_PENDING_COLOR, rsvpLabel, useGuataca } from '@/store';
 import { Avatar, Badge, Button, CloseButton, Input, Modal, useConfirm } from '@/components/ui';
+import { downloadIcs } from '@/lib/ics';
 import { SetlistEditor } from './SetlistEditor';
 import { RecordingsSection } from './RecordingsSection';
 import { PhotoViewer } from './PhotoViewer';
@@ -470,6 +471,16 @@ export function EventModal() {
           <Button variant="brand" onClick={() => openShare(ev.id)} className="py-[11px] px-4 rounded-[11px]">
             <Instagram size={15} strokeWidth={1.9} />
             {t.prepIg}
+          </Button>
+        )}
+        {!ev.past && !ev.cancelled && (
+          <Button
+            variant="surface"
+            onClick={() => downloadIcs({ id: ev.id, title: ev.title, venue: ev.venue, note: ev.note, date: ev.date, time: ev.time, hours: ev.hours })}
+            className="py-[11px] px-4 rounded-[11px]"
+          >
+            <CalendarPlus size={15} strokeWidth={1.9} />
+            {t.addToCalendar}
           </Button>
         )}
         <Button variant="surface" onClick={() => copyLink('event', ev.id)} className="py-[11px] px-4 rounded-[11px]">
