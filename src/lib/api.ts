@@ -870,6 +870,17 @@ export async function setThreadReaction(threadId: string, kind: ReactionKind | n
   }
 }
 
+/** Delete a comment (its replies, reactions, media rows and refs cascade); also removes uploaded photos from storage. */
+export async function deleteComment(id: number): Promise<void> {
+  const { data: ids } = await supabase.from('thread_comments').select('id').or(`id.eq.${id},parent_id.eq.${id}`);
+  const { data: media } = await supabase.from('thread_media').select('url').in('comment_id', (ids ?? []).map((r) => r.id));
+  const { error } = await supabase.from('thread_comments').delete().eq('id', id);
+  if (error) throw error;
+  const marker = '/storage/v1/object/public/forum-photos/';
+  const paths = (media ?? []).map((m) => m.url).filter((u): u is string => !!u && u.includes(marker)).map((u) => u.slice(u.indexOf(marker) + marker.length));
+  if (paths.length) await supabase.storage.from('forum-photos').remove(paths);
+}
+
 /** Set the signed-in member's like/dislike on a comment; `null` removes it. */
 export async function setCommentReaction(commentId: number, kind: ReactionKind | null, userId: string): Promise<void> {
   if (kind === null) {

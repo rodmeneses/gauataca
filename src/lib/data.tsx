@@ -8,7 +8,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { useAuth } from './auth';
 import {
   addComment as apiAddComment, addEventMedia as apiAddEventMedia, addEventPhotos as apiAddEventPhotos, addTake as apiAddTake, createEvent as apiCreateEvent, createGear as apiCreateGear, createInstrument as apiCreateInstrument,
-  createSong as apiCreateSong, createThread as apiCreateThread, createThreadPoll as apiCreateThreadPoll, createTransaction as apiCreateTransaction, deleteEventMedia as apiDeleteEventMedia, deleteTake as apiDeleteTake, deleteThreadMedia as apiDeleteThreadMedia, deleteTransaction as apiDeleteTransaction, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
+  createSong as apiCreateSong, createThread as apiCreateThread, createThreadPoll as apiCreateThreadPoll, createTransaction as apiCreateTransaction, deleteComment as apiDeleteComment, deleteEventMedia as apiDeleteEventMedia, deleteTake as apiDeleteTake, deleteThreadMedia as apiDeleteThreadMedia, deleteTransaction as apiDeleteTransaction, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
   setEventPinned as apiSetEventPinned, setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, setSongInstruments as apiSetSongInstruments, setSongLinks as apiSetSongLinks,
   addThreadMedia as apiAddThreadMedia, addThreadRefs as apiAddThreadRefs, settleEvent as apiSettleEvent, setCommentReaction as apiSetCommentReaction, setThreadArchived as apiSetThreadArchived, setThreadPinned as apiSetThreadPinned, setThreadReaction as apiSetThreadReaction, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateEvent as apiUpdateEvent, updateMemberInstruments as apiUpdateMemberInstruments, updateSong as apiUpdateSong, updateTransaction as apiUpdateTransaction, voteThreadPoll as apiVoteThreadPoll,
   uploadEventPhoto as apiUploadEventPhoto, uploadForumPhoto as apiUploadForumPhoto, uploadProof as apiUploadProof, type DataSnapshot,
@@ -59,6 +59,8 @@ interface DataValue extends DataSnapshot {
   addComment: (threadId: string, body: string, parentId?: number | null) => Promise<number | undefined>;
   setThreadReaction: (threadId: string, kind: ReactionKind | null) => Promise<void>;
   setCommentReaction: (commentId: number, kind: ReactionKind | null) => Promise<void>;
+  /** Delete a comment (and its replies). */
+  deleteComment: (commentId: number) => Promise<void>;
   /** Pin/unpin a forum idea. */
   setThreadPinned: (id: string, pinned: boolean) => Promise<void>;
   /** Archive/unarchive a forum idea. */
@@ -185,6 +187,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       addComment: (threadId, body, parentId = null) => run(() => apiAddComment(threadId, body, uid, parentId)),
       setThreadReaction: (threadId, kind) => run(() => apiSetThreadReaction(threadId, kind, uid)),
       setCommentReaction: (commentId, kind) => run(() => apiSetCommentReaction(commentId, kind, uid)),
+      deleteComment: (commentId) => run(() => apiDeleteComment(commentId)),
       setThreadPinned: (id, pinned) => run(() => apiSetThreadPinned(id, pinned)),
       setThreadArchived: (id, archived) => run(() => apiSetThreadArchived(id, archived)),
       addThreadMedia: (threadId, urls, commentId = null) => run(() => apiAddThreadMedia(threadId, urls, uid, commentId)),
