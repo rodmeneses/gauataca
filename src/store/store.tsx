@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type {
-  AppProps, CalTab, CustodyDialog, Device, FormState, GenreId, Lang, Localized, MobileTab, Modal,
+  AppProps, CalTab, CustodyDialog, Device, ForumTab, FormState, GenreId, Lang, Localized, MobileTab, Modal,
   RatingKey, Role, SettleDialog, ShareSheet, SongSort, Toast, TxDate, TxFilter, View,
 } from '../types';
 import { applyTheme, readThemePref, type ThemePref } from '../lib/prefs';
@@ -17,6 +17,7 @@ export interface State {
   view: View;
   device: Device;
   calTab: CalTab;
+  forumTab: ForumTab;
   openSong: string | null;
   /** Song id to scroll into view after a cross-view jump (set by goToSong, cleared after scroll). */
   scrollToSong: string | null;
@@ -79,6 +80,7 @@ export function initialState(props: AppProps): State {
     view: props.startView || 'dashboard',
     device: 'auto',
     calTab: 'upcoming',
+    forumTab: 'active',
     openSong: null,
     scrollToSong: null,
     scrollToTx: null,

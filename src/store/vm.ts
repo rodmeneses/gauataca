@@ -289,6 +289,8 @@ export interface EventVm {
   /** "Movido del sáb 27 sep 2026" or null. */
   movedFrom: string | null;
   flyer: string | null;
+  /** Admin-pinned; sorts to the top of the upcoming/history list. */
+  pinned: boolean;
 }
 
 export function eventVm(e: BandEvent, allSongs: Song[], ctx: Ctx): EventVm {
@@ -378,6 +380,7 @@ export function eventVm(e: BandEvent, allSongs: Song[], ctx: Ctx): EventVm {
     cancelled: e.state === 'cancelled',
     movedFrom: e.prevDate ? t.movedFrom + ' ' + fmt(e.prevDate, lang, true) : null,
     flyer: e.flyer ?? null,
+    pinned: e.pinned,
   };
 }
 
@@ -543,6 +546,10 @@ export interface ThreadVm {
   comments: CommentVm[];
   /** Optional poll attached at creation time (null when the idea has none). */
   poll: ThreadPollVm | null;
+  /** Admin-pinned; sorts to the top of the active/archived list. */
+  pinned: boolean;
+  /** Admin-archived; hidden from the active forum tab. */
+  archived: boolean;
 }
 
 function resolveRefs(refs: ThreadRef[], ctx: Ctx): ResolvedRef[] {
@@ -634,6 +641,8 @@ export function threadVm(b: Thread, ctx: Ctx): ThreadVm {
     commentCount: String(flat),
     comments,
     poll: b.poll ? threadPollVm(b.poll, ctx) : null,
+    pinned: b.pinned,
+    archived: b.archived,
   };
 }
 

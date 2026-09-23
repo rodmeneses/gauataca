@@ -41,7 +41,7 @@ function baseEvent(overrides: Partial<BandEvent>): BandEvent {
   return {
     id: 'e', type: 'gig', state: 'active', date: '2026-09-01', time: '20:00',
     title: { es: 'Evento', en: 'Event' }, venue: 'Salon X', fee: 0, cost: 0,
-    settled: false, setlist: [], attend: 0, note: { es: '', en: '' },
+    settled: false, setlist: [], attend: 0, note: { es: '', en: '' }, pinned: false,
     ...overrides,
   };
 }
@@ -391,7 +391,7 @@ describe('threadVm', () => {
       id: 'th1', by: 'm1', date: '2026-09-01',
       title: { es: '', en: 'New venue idea' }, body: { es: '', en: 'What about downtown?' },
       reactions: { like: 2, dislike: 1 }, myReaction: 'like',
-      media: [], refs: [],
+      media: [], refs: [], pinned: false, archived: false,
       comments: [
         {
           id: 10, parentId: null, by: 'm2', text: { es: '', en: 'Love it' }, createdAt: '2026-09-02T10:00:00Z',
@@ -424,7 +424,7 @@ describe('threadVm', () => {
     const th: Thread = {
       id: 'th2', by: 'm1', date: '2026-09-01',
       title: { es: '', en: 'Idea' }, body: { es: '', en: 'Body' },
-      reactions: { like: 0, dislike: 0 }, myReaction: null, media: [],
+      reactions: { like: 0, dislike: 0 }, myReaction: null, media: [], pinned: false, archived: false,
       refs: [
         { id: 1, kind: 'song', refId: 's1' },
         { id: 2, kind: 'event', refId: 'e1' },

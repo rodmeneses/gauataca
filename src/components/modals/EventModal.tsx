@@ -3,7 +3,7 @@
  * media gallery, retrospective (ratings, well/improve, poll, my ratings) and footer.
  */
 import { useRef, useState } from 'react';
-import { ChartColumn, Check, EyeOff, ExternalLink, Film, Instagram, Link, Pencil, Plus, Star, Trash2, Upload } from 'lucide-react';
+import { ChartColumn, Check, EyeOff, ExternalLink, Film, Instagram, Link, Pencil, Pin, Plus, Star, Trash2, Upload } from 'lucide-react';
 import { RSVP_COLOR, RSVP_ORDER, RSVP_PENDING_COLOR, rsvpLabel, useGuataca } from '@/store';
 import { Avatar, Badge, Button, CloseButton, Input, Modal, useConfirm } from '@/components/ui';
 import { SetlistEditor } from './SetlistEditor';
@@ -20,7 +20,7 @@ const textareaCls =
   'w-full py-[11px] px-[13px] rounded-[10px] border border-line bg-base text-ink-base font-sans font-normal text-[13px] leading-[normal] outline-none resize-y';
 
 export function EventModal() {
-  const { t, ev, fb, state, songs, isAdmin, closeModal, openShare, openSettle, openEditEvent, pickPoll, setRating, toggleAnon, setFbWell, setFbImprove, submitFb, setRsvp, setEventSetlist, addTake, deleteTake, addEventVideo, addEventPhotos, deleteEventMedia, goToSong, copyLink } = useGuataca();
+  const { t, ev, fb, state, songs, isAdmin, closeModal, openShare, openSettle, openEditEvent, pickPoll, setRating, toggleAnon, setFbWell, setFbImprove, submitFb, setRsvp, setEventSetlist, addTake, deleteTake, addEventVideo, addEventPhotos, deleteEventMedia, goToSong, copyLink, toggleEventPin } = useGuataca();
   const [videoLabel, setVideoLabel] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -73,11 +73,25 @@ export function EventModal() {
               <Badge lg color="var(--color-emerald)" style={{ background: 'color-mix(in srgb, var(--color-emerald) 11%, transparent)' }}>{t.settled}</Badge>
             )}
             <Badge lg color="var(--color-ink-muted)">{ev.rel}</Badge>
+            {ev.pinned && <Badge lg color="var(--color-amber)">{t.pinned}</Badge>}
           </div>
           <h2 className="m-0 font-display font-semibold text-[23px] leading-[1.25] text-ink-bright tracking-[-.015em]">{ev.title}</h2>
           <p className="mt-[10px] mb-0 mx-0 text-[13.5px] text-ink-meta leading-[1.6]">{ev.note}</p>
         </div>
-        <CloseButton onClick={closeModal} size={34} />
+        <div className="flex flex-col items-end gap-[8px] flex-none">
+          <CloseButton onClick={closeModal} size={34} />
+          {isAdmin && (
+            <button
+              type="button"
+              title={ev.pinned ? t.unpin : t.pin}
+              onClick={() => toggleEventPin(ev.id)}
+              className="grid place-items-center min-w-[40px] min-h-[40px] rounded-[10px] border border-line bg-surface cursor-pointer hover:border-line-hover"
+              style={{ color: ev.pinned ? 'var(--color-amber)' : 'var(--color-ink-muted)' }}
+            >
+              <Pin size={16} strokeWidth={2} fill={ev.pinned ? 'currentColor' : 'none'} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ---- stat tiles */}

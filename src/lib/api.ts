@@ -186,6 +186,7 @@ function mapEvents(
       prevDate: e.previous_starts_at ? e.previous_starts_at.slice(0, 10) : undefined,
       media: (mediaByEvent.get(e.id) ?? []).map((m) => ({ id: m.id, kind: m.kind, label: { es: m.label_es, en: m.label_en }, url: m.url })),
       feedback: fbRows.length ? buildFeedback(fbRows, poll, optsByPoll, votesByOpt, memberShort) : undefined,
+      pinned: !!e.pinned,
     };
   });
 }
@@ -312,6 +313,8 @@ function mapThreads(
           return cm;
         }),
       poll: pollFor(b.id),
+      pinned: !!b.pinned,
+      archived: !!b.archived,
     };
   });
 }
@@ -438,6 +441,11 @@ export async function updateEvent(
   if (ev?.settled) {
     await syncEventTransactions(id, input.fee, input.cost, userId);
   }
+}
+
+/** Pin/unpin an event — pinned events sort to the top of the calendar's upcoming/history lists. */
+export async function setEventPinned(id: string, pinned: boolean): Promise<void> {
+  await supabase.from('events').update({ pinned }).eq('id', id);
 }
 
 export async function createSong(
@@ -792,6 +800,16 @@ export async function createThread(input: { title: string; body: string }, userI
   });
   void notifyCreated({ kind: 'thread', id });
   return id;
+}
+
+/** Pin/unpin a forum idea — pinned ideas sort to the top of the active/archived list. */
+export async function setThreadPinned(id: string, pinned: boolean): Promise<void> {
+  await supabase.from('threads').update({ pinned }).eq('id', id);
+}
+
+/** Archive/unarchive a forum idea — archived ideas move out of the active tab. */
+export async function setThreadArchived(id: string, archived: boolean): Promise<void> {
+  await supabase.from('threads').update({ archived }).eq('id', id);
 }
 
 /** Add a comment (or, with `parentId`, a one-level reply) to an idea; returns the new comment id. */
