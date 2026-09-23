@@ -239,6 +239,8 @@ export interface Guataca {
   saveThread: (photos: File[], poll?: { question: string; options: string[] } | null) => Promise<void>;
   setThreadReaction: (threadId: string, kind: ReactionKind | null) => Promise<void>;
   setCommentReaction: (commentId: number, kind: ReactionKind | null) => Promise<void>;
+  /** Delete one of your own comments (its replies go with it). */
+  deleteComment: (commentId: number) => Promise<void>;
   /** Set the signed-in member's vote on a poll option; re-picking moves the vote. */
   voteThreadPoll: (optionId: number) => Promise<void>;
   /** Attach photos to a forum idea (or, with `commentId`, to one of its comments). */
@@ -357,7 +359,7 @@ export function useGuataca(): Guataca {
     addTake: persistTake, deleteTake: persistDeleteTake,
     addEventMedia: persistAddEventMedia, addEventPhotos: persistAddEventPhotos, deleteEventMedia: persistDeleteEventMedia, uploadEventPhoto: persistUploadEventPhoto,
     setRsvp: persistRsvp, setEventPinned: persistEventPinned,
-    createThread: persistCreateThread, addComment: persistComment, setThreadReaction: persistThreadReaction, setCommentReaction: persistCommentReaction,
+    createThread: persistCreateThread, addComment: persistComment, setThreadReaction: persistThreadReaction, setCommentReaction: persistCommentReaction, deleteComment: persistDeleteComment,
     setThreadPinned: persistThreadPinned, setThreadArchived: persistThreadArchived,
     addThreadMedia: persistAddThreadMedia, deleteThreadMedia: persistDeleteThreadMedia, addThreadRefs: persistThreadRefs, uploadForumPhoto: persistUploadForumPhoto,
     createThreadPoll: persistCreateThreadPoll, voteThreadPoll: persistVoteThreadPoll,
@@ -864,6 +866,10 @@ export function useGuataca(): Guataca {
       setCommentReaction: async (commentId, kind) => {
         await persistCommentReaction(commentId, kind);
       },
+      deleteComment: async (commentId) => {
+        await persistDeleteComment(commentId);
+        toast(t.commentDeleted);
+      },
       sendComment: async (photos) => {
         const txt = st.commentDraft.trim();
         if (!txt || !thSel) return;
@@ -1020,5 +1026,5 @@ export function useGuataca(): Guataca {
       toast,
       dismissToast,
     };
-  }, [st, props, set, toast, dismissToast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myPollPicks, loading, mutating, error, isPhoneViewport, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, updateEvent, createSong, updateSong, persistSongLinks, createTransaction, persistUpdateTransaction, persistDeleteTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistAddEventMedia, persistAddEventPhotos, persistDeleteEventMedia, persistUploadEventPhoto, persistRsvp, persistCreateThread, persistComment, persistThreadReaction, persistCommentReaction, persistAddThreadMedia, persistDeleteThreadMedia, persistThreadRefs, persistUploadForumPhoto, persistCreateThreadPoll, persistVoteThreadPoll, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
+  }, [st, props, set, toast, dismissToast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myPollPicks, loading, mutating, error, isPhoneViewport, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, updateEvent, createSong, updateSong, persistSongLinks, createTransaction, persistUpdateTransaction, persistDeleteTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistAddEventMedia, persistAddEventPhotos, persistDeleteEventMedia, persistUploadEventPhoto, persistRsvp, persistCreateThread, persistComment, persistThreadReaction, persistCommentReaction, persistDeleteComment, persistAddThreadMedia, persistDeleteThreadMedia, persistThreadRefs, persistUploadForumPhoto, persistCreateThreadPoll, persistVoteThreadPoll, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
 }

@@ -516,6 +516,8 @@ export interface ResolvedRef {
 export interface CommentVm {
   id: number;
   parentId: number | null;
+  /** Written by the signed-in member (only they can delete it). */
+  mine: boolean;
   author: string;
   initial: string;
   text: string;
@@ -570,6 +572,7 @@ function commentVm(c: ThreadComment, ctx: Ctx): CommentVm {
   return {
     id: c.id,
     parentId: c.parentId,
+    mine: c.by === ctx.meId,
     author: memberById(ctx.members, c.by).short,
     initial: memberById(ctx.members, c.by).initial,
     text: L(ctx.lang, c.text),

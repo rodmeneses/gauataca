@@ -4,9 +4,9 @@
  * comment + per-comment reply) — each with @-mentions and photo attach.
  */
 import { useRef, useState } from 'react';
-import { Archive, ArchiveRestore, CalendarDays, ChartColumn, ImagePlus, MessageCircle, Music, Pin, X } from 'lucide-react';
+import { Archive, ArchiveRestore, CalendarDays, ChartColumn, ImagePlus, MessageCircle, Music, Pin, Trash2, X } from 'lucide-react';
 import { useGuataca } from '@/store';
-import { Avatar, Button, CloseButton, Modal } from '@/components/ui';
+import { Avatar, Button, CloseButton, Modal, useConfirm } from '@/components/ui';
 import { PhotoStrip } from '@/components/ui/PhotoStrip';
 import { ReactionButtons } from '@/components/ReactionButtons';
 import { Composer } from './Composer';
@@ -117,8 +117,9 @@ export function ThreadModal() {
     t, state, th, isAdmin, closeModal,
     setCommentDraft, sendComment, setReplyDraft, setReplyTarget, sendReply,
     setThreadReaction, setCommentReaction, voteThreadPoll, addThreadPhotos, convertThread, goToSong, openEvent,
-    toggleThreadPin, toggleThreadArchive,
+    toggleThreadPin, toggleThreadArchive, deleteComment,
   } = useGuataca();
+  const { confirm, dialog } = useConfirm();
   const ideaFileRef = useRef<HTMLInputElement>(null);
   if (!th) return null;
 
@@ -141,15 +142,30 @@ export function ThreadModal() {
       <div className="mt-[10px]">
         <PhotoStrip photos={c.media} />
       </div>
-      {!isReply && (
-        <button
-          type="button"
-          onClick={() => setReplyTarget(state.replyTarget === c.id ? null : c.id)}
-          className="mt-[10px] inline-flex items-center gap-[6px] py-[6px] px-[10px] rounded-[9px] border border-line bg-raised text-ink-muted font-sans font-semibold text-[12px] leading-[normal] cursor-pointer hover:text-violet-light hover:border-violet/40"
-        >
-          <MessageCircle size={13} strokeWidth={2} />
-          {t.reply}
-        </button>
+      {(!isReply || c.mine) && (
+        <div className="mt-[10px] flex items-center gap-[8px]">
+          {!isReply && (
+            <button
+              type="button"
+              onClick={() => setReplyTarget(state.replyTarget === c.id ? null : c.id)}
+              className="inline-flex items-center gap-[6px] py-[6px] px-[10px] rounded-[9px] border border-line bg-raised text-ink-muted font-sans font-semibold text-[12px] leading-[normal] cursor-pointer hover:text-violet-light hover:border-violet/40"
+            >
+              <MessageCircle size={13} strokeWidth={2} />
+              {t.reply}
+            </button>
+          )}
+          {c.mine && (
+            <button
+              type="button"
+              title={t.deleteComment}
+              aria-label={t.deleteComment}
+              onClick={() => confirm({ message: t.confirmDeleteComment, onConfirm: () => deleteComment(c.id) })}
+              className="ml-auto grid place-items-center min-w-[32px] min-h-[32px] rounded-[9px] border border-line bg-raised text-ink-muted cursor-pointer hover:text-red hover:border-red/40"
+            >
+              <Trash2 size={13} strokeWidth={2} />
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
@@ -309,6 +325,7 @@ export function ThreadModal() {
           sendLabel={t.send}
         />
       </div>
+      {dialog}
     </Modal>
   );
 }

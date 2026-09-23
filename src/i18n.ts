@@ -70,7 +70,7 @@ const es = {
   anonymous: 'Anónimo',
   switchLang: 'Cambiar a inglés',
   ideaLoaded: 'Idea cargada en el creador de eventos',
-  commentPosted: 'Comentario publicado',
+  commentPosted: 'Comentario publicado', commentDeleted: 'Comentario eliminado', deleteComment: 'Eliminar comentario', confirmDeleteComment: 'Se eliminará este comentario y sus respuestas. No se puede deshacer.',
   // forum (ideas board) — comments, replies, reactions and references
   like: 'Me gusta', dislike: 'No me gusta', reactions: 'Reacciones',
   reply: 'Responder', replies: 'respuestas', replyPlaceholder: 'Escribe una respuesta…',
@@ -228,7 +228,7 @@ const en: typeof es = {
   anonymous: 'Anonymous',
   switchLang: 'Switch to Spanish',
   ideaLoaded: 'Idea loaded into the event creator',
-  commentPosted: 'Comment posted',
+  commentPosted: 'Comment posted', commentDeleted: 'Comment deleted', deleteComment: 'Delete comment', confirmDeleteComment: 'This comment and its replies will be deleted. This can\'t be undone.',
   // forum (ideas board) — comments, replies, reactions and references
   like: 'Like', dislike: 'Dislike', reactions: 'Reactions',
   reply: 'Reply', replies: 'replies', replyPlaceholder: 'Write a reply…',
