@@ -4,7 +4,7 @@
  * comment + per-comment reply) — each with @-mentions and photo attach.
  */
 import { useRef, useState } from 'react';
-import { CalendarDays, ChartColumn, ImagePlus, MessageCircle, Music, X } from 'lucide-react';
+import { Archive, ArchiveRestore, CalendarDays, ChartColumn, ImagePlus, MessageCircle, Music, Pin, X } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { Avatar, Button, CloseButton, Modal } from '@/components/ui';
 import { PhotoStrip } from '@/components/ui/PhotoStrip';
@@ -117,6 +117,7 @@ export function ThreadModal() {
     t, state, th, isAdmin, closeModal,
     setCommentDraft, sendComment, setReplyDraft, setReplyTarget, sendReply,
     setThreadReaction, setCommentReaction, voteThreadPoll, addThreadPhotos, convertThread, goToSong, openEvent,
+    toggleThreadPin, toggleThreadArchive,
   } = useGuataca();
   const ideaFileRef = useRef<HTMLInputElement>(null);
   if (!th) return null;
@@ -170,6 +171,12 @@ export function ThreadModal() {
               onPick={(k) => setThreadReaction(th.id, k)}
               className="flex-none"
             />
+            {th.pinned && (
+              <span className="inline-flex items-center gap-[5px] py-[4px] px-[9px] rounded-[7px] bg-[var(--color-tint-amber)] font-sans font-semibold text-[11px] leading-[normal]" style={{ color: 'var(--color-amber)' }}>
+                <Pin size={11} strokeWidth={2.2} fill="currentColor" />
+                {t.pinned}
+              </span>
+            )}
             {isAdmin && (
               <Button variant="brand" onClick={() => convertThread(th.id)} className="py-2 px-[14px] rounded-[9px] text-[12px]">
                 {t.convert}
@@ -179,6 +186,27 @@ export function ThreadModal() {
         </div>
         <div className="flex flex-col items-end gap-[8px] flex-none">
           <CloseButton onClick={closeModal} size={34} />
+          {isAdmin && (
+            <button
+              type="button"
+              title={th.pinned ? t.unpin : t.pin}
+              onClick={() => toggleThreadPin(th.id)}
+              className="grid place-items-center min-w-[40px] min-h-[40px] rounded-[10px] border border-line bg-surface cursor-pointer hover:border-line-hover"
+              style={{ color: th.pinned ? 'var(--color-amber)' : 'var(--color-ink-muted)' }}
+            >
+              <Pin size={16} strokeWidth={2} fill={th.pinned ? 'currentColor' : 'none'} />
+            </button>
+          )}
+          {isAdmin && (
+            <button
+              type="button"
+              title={th.archived ? t.unarchive : t.archive}
+              onClick={() => toggleThreadArchive(th.id)}
+              className="grid place-items-center min-w-[40px] min-h-[40px] rounded-[10px] border border-line bg-surface text-ink-muted hover:text-ink-body hover:border-line-hover cursor-pointer"
+            >
+              {th.archived ? <ArchiveRestore size={16} strokeWidth={2} /> : <Archive size={16} strokeWidth={2} />}
+            </button>
+          )}
           <button
             type="button"
             title={t.addPhotos}

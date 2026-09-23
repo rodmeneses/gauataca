@@ -1,11 +1,11 @@
 /** Mobile "Agenda" tab: upcoming/history toggle, "New event" (admin), and event cards. */
-import { Instagram, Plus } from 'lucide-react';
+import { Instagram, Pin, Plus } from 'lucide-react';
 import { useGuataca } from '../../store';
 import { Pill, Segment } from '../ui';
 import { PhotoStrip } from '../ui/PhotoStrip';
 
 export function MobileAgenda() {
-  const { t, isAdmin, state, calList, setCalTab, openNewEvent, openShare, openEvent } = useGuataca();
+  const { t, isAdmin, state, calList, setCalTab, openNewEvent, openShare, openEvent, toggleEventPin } = useGuataca();
   const tab = state.calTab;
 
   return (
@@ -55,7 +55,24 @@ export function MobileAgenda() {
                 ✓ {e.rsvpLabel}
               </span>
             )}
+            {e.pinned && (
+              <span className="flex items-center gap-1 font-display font-semibold text-[11px] tracking-[.05em] uppercase whitespace-nowrap py-1 px-2 rounded-md" style={{ color: 'var(--color-amber)' }}>
+                <Pin size={11} strokeWidth={2.2} fill="currentColor" />
+                {t.pinned}
+              </span>
+            )}
             <span className="ml-auto font-mono font-semibold text-[12px] text-violet-light">{e.rel}</span>
+            {isAdmin && (
+              <button
+                type="button"
+                title={e.pinned ? t.unpin : t.pin}
+                onClick={() => toggleEventPin(e.id)}
+                className="flex-none grid place-items-center min-w-[36px] min-h-[36px] rounded-lg border border-line bg-raised cursor-pointer"
+                style={{ color: e.pinned ? 'var(--color-amber)' : 'var(--color-ink-muted)' }}
+              >
+                <Pin size={14} strokeWidth={2} fill={e.pinned ? 'currentColor' : 'none'} />
+              </button>
+            )}
           </div>
           <h3 className="m-0 font-display font-semibold text-[17px] leading-snug text-ink">{e.title}</h3>
           <div className="text-[13px] text-ink-muted leading-relaxed">

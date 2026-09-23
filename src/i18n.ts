@@ -153,6 +153,10 @@ const es = {
   offline: 'Sin conexión — mostrando datos guardados',
   offlineWriteBlocked: 'Sin conexión: no se pudo guardar. Intenta de nuevo cuando vuelvas a estar en línea.',
   backOnline: 'De vuelta en línea',
+  // pin (events + forum ideas) / archive (forum ideas) — added in code, not in the Claude Design file
+  pin: 'Fijar', unpin: 'Quitar fijado', pinned: 'Fijado', unpinned: 'Se quitó de fijados',
+  archive: 'Archivar', unarchive: 'Desarchivar', archived: 'Archivado', unarchived: 'Se desarchivó',
+  forumArchived: 'Archivadas', noArchivedIdeas: 'No hay ideas archivadas',
 };
 
 const en: typeof es = {
@@ -306,6 +310,10 @@ const en: typeof es = {
   offline: "Offline — showing saved data",
   offlineWriteBlocked: "You're offline: couldn't save. Try again once you're back online.",
   backOnline: 'Back online',
+  // pin (events + forum ideas) / archive (forum ideas)
+  pin: 'Pin', unpin: 'Unpin', pinned: 'Pinned', unpinned: 'Unpinned',
+  archive: 'Archive', unarchive: 'Unarchive', archived: 'Archived', unarchived: 'Unarchived',
+  forumArchived: 'Archived', noArchivedIdeas: 'No archived ideas',
 };
 
 export type Dict = typeof es;

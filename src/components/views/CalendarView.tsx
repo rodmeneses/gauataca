@@ -2,13 +2,13 @@
  * Calendar view — Upcoming / History pills, "New event" (admin) or "Admins only" lock note
  * (member), and the grid of event cards. Mirrors design lines 253–339.
  */
-import { Clock, Instagram, Lock, MapPin, Mic, Music, Plus, RefreshCcw } from 'lucide-react';
+import { Clock, Instagram, Lock, MapPin, Mic, Music, Pin, Plus, RefreshCcw } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { Badge, Button, Card, Pill, Segment } from '@/components/ui';
 import { PhotoStrip } from '@/components/ui/PhotoStrip';
 
 export function CalendarView() {
-  const { t, state, isAdmin, isMember, calList, setCalTab, openNewEvent, openEvent, openShare } = useGuataca();
+  const { t, state, isAdmin, isMember, calList, setCalTab, openNewEvent, openEvent, openShare, toggleEventPin } = useGuataca();
   const tab = state.calTab;
 
   return (
@@ -56,8 +56,20 @@ export function CalendarView() {
                     {e.showState && <Badge color={e.stateColor}>{e.stateLabel}</Badge>}
                     <Badge color="var(--color-ink-muted)">{e.rel}</Badge>
                     {e.canRsvp && e.rsvpLabel && <Badge color={e.rsvpColor}>✓ {e.rsvpLabel}</Badge>}
+                    {e.pinned && <Badge color="var(--color-amber)">{t.pinned}</Badge>}
                   </div>
                 </div>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    title={e.pinned ? t.unpin : t.pin}
+                    onClick={() => toggleEventPin(e.id)}
+                    className="flex-none grid place-items-center w-[30px] h-[30px] rounded-[9px] border border-line bg-raised cursor-pointer hover:border-line-hover"
+                    style={{ color: e.pinned ? 'var(--color-amber)' : 'var(--color-ink-muted)' }}
+                  >
+                    <Pin size={14} strokeWidth={2} fill={e.pinned ? 'currentColor' : 'none'} />
+                  </button>
+                )}
               </div>
 
               {/* venue / date / moved-from */}

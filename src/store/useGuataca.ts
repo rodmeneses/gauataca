@@ -158,6 +158,8 @@ export interface Guataca {
   gear: GearVm[];
   gearValue: string;
   threads: ThreadVm[];
+  /** Active or archived, depending on forumTab; pinned ideas sort first. */
+  forumList: ThreadVm[];
   members: MemberVm[];
   /** Instrument catalog (basic + custom), for the picker and name resolution. */
   instruments: Instrument[];
@@ -205,6 +207,7 @@ export interface Guataca {
   toggleRole: () => void;
   setDevice: (dv: State['device']) => void;
   setCalTab: (tab: State['calTab']) => void;
+  setForumTab: (tab: State['forumTab']) => void;
   setMobileTab: (tab: MobileTab) => void;
   toggleSong: (id: string) => void;
   /** Navigate to the repertoire and open a specific song (from a setlist, etc.). */
@@ -275,6 +278,8 @@ export interface Guataca {
   uploadProof: (file: File) => Promise<string | null>;
   /** Set the signed-in member's RSVP; choosing the current answer again withdraws it (back to pending). */
   setRsvp: (eventId: string, status: RsvpStatus) => Promise<void>;
+  /** Toggle an event's pinned state (admin only). */
+  toggleEventPin: (eventId: string) => Promise<void>;
   /** Replace an event's setlist (ordered song ids). */
   setEventSetlist: (eventId: string, songIds: string[]) => Promise<void>;
   /** Add a recording ("take") of a song during a practice event. */
@@ -296,6 +301,10 @@ export interface Guataca {
   /** Post a one-level reply to the active reply target (optionally with photos). */
   sendReply: (photos?: File[]) => Promise<void>;
   convertThread: (id: string) => void;
+  /** Toggle a forum idea's pinned state (admin only). */
+  toggleThreadPin: (id: string) => Promise<void>;
+  /** Toggle a forum idea's archived state (admin only). */
+  toggleThreadArchive: (id: string) => Promise<void>;
   pickPoll: (i: number) => Promise<void>;
   setRating: (k: RatingKey, n: number) => void;
   toggleAnon: () => void;
@@ -347,8 +356,9 @@ export function useGuataca(): Guataca {
     onboard: persistOnboard, updateMemberInstruments: persistMemberInstruments, setSongInstruments: persistSongInstruments,
     addTake: persistTake, deleteTake: persistDeleteTake,
     addEventMedia: persistAddEventMedia, addEventPhotos: persistAddEventPhotos, deleteEventMedia: persistDeleteEventMedia, uploadEventPhoto: persistUploadEventPhoto,
-    setRsvp: persistRsvp,
+    setRsvp: persistRsvp, setEventPinned: persistEventPinned,
     createThread: persistCreateThread, addComment: persistComment, setThreadReaction: persistThreadReaction, setCommentReaction: persistCommentReaction,
+    setThreadPinned: persistThreadPinned, setThreadArchived: persistThreadArchived,
     addThreadMedia: persistAddThreadMedia, deleteThreadMedia: persistDeleteThreadMedia, addThreadRefs: persistThreadRefs, uploadForumPhoto: persistUploadForumPhoto,
     createThreadPoll: persistCreateThreadPoll, voteThreadPoll: persistVoteThreadPoll,
     submitFeedback: persistFeedback, pickPoll: persistPoll, transferCustody: persistCustody,
@@ -416,8 +426,11 @@ export function useGuataca(): Guataca {
     ];
 
     const evm = (e: BandEvent) => eventVm(e, allSongs, ctx);
-    const upcoming = upcomingRaw.map(evm);
-    const history = historyRaw.map(evm);
+    // Pinned events float to the top of each list; Array#sort is stable, so the
+    // existing date order is preserved within the pinned and unpinned groups.
+    const pinnedFirst = <V extends { pinned: boolean }>(arr: V[]): V[] => [...arr].sort((a, b) => Number(b.pinned) - Number(a.pinned));
+    const upcoming = pinnedFirst(upcomingRaw.map(evm));
+    const history = pinnedFirst(historyRaw.map(evm));
     const events = [...upcoming, ...history];
     const nextEvent = nextRaw ? evm(nextRaw) : null;
     const dashUpcoming = upcomingRaw.filter((e) => e.state !== 'cancelled').slice(0, 3).map(evm);
@@ -451,6 +464,7 @@ export function useGuataca(): Guataca {
 
     const gear = dbGear.map((g) => gearVm(g, g.holder, ctx));
     const threads = dbThreads.map((b) => threadVm(b, ctx));
+    const forumList = pinnedFirst(threads.filter((b) => (st.forumTab === 'archived' ? b.archived : !b.archived)));
     const members = dbMembers.map((m) => memberVm(m, ctx));
 
     /* ---- modal selections */
@@ -608,7 +622,7 @@ export function useGuataca(): Guataca {
       tx, recentTx, txFilter: st.txFilter, txDate: st.txDate,
       contributions,
       gear, gearValue: money0(dbGear.reduce((a, b) => a + b.cost, 0)),
-      threads, members, instruments,
+      threads, forumList, members, instruments,
 
       balanceStr: money(balance), balanceNeg: balance < 0, incomeStr: money(income), expenseStr: money(expense),
       txCount: String(allTx.length), statSongs: String(allSongs.length),
@@ -638,6 +652,7 @@ export function useGuataca(): Guataca {
       },
       setDevice: (dv) => set({ device: dv }),
       setCalTab: (tab) => set({ calTab: tab }),
+      setForumTab: (tab) => set({ forumTab: tab }),
       setMobileTab: (tab) => set({ mobileTab: tab }),
       toggleSong: (id) => set((s) => ({ openSong: s.openSong === id ? null : id })),
       goToSong: (id) => set({ view: 'repertoire', mobileTab: 'repertoire', openSong: id, scrollToSong: id, q: '', genre: 'all', staleOnly: false, modal: null, palette: false }),
@@ -772,6 +787,12 @@ export function useGuataca(): Guataca {
         await persistRsvp(eventId, next);
         toast(t.rsvpSaved);
       },
+      toggleEventPin: async (eventId) => {
+        const e = allEvents.find((x) => x.id === eventId);
+        if (!e) return;
+        await persistEventPinned(eventId, !e.pinned);
+        toast(e.pinned ? t.unpinned : t.pinned);
+      },
       setEventSetlist: async (eventId, songIds) => {
         await persistSetlist(eventId, songIds);
         toast(t.setlistSaved);
@@ -877,6 +898,18 @@ export function useGuataca(): Guataca {
         toast(t.ideaCreated);
       },
       convertThread,
+      toggleThreadPin: async (id) => {
+        const b = dbThreads.find((x) => x.id === id);
+        if (!b) return;
+        await persistThreadPinned(id, !b.pinned);
+        toast(b.pinned ? t.unpinned : t.pinned);
+      },
+      toggleThreadArchive: async (id) => {
+        const b = dbThreads.find((x) => x.id === id);
+        if (!b) return;
+        await persistThreadArchived(id, !b.archived);
+        toast(b.archived ? t.unarchived : t.archived);
+      },
       voteThreadPoll: async (optionId) => {
         await persistVoteThreadPoll(optionId);
         toast(t.voted);

@@ -9,6 +9,8 @@ export type Device = 'auto' | 'desktop' | 'tablet' | 'mobile';
 export type Layout = 'phone' | 'tablet' | 'desktop';
 export type MobileTab = 'agenda' | 'repertoire' | 'fund' | 'brainstorm' | 'profile';
 export type CalTab = 'upcoming' | 'history';
+/** Brainstorm/forum tab: everyday ideas, or ones an admin has archived. */
+export type ForumTab = 'active' | 'archived';
 
 /** A string that has a translation per language. */
 export type Localized = Record<Lang, string>;
@@ -117,6 +119,8 @@ export interface BandEvent {
   prevDate?: string;
   media?: { id: number; kind: 'photo' | 'video'; label: Localized; url: string }[];
   feedback?: EventFeedback;
+  /** Admin-pinned events sort to the top of the calendar's upcoming/history lists. */
+  pinned: boolean;
 }
 
 /** A recording of one song made during a practice event ("Take 1", "Take 2", …). */
@@ -225,6 +229,10 @@ export interface Thread {
   comments: ThreadComment[];
   /** Optional poll attached at creation time. */
   poll?: ThreadPoll;
+  /** Admin-pinned ideas sort to the top of the active/archived list. */
+  pinned: boolean;
+  /** Admin-archived ideas move out of the active forum tab into Archived. */
+  archived: boolean;
 }
 
 export type ToastTone = 'ok' | 'violet' | 'err';
