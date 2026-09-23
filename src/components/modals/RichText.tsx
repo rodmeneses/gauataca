@@ -2,6 +2,7 @@
  * Renders forum body/comment text. @-mention tokens (`@{song:<id>}` /
  * `@{event:<id>}`) become tappable chips that open the referenced song/event;
  * a token whose id no longer exists is dropped (the reference was deleted).
+ * Line breaks the author typed are preserved (`whitespace-pre-wrap`).
  */
 import { CalendarDays, Music } from 'lucide-react';
 import { useGuataca } from '@/store';
@@ -13,7 +14,7 @@ export function RichText({ text, className }: { text: string; className?: string
   const songById = new Map(songs.map((s) => [s.id, s]));
   const eventById = new Map(events.map((e) => [e.id, e]));
   return (
-    <span className={className}>
+    <span className={`whitespace-pre-wrap break-words${className ? ' ' + className : ''}`}>
       {segs.map((seg, i) => {
         if (seg.type === 'text') return <span key={i}>{seg.text}</span>;
         const label = seg.kind === 'song' ? songById.get(seg.id)?.title : eventById.get(seg.id)?.title;
