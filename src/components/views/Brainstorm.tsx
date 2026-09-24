@@ -47,6 +47,8 @@ export function Brainstorm() {
           <ReactionButtons
             likes={b.likes}
             dislikes={b.dislikes}
+            likedBy={b.likedBy}
+            dislikedBy={b.dislikedBy}
             my={b.myReaction}
             onPick={(k) => setThreadReaction(b.id, k)}
             vertical
