@@ -1,16 +1,16 @@
 /**
  * Brainstorm view — the ideas thread list (design lines 553–587). Each thread
- * card: like/dislike reactions, title (opens thread), body, author/date,
- * comment count, and (admin only) the "convert to event" action.
+ * card: like/dislike reactions, title, body, author/date,
+ * comment count, and a "view details" button (pin/archive/convert live in the thread modal).
  */
-import { Archive, ArchiveRestore, BarChart3, CalendarPlus, Lightbulb, MessageSquare, Pin } from 'lucide-react';
+import { BarChart3, Lightbulb, MessageSquare, Pin } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { Button, Pill, Segment } from '@/components/ui';
 import { ReactionButtons } from '@/components/ReactionButtons';
 
 export function Brainstorm() {
   const {
-    t, state, isAdmin, forumList, setThreadReaction, openThread, convertThread, openNewThread, setForumTab, toggleThreadPin, toggleThreadArchive,
+    t, state, isAdmin, forumList, setThreadReaction, openThread, openNewThread, setForumTab,
   } = useGuataca();
   const tab = state.forumTab;
 
@@ -81,44 +81,15 @@ export function Brainstorm() {
                   {b.poll.total} {t.votes}
                 </span>
               )}
-              <div className="ml-auto flex items-center gap-[7px]">
-                <button
-                  type="button"
-                  onClick={() => openThread(b.id)}
-                  className="py-2 px-3 rounded-[9px] border border-line bg-raised text-ink-body font-sans font-semibold text-[12.5px] cursor-pointer whitespace-nowrap hover:border-line-hover hover:bg-hover"
-                >
-                  {t.viewDetails}
-                </button>
-                {isAdmin && (
-                  <>
-                  <button
-                    type="button"
-                    title={b.pinned ? t.unpin : t.pin}
-                    onClick={() => toggleThreadPin(b.id)}
-                    className="grid place-items-center w-[30px] h-[30px] rounded-[9px] border border-line bg-raised cursor-pointer hover:border-line-hover"
-                    style={{ color: b.pinned ? 'var(--color-amber)' : 'var(--color-ink-muted)' }}
-                  >
-                    <Pin size={13} strokeWidth={2} fill={b.pinned ? 'currentColor' : 'none'} />
-                  </button>
-                  <button
-                    type="button"
-                    title={b.archived ? t.unarchive : t.archive}
-                    onClick={() => toggleThreadArchive(b.id)}
-                    className="grid place-items-center w-[30px] h-[30px] rounded-[9px] border border-line bg-raised text-ink-muted cursor-pointer hover:border-line-hover hover:text-ink-body"
-                  >
-                    {b.archived ? <ArchiveRestore size={13} strokeWidth={2} /> : <Archive size={13} strokeWidth={2} />}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => convertThread(b.id)}
-                    className="flex items-center gap-[7px] py-2 px-3 rounded-[9px] border border-violet/40 bg-[var(--color-tint-violet)] text-violet-lighter font-sans font-semibold text-[12px] cursor-pointer whitespace-nowrap hover:bg-[var(--color-tint-violet)]"
-                  >
-                    <CalendarPlus size={13} strokeWidth={2} />
-                    {t.convert}
-                  </button>
-                  </>
-                )}
-              </div>
+            </div>
+            <div className="flex gap-2 border-t border-line-soft pt-[13px] mt-[14px]">
+              <button
+                type="button"
+                onClick={() => openThread(b.id)}
+                className="flex-1 p-[9px] rounded-[9px] border border-line bg-raised text-ink-body font-sans font-semibold text-[12.5px] cursor-pointer hover:border-line-hover hover:bg-hover"
+              >
+                {t.viewDetails}
+              </button>
             </div>
           </div>
         </article>
