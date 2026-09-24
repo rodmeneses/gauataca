@@ -55,13 +55,7 @@ export function Brainstorm() {
             className="flex-none mt-[2px]"
           />
           <div className="min-w-0 flex-1">
-            <button
-              type="button"
-              onClick={() => openThread(b.id)}
-              className="border-none bg-transparent p-0 text-left cursor-pointer block w-full"
-            >
-              <h3 className="m-0 font-display font-semibold text-[16px] leading-[1.35] text-ink">{b.title}</h3>
-            </button>
+            <h3 className="m-0 font-display font-semibold text-[16px] leading-[1.35] text-ink">{b.title}</h3>
             <p className="mt-[9px] mb-0 text-[13.5px] text-ink-meta leading-[1.65] line-clamp-3">{b.body}</p>
             <div className="flex items-center gap-[14px] mt-[14px] flex-wrap">
               <span className="flex items-center gap-2">
@@ -77,22 +71,26 @@ export function Brainstorm() {
                   {t.pinned}
                 </span>
               )}
-              <button
-                type="button"
-                onClick={() => openThread(b.id)}
-                className="flex items-center gap-[7px] border-none bg-transparent text-ink-muted font-sans font-medium text-[12px] cursor-pointer p-0 whitespace-nowrap hover:text-violet-light"
-              >
+              <span className="flex items-center gap-[7px] text-ink-muted font-sans font-medium text-[12px] whitespace-nowrap">
                 <MessageSquare size={14} strokeWidth={1.9} />
                 {b.commentCount} {t.comments}
-              </button>
+              </span>
               {b.poll && (
                 <span className="inline-flex items-center gap-[6px] py-[4px] px-[9px] rounded-[7px] bg-[var(--color-tint-violet)] text-violet-lighter font-sans font-semibold text-[11px] leading-[normal]">
                   <BarChart3 size={12} strokeWidth={2} />
                   {b.poll.total} {t.votes}
                 </span>
               )}
-              {isAdmin && (
-                <div className="ml-auto flex items-center gap-[7px]">
+              <div className="ml-auto flex items-center gap-[7px]">
+                <button
+                  type="button"
+                  onClick={() => openThread(b.id)}
+                  className="py-2 px-3 rounded-[9px] border border-line bg-raised text-ink-body font-sans font-semibold text-[12.5px] cursor-pointer whitespace-nowrap hover:border-line-hover hover:bg-hover"
+                >
+                  {t.viewDetails}
+                </button>
+                {isAdmin && (
+                  <>
                   <button
                     type="button"
                     title={b.pinned ? t.unpin : t.pin}
@@ -118,8 +116,9 @@ export function Brainstorm() {
                     <CalendarPlus size={13} strokeWidth={2} />
                     {t.convert}
                   </button>
-                </div>
-              )}
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </article>
