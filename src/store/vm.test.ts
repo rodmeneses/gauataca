@@ -390,16 +390,16 @@ describe('threadVm', () => {
     const th: Thread = {
       id: 'th1', by: 'm1', date: '2026-09-01',
       title: { es: '', en: 'New venue idea' }, body: { es: '', en: 'What about downtown?' },
-      reactions: { like: 2, dislike: 1 }, myReaction: 'like',
+      reactions: { like: 2, dislike: 0, likedBy: ['m1', 'm2'], dislikedBy: [] }, myReaction: 'like',
       media: [], refs: [], pinned: false, archived: false,
       comments: [
         {
           id: 10, parentId: null, by: 'm2', text: { es: '', en: 'Love it' }, createdAt: '2026-09-02T10:00:00Z',
-          reactions: { like: 1, dislike: 0 }, myReaction: null, media: [], refs: [],
+          reactions: { like: 1, dislike: 0, likedBy: ['m1'], dislikedBy: [] }, myReaction: null, media: [], refs: [],
           replies: [
             {
               id: 11, parentId: 10, by: 'm1', text: { es: '', en: 'Thanks!' }, createdAt: '2026-09-02T11:00:00Z',
-              reactions: { like: 0, dislike: 0 }, myReaction: null, media: [], refs: [], replies: [],
+              reactions: { like: 0, dislike: 0, likedBy: [], dislikedBy: [] }, myReaction: null, media: [], refs: [], replies: [],
             },
           ],
         },
@@ -409,7 +409,9 @@ describe('threadVm', () => {
     expect(vm.author).toBe('Ana');
     expect(vm.title).toBe('New venue idea');
     expect(vm.likes).toBe(2);
-    expect(vm.dislikes).toBe(1);
+    expect(vm.dislikes).toBe(0);
+    expect(vm.likedBy).toEqual(['Ana', 'Beto']);
+    expect(vm.dislikedBy).toEqual([]);
     expect(vm.myReaction).toBe('like');
     expect(vm.commentCount).toBe('2'); // 1 top-level + 1 reply
     expect(vm.comments).toHaveLength(1);
@@ -424,7 +426,7 @@ describe('threadVm', () => {
     const th: Thread = {
       id: 'th2', by: 'm1', date: '2026-09-01',
       title: { es: '', en: 'Idea' }, body: { es: '', en: 'Body' },
-      reactions: { like: 0, dislike: 0 }, myReaction: null, media: [], pinned: false, archived: false,
+      reactions: { like: 0, dislike: 0, likedBy: [], dislikedBy: [] }, myReaction: null, media: [], pinned: false, archived: false,
       refs: [
         { id: 1, kind: 'song', refId: 's1' },
         { id: 2, kind: 'event', refId: 'e1' },

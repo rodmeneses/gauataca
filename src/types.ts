@@ -178,6 +178,9 @@ export type ReactionKind = 'like' | 'dislike';
 export interface ReactionTally {
   like: number;
   dislike: number;
+  /** Member ids behind each count, so the UI can show who reacted. */
+  likedBy: string[];
+  dislikedBy: string[];
 }
 
 /** A referenced song/event attached to an idea or comment (picker chips AND @-mentions). */

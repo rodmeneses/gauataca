@@ -72,7 +72,7 @@ const es = {
   ideaLoaded: 'Idea cargada en el creador de eventos',
   commentPosted: 'Comentario publicado', commentDeleted: 'Comentario eliminado', deleteComment: 'Eliminar comentario', confirmDeleteComment: 'Se eliminará este comentario y sus respuestas. No se puede deshacer.',
   // forum (ideas board) — comments, replies, reactions and references
-  like: 'Me gusta', dislike: 'No me gusta', reactions: 'Reacciones',
+  like: 'Me gusta', dislike: 'No me gusta', reactions: 'Reacciones', whoReacted: 'Quién reaccionó',
   reply: 'Responder', replies: 'respuestas', replyPlaceholder: 'Escribe una respuesta…',
   ideaTitle: 'Título de la idea', ideaBody: '¿Qué tienes en mente?',
   addReference: 'Referenciar canción o evento',
@@ -230,7 +230,7 @@ const en: typeof es = {
   ideaLoaded: 'Idea loaded into the event creator',
   commentPosted: 'Comment posted', commentDeleted: 'Comment deleted', deleteComment: 'Delete comment', confirmDeleteComment: 'This comment and its replies will be deleted. This can\'t be undone.',
   // forum (ideas board) — comments, replies, reactions and references
-  like: 'Like', dislike: 'Dislike', reactions: 'Reactions',
+  like: 'Like', dislike: 'Dislike', reactions: 'Reactions', whoReacted: 'Who reacted',
   reply: 'Reply', replies: 'replies', replyPlaceholder: 'Write a reply…',
   ideaTitle: 'Idea title', ideaBody: 'What is on your mind?',
   addReference: 'Reference a song or event',

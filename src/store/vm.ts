@@ -531,6 +531,9 @@ export interface CommentVm {
   dateStr: string;
   likes: number;
   dislikes: number;
+  /** Short names of the members behind each count. */
+  likedBy: string[];
+  dislikedBy: string[];
   myReaction: ReactionKind | null;
   media: ThreadMedia[];
   refs: ResolvedRef[];
@@ -547,6 +550,9 @@ export interface ThreadVm {
   dateStr: string;
   likes: number;
   dislikes: number;
+  /** Short names of the members behind each count. */
+  likedBy: string[];
+  dislikedBy: string[];
   myReaction: ReactionKind | null;
   media: ThreadMedia[];
   refs: ResolvedRef[];
@@ -575,6 +581,10 @@ function resolveRefs(refs: ThreadRef[], ctx: Ctx): ResolvedRef[] {
   return out;
 }
 
+function reactorNames(ids: string[], ctx: Ctx): string[] {
+  return ids.map((id) => memberById(ctx.members, id).short);
+}
+
 function commentVm(c: ThreadComment, ctx: Ctx): CommentVm {
   return {
     id: c.id,
@@ -586,6 +596,8 @@ function commentVm(c: ThreadComment, ctx: Ctx): CommentVm {
     dateStr: rel(c.createdAt.slice(0, 10), ctx.lang),
     likes: c.reactions.like,
     dislikes: c.reactions.dislike,
+    likedBy: reactorNames(c.reactions.likedBy, ctx),
+    dislikedBy: reactorNames(c.reactions.dislikedBy, ctx),
     myReaction: c.myReaction,
     media: c.media,
     refs: resolveRefs(c.refs, ctx),
@@ -645,6 +657,8 @@ export function threadVm(b: Thread, ctx: Ctx): ThreadVm {
     dateStr: fmt(b.date, ctx.lang, true),
     likes: b.reactions.like,
     dislikes: b.reactions.dislike,
+    likedBy: reactorNames(b.reactions.likedBy, ctx),
+    dislikedBy: reactorNames(b.reactions.dislikedBy, ctx),
     myReaction: b.myReaction,
     media: b.media,
     refs: resolveRefs(b.refs, ctx),

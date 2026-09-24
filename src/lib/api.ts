@@ -6,7 +6,7 @@
 import { supabase } from './supabase';
 import { notifyCreated } from './notify';
 import type {
-  BandEvent, EventFeedback, EventType, Gear, GearCondition, GenreId, Instrument, LinkKind, Member, Proficiency, ProofKind, ReactionKind, RsvpStatus, Song, Take, Thread, ThreadComment, ThreadPoll, Transaction, TxCategory, TxKind, VocalFlag,
+  BandEvent, EventFeedback, EventType, Gear, GearCondition, GenreId, Instrument, LinkKind, Member, Proficiency, ProofKind, ReactionKind, ReactionTally, RsvpStatus, Song, Take, Thread, ThreadComment, ThreadPoll, Transaction, TxCategory, TxKind, VocalFlag,
 } from '../types';
 
 type Row = Record<string, any>;
@@ -226,16 +226,15 @@ function mapGear(rows: Row[], transactions: Row[]): Gear[] {
 }
 
 /* ----------------------------------------------------------------- threads */
-function tallyReactions(rows: Row[], userId: string | null): { tally: { like: number; dislike: number }; mine: ReactionKind | null } {
-  let like = 0;
-  let dislike = 0;
+function tallyReactions(rows: Row[], userId: string | null): { tally: ReactionTally; mine: ReactionKind | null } {
+  const likedBy: string[] = [];
+  const dislikedBy: string[] = [];
   let mine: ReactionKind | null = null;
   for (const r of rows) {
-    if (r.kind === 'like') like += 1;
-    else dislike += 1;
+    (r.kind === 'like' ? likedBy : dislikedBy).push(r.profile_id);
     if (userId && r.profile_id === userId) mine = r.kind;
   }
-  return { tally: { like, dislike }, mine };
+  return { tally: { like: likedBy.length, dislike: dislikedBy.length, likedBy, dislikedBy }, mine };
 }
 
 function mapThreads(

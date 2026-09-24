@@ -132,7 +132,7 @@ export function ThreadModal() {
         <span className="font-sans font-semibold text-[12.5px] text-ink">{c.author}</span>
         <span className="text-[11.5px] text-ink-dim">{c.dateStr}</span>
         <span className="ml-auto flex-none">
-          <ReactionButtons likes={c.likes} dislikes={c.dislikes} my={c.myReaction} onPick={(k) => setCommentReaction(c.id, k)} />
+          <ReactionButtons likes={c.likes} dislikes={c.dislikes} likedBy={c.likedBy} dislikedBy={c.dislikedBy} my={c.myReaction} onPick={(k) => setCommentReaction(c.id, k)} />
         </span>
       </div>
       <p className="m-0 mt-[10px] text-[13px] text-ink-body leading-[1.65]">
@@ -183,6 +183,8 @@ export function ThreadModal() {
             <ReactionButtons
               likes={th.likes}
               dislikes={th.dislikes}
+              likedBy={th.likedBy}
+              dislikedBy={th.dislikedBy}
               my={th.myReaction}
               onPick={(k) => setThreadReaction(th.id, k)}
               className="flex-none"
