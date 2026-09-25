@@ -70,7 +70,7 @@ export function Shell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, bs.loading, modal]);
 
-  // Shareable deep link (?event= / ?song= / ?tx=): apply once data is loaded,
+  // Shareable deep link (?event= / ?song= / ?tx= / ?thread=[&comment=]): apply once data is loaded,
   // then strip the params so a refresh doesn't re-open the item.
   const deepLinkApplied = useRef(false);
   useEffect(() => {
@@ -82,7 +82,7 @@ export function Shell() {
     if (dl.kind === 'event') bs.openEvent(dl.id);
     else if (dl.kind === 'song') bs.goToSong(dl.id);
     else if (dl.kind === 'tx') bs.goToTx(dl.id);
-    else bs.openThread(dl.id);
+    else bs.openThread(dl.id, dl.commentId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bs.loading]);
 

@@ -3,8 +3,8 @@
  * photo strip, the comment list with one-level replies, and the composers (root
  * comment + per-comment reply) — each with @-mentions and photo attach.
  */
-import { useRef, useState } from 'react';
-import { Archive, ArchiveRestore, CalendarDays, ChartColumn, ImagePlus, MessageCircle, Music, Pin, Trash2, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Archive, ArchiveRestore, CalendarDays, ChartColumn, ImagePlus, Link, MessageCircle, Music, Pin, Trash2, X } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { Avatar, Button, CloseButton, Modal, useConfirm } from '@/components/ui';
 import { PhotoStrip } from '@/components/ui/PhotoStrip';
@@ -117,16 +117,27 @@ export function ThreadModal() {
     t, state, th, isAdmin, closeModal,
     setCommentDraft, sendComment, setReplyDraft, setReplyTarget, sendReply,
     setThreadReaction, setCommentReaction, voteThreadPoll, addThreadPhotos, convertThread, goToSong, openEvent,
-    toggleThreadPin, toggleThreadArchive, deleteComment,
+    toggleThreadPin, toggleThreadArchive, deleteComment, copyLink,
   } = useGuataca();
   const { confirm, dialog } = useConfirm();
   const ideaFileRef = useRef<HTMLInputElement>(null);
+  const targetComment = state.modal?.kind === 'thread' ? state.modal.commentId : undefined;
+  const threadId = th?.id;
+  // Deep link to a comment/reply: scroll it into view once the thread renders.
+  useEffect(() => {
+    if (!targetComment || !threadId) return;
+    document.getElementById(`comment-${targetComment}`)?.scrollIntoView({ block: 'center' });
+  }, [targetComment, threadId]);
   if (!th) return null;
 
   const openRef = (kind: 'song' | 'event', id: string) => (kind === 'song' ? goToSong(id) : openEvent(id));
 
   const renderComment = (c: CommentVm, isReply: boolean) => (
-    <div className="bg-surface border border-line-soft rounded-[12px] p-[13px_14px]">
+    <div
+      id={`comment-${c.id}`}
+      className="bg-surface border rounded-[12px] p-[13px_14px]"
+      style={{ borderColor: c.id === targetComment ? 'color-mix(in srgb, var(--color-emerald) 50%, transparent)' : 'var(--color-line-soft)' }}
+    >
       <div className="flex items-center gap-[9px]">
         <Avatar initial={c.initial} size={26} radius={8} style={{ fontSize: 9.5 }} />
         <span className="font-sans font-semibold text-[12.5px] text-ink">{c.author}</span>
@@ -142,31 +153,38 @@ export function ThreadModal() {
       <div className="mt-[10px]">
         <PhotoStrip photos={c.media} />
       </div>
-      {(!isReply || c.mine) && (
-        <div className="mt-[10px] flex items-center gap-[8px]">
-          {!isReply && (
-            <button
-              type="button"
-              onClick={() => setReplyTarget(state.replyTarget === c.id ? null : c.id)}
-              className="inline-flex items-center gap-[6px] py-[6px] px-[10px] rounded-[9px] border border-line bg-raised text-ink-muted font-sans font-semibold text-[12px] leading-[normal] cursor-pointer hover:text-violet-light hover:border-violet/40"
-            >
-              <MessageCircle size={13} strokeWidth={2} />
-              {t.reply}
-            </button>
-          )}
-          {c.mine && (
-            <button
-              type="button"
-              title={t.deleteComment}
-              aria-label={t.deleteComment}
-              onClick={() => confirm({ message: t.confirmDeleteComment, onConfirm: () => deleteComment(c.id) })}
-              className="ml-auto grid place-items-center min-w-[32px] min-h-[32px] rounded-[9px] border border-line bg-raised text-ink-muted cursor-pointer hover:text-red hover:border-red/40"
-            >
-              <Trash2 size={13} strokeWidth={2} />
-            </button>
-          )}
-        </div>
-      )}
+      <div className="mt-[10px] flex items-center gap-[8px]">
+        {!isReply && (
+          <button
+            type="button"
+            onClick={() => setReplyTarget(state.replyTarget === c.id ? null : c.id)}
+            className="inline-flex items-center gap-[6px] py-[6px] px-[10px] rounded-[9px] border border-line bg-raised text-ink-muted font-sans font-semibold text-[12px] leading-[normal] cursor-pointer hover:text-violet-light hover:border-violet/40"
+          >
+            <MessageCircle size={13} strokeWidth={2} />
+            {t.reply}
+          </button>
+        )}
+        <button
+          type="button"
+          title={t.copyLink}
+          aria-label={t.copyLink}
+          onClick={() => copyLink('thread', th.id, c.id)}
+          className="ml-auto grid place-items-center min-w-[32px] min-h-[32px] rounded-[9px] border border-line bg-raised text-ink-muted cursor-pointer hover:text-ink-body hover:border-line-hover"
+        >
+          <Link size={13} strokeWidth={2} />
+        </button>
+        {c.mine && (
+          <button
+            type="button"
+            title={t.deleteComment}
+            aria-label={t.deleteComment}
+            onClick={() => confirm({ message: t.confirmDeleteComment, onConfirm: () => deleteComment(c.id) })}
+            className="grid place-items-center min-w-[32px] min-h-[32px] rounded-[9px] border border-line bg-raised text-ink-muted cursor-pointer hover:text-red hover:border-red/40"
+          >
+            <Trash2 size={13} strokeWidth={2} />
+          </button>
+        )}
+      </div>
     </div>
   );
 
@@ -225,6 +243,15 @@ export function ThreadModal() {
               {th.archived ? <ArchiveRestore size={16} strokeWidth={2} /> : <Archive size={16} strokeWidth={2} />}
             </button>
           )}
+          <button
+            type="button"
+            title={t.copyLink}
+            aria-label={t.copyLink}
+            onClick={() => copyLink('thread', th.id)}
+            className="grid place-items-center min-w-[40px] min-h-[40px] rounded-[10px] border border-line bg-surface text-ink-muted hover:text-ink-body hover:border-line-hover cursor-pointer"
+          >
+            <Link size={16} strokeWidth={2} />
+          </button>
           <button
             type="button"
             title={t.addPhotos}
