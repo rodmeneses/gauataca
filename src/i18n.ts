@@ -140,6 +140,10 @@ const es = {
   language: 'Idioma',
   // notifications (Web Push)
   notifications: 'Notificaciones',
+  whatsNew: 'Novedades',
+  changelogNew: 'Nuevo',
+  changelogClose: 'Entendido',
+  version: 'Versión',
   notifyEnable: 'Activar notificaciones',
   notifyDisable: 'Desactivar notificaciones',
   notifyEvents: 'Nuevos eventos',
@@ -297,6 +301,10 @@ const en: typeof es = {
   language: 'Language',
   // notifications (Web Push)
   notifications: 'Notifications',
+  whatsNew: "What's new",
+  changelogNew: 'New',
+  changelogClose: 'Got it',
+  version: 'Version',
   notifyEnable: 'Enable notifications',
   notifyDisable: 'Disable notifications',
   notifyEvents: 'New events',

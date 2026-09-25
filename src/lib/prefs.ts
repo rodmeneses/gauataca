@@ -13,6 +13,7 @@ export type ThemePref = 'light' | 'dark' | 'system';
 
 export const THEME_KEY = 'guataca.theme';
 export const LANG_KEY = 'guataca.lang';
+export const SEEN_VERSION_KEY = 'guataca.seenVersion';
 
 function read(key: string): string | null {
   try {
@@ -46,6 +47,15 @@ export function readLangPref(): Lang | null {
 
 export function writeLangPref(v: Lang): void {
   write(LANG_KEY, v);
+}
+
+/** Last app version whose changelog the user has been shown (null = never recorded). */
+export function readSeenVersion(): string | null {
+  return read(SEEN_VERSION_KEY);
+}
+
+export function writeSeenVersion(v: string): void {
+  write(SEEN_VERSION_KEY, v);
 }
 
 /** `true` when the OS currently asks for a dark UI. */

@@ -1,12 +1,13 @@
 /** Mobile "Perfil" tab: appearance + language, sign in/out, the signed-in member card + the full roster. */
-import { LogOut, Pencil } from 'lucide-react';
+import { LogOut, Pencil, Sparkles } from 'lucide-react';
 import { useGuataca } from '../../store';
 import { Pill, Segment } from '../ui';
+import { APP_VERSION } from '../../data/changelog';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { NotificationPrefs } from '../notifications/NotificationPrefs';
 
 export function MobileProfile() {
-  const { t, lang, setLang, signedIn, signOut, openSignIn, me, roleLabel, members, isAdmin, openMember } = useGuataca();
+  const { t, lang, setLang, signedIn, signOut, openSignIn, me, roleLabel, members, isAdmin, openMember, openChangelog } = useGuataca();
   return (
     <div className="flex flex-col gap-4">
       <section className="flex flex-col gap-2.5">
@@ -38,6 +39,16 @@ export function MobileProfile() {
           <NotificationPrefs />
         </section>
       )}
+
+      <button
+        type="button"
+        onClick={() => openChangelog()}
+        className="flex items-center gap-2 min-h-[44px] px-4 rounded-xl border border-line bg-raised text-ink-body font-sans font-semibold text-[13px] cursor-pointer"
+      >
+        <Sparkles size={16} strokeWidth={2} />
+        {t.whatsNew}
+        <span className="ml-auto font-mono text-[12px] text-ink-dim">v{APP_VERSION}</span>
+      </button>
 
       <div className="bg-surface border border-line rounded-2xl p-5 flex flex-col items-center gap-3 text-center">
         <span

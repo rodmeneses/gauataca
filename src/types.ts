@@ -258,7 +258,8 @@ export type Modal =
   | { kind: 'newGear' }
   | { kind: 'onboard' }
   | { kind: 'signin' }
-  | { kind: 'notifications' };
+  | { kind: 'notifications' }
+  | { kind: 'changelog'; since?: string };
 
 export interface ShareSheet {
   title: string;

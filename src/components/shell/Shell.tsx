@@ -2,6 +2,8 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { useGuataca } from '../../store';
 import { useAuth } from '../../lib/auth';
 import { clearDeepLink, readDeepLink } from '../../lib/deepLink';
+import { readSeenVersion, writeSeenVersion } from '../../lib/prefs';
+import { APP_VERSION, entriesSince } from '../../data/changelog';
 import { LoginPage } from '../auth/LoginPage';
 import { DesktopShell } from './DesktopShell';
 import { MobileShell } from '../mobile/MobileShell';
@@ -12,6 +14,7 @@ import { ThreadModal } from '../modals/ThreadModal';
 import { MemberModal } from '../modals/MemberModal';
 import { OnboardModal } from '../modals/OnboardModal';
 import { SignInModal } from '../modals/SignInModal';
+import { ChangelogModal } from '../changelog/ChangelogModal';
 import { NotificationPrefsModal } from '../notifications/NotificationPrefsModal';
 import { ShareSheet } from '../modals/ShareSheet';
 import { CustodyDialog } from '../modals/CustodyDialog';
@@ -53,6 +56,19 @@ export function Shell() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, profile, bs.state.onboardDismissed, modal]);
+
+  // After an update, show what's new once. First-ever visit just records the
+  // version (new members get onboarding, not release notes).
+  const changelogChecked = useRef(false);
+  useEffect(() => {
+    if (changelogChecked.current || !user || bs.loading || modal) return;
+    changelogChecked.current = true;
+    const seen = readSeenVersion();
+    if (seen === APP_VERSION) return;
+    writeSeenVersion(APP_VERSION);
+    if (entriesSince(seen).length > 0) bs.openChangelog(seen ?? undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, bs.loading, modal]);
 
   // Shareable deep link (?event= / ?song= / ?tx=): apply once data is loaded,
   // then strip the params so a refresh doesn't re-open the item.
@@ -131,6 +147,7 @@ export function Shell() {
       {modal?.kind === 'member' && bs.mb && <MemberModal />}
       {modal?.kind === 'signin' && <SignInModal />}
       {modal?.kind === 'notifications' && <NotificationPrefsModal />}
+      {modal?.kind === 'changelog' && <ChangelogModal />}
 
       {bs.sheet && <ShareSheet />}
       {bs.custody && <CustodyDialog />}
