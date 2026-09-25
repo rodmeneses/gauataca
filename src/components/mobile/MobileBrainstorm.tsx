@@ -1,7 +1,7 @@
 /** Mobile "Ideas" tab: active/archived toggle, the brainstorm thread list (reactions, view details). */
 import { BarChart3, Lightbulb, MessageSquare, Pin } from 'lucide-react';
 import { useGuataca } from '../../store';
-import { Pill, Segment } from '../ui';
+import { AddButton, Pill, Segment } from '../ui';
 import { ReactionButtons } from '../ReactionButtons';
 
 export function MobileBrainstorm() {
@@ -18,13 +18,7 @@ export function MobileBrainstorm() {
           {t.brainstorm}
         </h2>
         {isAdmin && (
-          <button
-            type="button"
-            onClick={openNewThread}
-            className="min-h-[44px] px-4 rounded-xl border border-violet/40 bg-[var(--color-tint-violet)] text-violet font-sans font-semibold text-[13px] cursor-pointer"
-          >
-            {t.newThread}
-          </button>
+          <AddButton onClick={openNewThread}>{t.newThread}</AddButton>
         )}
       </div>
       <Segment className="w-full" aria-label={t.brainstorm}>

@@ -2,9 +2,9 @@
  * Calendar view — Upcoming / History pills, "New event" (admin) or "Admins only" lock note
  * (member), and the grid of event cards. Mirrors design lines 253–339.
  */
-import { Clock, Instagram, Lock, MapPin, Mic, Music, Pin, Plus, RefreshCcw } from 'lucide-react';
+import { Clock, Instagram, Lock, MapPin, Mic, Music, Pin, RefreshCcw } from 'lucide-react';
 import { useGuataca } from '@/store';
-import { Badge, Button, Card, Pill, Segment } from '@/components/ui';
+import { AddButton, Badge, Button, Card, Pill, Segment } from '@/components/ui';
 import { PhotoStrip } from '@/components/ui/PhotoStrip';
 
 export function CalendarView() {
@@ -24,10 +24,9 @@ export function CalendarView() {
           </Pill>
         </Segment>
         {isAdmin && (
-          <Button variant="primary" className="ml-auto py-[10px] px-[15px]" onClick={openNewEvent}>
-            <Plus size={15} strokeWidth={2.2} />
+          <AddButton className="ml-auto" onClick={openNewEvent}>
             {t.newEvent}
-          </Button>
+          </AddButton>
         )}
         {isMember && (
           <span className="ml-auto text-[12px] text-ink-muted flex items-center gap-[7px]">
@@ -134,13 +133,9 @@ export function CalendarView() {
 
               {/* actions */}
               <div className="flex gap-2 border-t border-line-soft pt-[13px]">
-                <button
-                  type="button"
-                  onClick={() => openEvent(e.id)}
-                  className="flex-1 p-[9px] rounded-[9px] border border-line bg-raised text-ink-body font-sans font-semibold text-[12.5px] cursor-pointer hover:border-line-hover hover:bg-hover"
-                >
+                <Button variant="ghost" className="flex-1 py-[9px] px-3 text-[12.5px]" onClick={() => openEvent(e.id)}>
                   {t.viewDetails}
-                </button>
+                </Button>
                 {e.isGig && (
                   <button
                     type="button"

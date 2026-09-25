@@ -1,8 +1,8 @@
 /** Mobile "Repertorio" tab: search + genre/sort filters + song cards with streaming links, chart links, takes and a collapsible rehearsal log. */
 import { useEffect } from 'react';
-import { ChevronDown, ChevronRight, Clock, FileText, Gauge, Link, Mic, Pencil, Plus, Youtube } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clock, FileText, Gauge, Link, Mic, Pencil, Youtube } from 'lucide-react';
 import { useGuataca } from '../../store';
-import { AppleMusicIcon, Pill, Segment, SpotifyIcon } from '../ui';
+import { AddButton, AppleMusicIcon, Pill, Segment, SpotifyIcon } from '../ui';
 import type { LinkKind } from '../../types';
 
 const rowLink = 'flex items-center gap-2 min-h-[44px] py-2 px-3 rounded-lg border border-line bg-raised text-ink-body no-underline font-sans font-medium text-[14px]';
@@ -37,15 +37,7 @@ export function MobileRepertoire() {
           className="w-full min-h-[48px] py-0 px-4 rounded-xl border border-line bg-raised text-ink-base font-sans font-normal text-[16px] outline-none"
         />
         {isAdmin && (
-          <button
-            type="button"
-            onClick={openNewSong}
-            className="flex items-center justify-center gap-2 w-full min-h-[44px] px-3 rounded-xl border-none text-white font-sans font-semibold text-[14px] cursor-pointer"
-            style={{ background: 'linear-gradient(100deg,var(--color-violet),var(--color-fuchsia))' }}
-          >
-            <Plus size={16} strokeWidth={2.2} />
-            {t.newSong}
-          </button>
+          <AddButton block onClick={openNewSong}>{t.newSong}</AddButton>
         )}
       </div>
 
