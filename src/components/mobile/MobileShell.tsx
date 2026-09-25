@@ -6,8 +6,10 @@
  * 392px phone-preview frame with the dev controls.
  */
 import { useEffect, useState, type ReactNode } from 'react';
-import { Calendar, Lightbulb, Monitor, Music, Receipt, Search, Smartphone, User, WifiHigh } from 'lucide-react';
+import { Calendar, Lightbulb, Monitor, Music, Receipt, RefreshCw, Search, Smartphone, User, WifiHigh } from 'lucide-react';
 import { useGuataca } from '../../store';
+import { useData } from '../../lib/data';
+import { usePullToRefresh } from './usePullToRefresh';
 import { BrandMark, Pill, Segment } from '../ui';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import type { MobileTab } from '../../types';
@@ -61,6 +63,8 @@ function MobileApp({ banner }: { banner?: ReactNode }) {
   const { t, bandName, balanceStr, balanceNeg, state, setMobileTab, openSearch } = useGuataca();
   const tab: MobileTab = state.mobileTab;
   const keyboardOpen = useKeyboardOpen();
+  const { reload } = useData();
+  const { ref, pull, dragging, refreshing, ready } = usePullToRefresh(() => reload({ silent: true }));
 
   const px = 'pl-[max(16px,env(safe-area-inset-left))] pr-[max(16px,env(safe-area-inset-right))]';
 
@@ -92,12 +96,29 @@ function MobileApp({ banner }: { banner?: ReactNode }) {
       </div>
 
       {/* scroll area */}
-      <div className={`flex-1 overflow-y-auto overscroll-contain pt-4 pb-6 ${px}`}>
-        {tab === 'agenda' && <MobileAgenda />}
-        {tab === 'repertoire' && <MobileRepertoire />}
-        {tab === 'fund' && <MobileFund />}
-        {tab === 'brainstorm' && <MobileBrainstorm />}
-        {tab === 'profile' && <MobileProfile />}
+      <div ref={ref} className={`flex-1 overflow-y-auto overscroll-contain pt-4 pb-6 ${px}`}>
+        <div
+          className="relative"
+          style={{ transform: pull ? `translateY(${pull}px)` : undefined, transition: dragging ? 'none' : 'transform .2s ease-out' }}
+        >
+          <span
+            aria-hidden="true"
+            className="absolute left-1/2 -top-11 -ml-4 grid place-items-center w-8 h-8 rounded-full bg-raised border border-line text-ink-muted pointer-events-none"
+            style={{ opacity: Math.min(pull / 48, 1) }}
+          >
+            <RefreshCw
+              size={16}
+              strokeWidth={2.2}
+              className={refreshing ? 'animate-spin' : ''}
+              style={refreshing ? undefined : { transform: `rotate(${pull * 4}deg)`, color: ready ? 'var(--color-emerald)' : undefined }}
+            />
+          </span>
+          {tab === 'agenda' && <MobileAgenda />}
+          {tab === 'repertoire' && <MobileRepertoire />}
+          {tab === 'fund' && <MobileFund />}
+          {tab === 'brainstorm' && <MobileBrainstorm />}
+          {tab === 'profile' && <MobileProfile />}
+        </div>
       </div>
 
       {/* bottom tab bar */}

@@ -6,8 +6,8 @@
  * log entries link to their event.
  */
 import { useEffect } from 'react';
-import { ChevronDown, ChevronRight, Clock, FileText, Gauge, Link, Mic, Pencil, Plus, Search, Youtube } from 'lucide-react';
-import { AppleMusicIcon, Pill, Segment, SpotifyIcon } from '@/components/ui';
+import { ChevronDown, ChevronRight, Clock, FileText, Gauge, Link, Mic, Pencil, Search, Youtube } from 'lucide-react';
+import { AddButton, AppleMusicIcon, Pill, Segment, SpotifyIcon } from '@/components/ui';
 import { useGuataca } from '@/store';
 import type { LinkKind } from '@/types';
 
@@ -62,14 +62,7 @@ export function Repertoire() {
           </Pill>
         </Segment>
         {isAdmin && (
-          <button
-            type="button"
-            onClick={openNewSong}
-            className="inline-flex items-center gap-2 p-[12px_16px] rounded-[11px] border border-emerald/40 bg-[var(--color-tint-emerald)] hover:bg-[var(--color-tint-emerald)] text-emerald-light font-sans font-semibold text-[13px] cursor-pointer whitespace-nowrap"
-          >
-            <Plus size={15} strokeWidth={2.2} />
-            {t.newSong}
-          </button>
+          <AddButton onClick={openNewSong}>{t.newSong}</AddButton>
         )}
       </div>
 

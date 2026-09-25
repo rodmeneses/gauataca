@@ -3,8 +3,8 @@
  * equipment inventory grid (design lines 454–551).
  */
 import { useEffect, useState } from 'react';
-import { ArrowLeftRight, ExternalLink, Link, Package, Pencil, Plus, Trash2 } from 'lucide-react';
-import { Badge, Button, Select, useConfirm } from '@/components/ui';
+import { ArrowLeftRight, ExternalLink, Link, Package, Pencil, Trash2 } from 'lucide-react';
+import { AddButton, Badge, Select, useConfirm } from '@/components/ui';
 import { useGuataca } from '@/store';
 import type { TxDate, TxFilter } from '@/types';
 
@@ -57,10 +57,9 @@ export function Ledger() {
           <h2 className="m-0 font-display font-semibold text-[15px] leading-none text-ink">{t.ledger}</h2>
           <span className="text-[12px] text-ink-muted whitespace-nowrap">— {t.subLedger}</span>
           {isAdmin && (
-            <Button variant="primary" className="ml-auto py-[10px] px-[15px]" onClick={openNewTx}>
-              <Plus size={15} strokeWidth={2.2} />
+            <AddButton className="ml-auto" onClick={openNewTx}>
               {t.newTx}
-            </Button>
+            </AddButton>
           )}
         </div>
         <div className="flex items-center gap-3 mb-[13px]">
@@ -202,10 +201,9 @@ export function Ledger() {
           <h2 className="m-0 font-display font-semibold text-[15px] leading-none text-ink">{t.gear}</h2>
           <span className="font-mono font-semibold text-[11.5px] text-ink-meta bg-raised border border-line py-1 px-[10px] rounded-[20px]">{gearValue}</span>
           {isAdmin && (
-            <Button variant="primary" className="ml-auto py-[10px] px-[15px]" onClick={openNewGear}>
-              <Plus size={15} strokeWidth={2.2} />
+            <AddButton className="ml-auto" onClick={openNewGear}>
               {t.newGear}
-            </Button>
+            </AddButton>
           )}
         </div>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-[14px]">

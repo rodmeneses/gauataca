@@ -1,7 +1,7 @@
 /** Mobile "Agenda" tab: upcoming/history toggle, "New event" (admin), and event cards. */
-import { Instagram, Pin, Plus } from 'lucide-react';
+import { Instagram, Pin } from 'lucide-react';
 import { useGuataca } from '../../store';
-import { Pill, Segment } from '../ui';
+import { AddButton, Pill, Segment } from '../ui';
 import { PhotoStrip } from '../ui/PhotoStrip';
 
 export function MobileAgenda() {
@@ -19,15 +19,7 @@ export function MobileAgenda() {
         </Pill>
       </Segment>
       {isAdmin && (
-        <button
-          type="button"
-          onClick={openNewEvent}
-          className="flex items-center justify-center gap-2 w-full min-h-[44px] px-3 rounded-xl border-none text-white font-sans font-semibold text-[14px] cursor-pointer"
-          style={{ background: 'linear-gradient(100deg,var(--color-violet),var(--color-fuchsia))' }}
-        >
-          <Plus size={16} strokeWidth={2.2} />
-          {t.newEvent}
-        </button>
+        <AddButton block onClick={openNewEvent}>{t.newEvent}</AddButton>
       )}
 
       {calList.map((e) => (

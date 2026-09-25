@@ -3,7 +3,7 @@
  * Views compose these plus Tailwind utilities (arbitrary values allowed, e.g. text-[13.5px]).
  */
 import { useEffect, useRef, type ButtonHTMLAttributes, type CSSProperties, type HTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
-import { X } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { useMediaQuery } from '../../lib/useMediaQuery';
 
 /** Lock body scroll (ref-counted) + trap focus inside `ref` while a dialog is open. */
@@ -74,6 +74,17 @@ export function Button({ variant = 'ghost', className, children, ...rest }: Butt
     <button type="button" className={cx('btn', `btn-${variant}`, className)} {...rest}>
       {children}
     </button>
+  );
+}
+
+/* -------------------------------------------------------------- AddButton */
+/** The one "create" action (new event / topic / song / transaction / gear): emerald primary + Plus. `block` = full width (mobile). */
+export function AddButton({ block, className, children, ...rest }: Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'> & { block?: boolean }) {
+  return (
+    <Button variant="primary" className={cx('py-[10px] px-[15px] whitespace-nowrap', block && 'w-full', className)} {...rest}>
+      <Plus size={15} strokeWidth={2.2} />
+      {children}
+    </Button>
   );
 }
 

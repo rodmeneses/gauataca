@@ -3,9 +3,9 @@
  * card: like/dislike reactions, title, body, author/date,
  * comment count, and a "view details" button (pin/archive/convert live in the thread modal).
  */
-import { BarChart3, Lightbulb, MessageSquare, Pin } from 'lucide-react';
+import { Lightbulb, MessageSquare } from 'lucide-react';
 import { useGuataca } from '@/store';
-import { Button, Pill, Segment } from '@/components/ui';
+import { AddButton, Badge, Button, Card, Pill, Segment } from '@/components/ui';
 import { ReactionButtons } from '@/components/ReactionButtons';
 
 export function Brainstorm() {
@@ -31,19 +31,17 @@ export function Brainstorm() {
             </Pill>
           </Segment>
           {isAdmin && (
-            <Button variant="brand" onClick={openNewThread} className="py-[9px] px-[14px] rounded-[10px] text-[12.5px]">
-              {t.newThread}
-            </Button>
+            <AddButton onClick={openNewThread}>{t.newThread}</AddButton>
           )}
         </div>
       </div>
       {forumList.length === 0 && (
-        <p className="m-0 font-sans font-normal text-[13.5px] text-ink-meta bg-surface border border-line rounded-[14px] p-[18px]">
+        <Card className="p-[18px] font-sans font-normal text-[13.5px] text-ink-meta">
           {tab === 'archived' ? t.noArchivedIdeas : t.noResults}
-        </p>
+        </Card>
       )}
       {forumList.map((b) => (
-        <article key={b.id} className="bg-surface border border-line rounded-[14px] p-[18px] flex gap-4">
+        <Card key={b.id} as="article" className="p-[18px] flex gap-4">
           <ReactionButtons
             likes={b.likes}
             dislikes={b.dislikes}
@@ -66,33 +64,23 @@ export function Brainstorm() {
               </span>
               <span className="text-[12px] text-ink-dim">{b.dateStr}</span>
               {b.pinned && (
-                <span className="inline-flex items-center gap-[5px] py-[4px] px-[9px] rounded-[7px] bg-[var(--color-tint-amber)] font-sans font-semibold text-[11px] leading-[normal]" style={{ color: 'var(--color-amber)' }}>
-                  <Pin size={11} strokeWidth={2.2} fill="currentColor" />
-                  {t.pinned}
-                </span>
+                <Badge color="var(--color-amber)">{t.pinned}</Badge>
               )}
               <span className="flex items-center gap-[7px] text-ink-muted font-sans font-medium text-[12px] whitespace-nowrap">
                 <MessageSquare size={14} strokeWidth={1.9} />
                 {b.commentCount} {t.comments}
               </span>
               {b.poll && (
-                <span className="inline-flex items-center gap-[6px] py-[4px] px-[9px] rounded-[7px] bg-[var(--color-tint-violet)] text-violet-lighter font-sans font-semibold text-[11px] leading-[normal]">
-                  <BarChart3 size={12} strokeWidth={2} />
-                  {b.poll.total} {t.votes}
-                </span>
+                <Badge color="var(--color-violet-light)">{b.poll.total} {t.votes}</Badge>
               )}
             </div>
             <div className="flex gap-2 border-t border-line-soft pt-[13px] mt-[14px]">
-              <button
-                type="button"
-                onClick={() => openThread(b.id)}
-                className="flex-1 p-[9px] rounded-[9px] border border-line bg-raised text-ink-body font-sans font-semibold text-[12.5px] cursor-pointer hover:border-line-hover hover:bg-hover"
-              >
+              <Button variant="ghost" className="flex-1 py-[9px] px-3 text-[12.5px]" onClick={() => openThread(b.id)}>
                 {t.viewDetails}
-              </button>
+              </Button>
             </div>
           </div>
-        </article>
+        </Card>
       ))}
     </div>
   );

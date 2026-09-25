@@ -1,8 +1,8 @@
 /** Mobile "Fondo" tab: pool balance hero + "New movement" (admin) + in/out & date filters + transactions, contributions and the gear inventory. */
 import { useEffect, useState } from 'react';
-import { ArrowLeftRight, ExternalLink, Link, Package, Pencil, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeftRight, ExternalLink, Link, Package, Pencil, Trash2 } from 'lucide-react';
 import { useGuataca } from '../../store';
-import { useConfirm } from '../ui';
+import { AddButton, useConfirm } from '../ui';
 import type { TxDate, TxFilter } from '../../types';
 
 const SECTION = 'font-display font-semibold text-[12px] tracking-[.08em] uppercase text-ink-muted';
@@ -34,15 +34,7 @@ export function MobileFund() {
           </div>
         </div>
         {isAdmin && (
-          <button
-            type="button"
-            onClick={openNewTx}
-            className="flex items-center justify-center gap-2 w-full min-h-[48px] rounded-xl border-none text-white font-sans font-semibold text-[14px] cursor-pointer"
-            style={{ background: 'linear-gradient(100deg,var(--color-violet),var(--color-fuchsia))' }}
-          >
-            <Plus size={16} strokeWidth={2.2} />
-            {t.newTx}
-          </button>
+          <AddButton block onClick={openNewTx}>{t.newTx}</AddButton>
         )}
 
         {/* filters */}
@@ -155,14 +147,7 @@ export function MobileFund() {
           <div className={SECTION}>{t.gear}</div>
           <span className="font-mono font-semibold text-[12px] text-ink-muted bg-raised border border-line py-1 px-2.5 rounded-full">{gearValue}</span>
           {isAdmin && (
-            <button
-              type="button"
-              onClick={openNewGear}
-              className="flex items-center gap-1.5 ml-auto min-h-[44px] py-0 px-3 rounded-lg border border-emerald/40 bg-[var(--color-tint-emerald)] text-emerald font-sans font-semibold text-[13px] cursor-pointer"
-            >
-              <Plus size={15} strokeWidth={2.2} />
-              {t.newGear}
-            </button>
+            <AddButton className="ml-auto" onClick={openNewGear}>{t.newGear}</AddButton>
           )}
         </div>
         {gear.map((g) => (

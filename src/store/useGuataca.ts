@@ -262,6 +262,8 @@ export interface Guataca {
   openSignIn: () => void;
   /** Open the Web Push notification preferences modal (desktop). */
   openNotifications: () => void;
+  /** Open the changelog; with `since`, only entries newer than that version are marked new. */
+  openChangelog: (since?: string) => void;
   signOut: () => Promise<void>;
   closeModal: () => void;
   /** Instagram flow: builds caption and opens the bottom sheet. */
@@ -738,6 +740,7 @@ export function useGuataca(): Guataca {
       setTxDate: (d) => set({ txDate: d }),
       openSignIn: () => set({ modal: { kind: 'signin' } }),
       openNotifications: () => set({ modal: { kind: 'notifications' } }),
+      openChangelog: (since) => set({ modal: { kind: 'changelog', since } }),
       signOut,
       closeModal: () => set({ modal: null }),
       openShare,

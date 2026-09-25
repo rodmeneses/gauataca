@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
-import { Bell, Calendar, LayoutDashboard, Lightbulb, Music, Palette, Receipt, Users } from 'lucide-react';
+import { Bell, Calendar, LayoutDashboard, Lightbulb, Music, Palette, Receipt, Sparkles, Users } from 'lucide-react';
 import { useGuataca } from '../../store';
 import type { View } from '../../types';
+import { APP_VERSION } from '../../data/changelog';
 import { BrandMark, cx } from '../ui';
 
 /**
@@ -33,7 +34,7 @@ function NavItem({ active, onClick, icon, label, badge }: { active: boolean; onC
 
 /** Sticky sidebar: 252px with labels on desktop, a 64px icon rail on tablet. */
 export function Sidebar() {
-  const { t, view, bandName, statUpcoming, statSongs, balanceStr, balanceNeg, me, roleLabel, go, openNotifications } = useGuataca();
+  const { t, view, bandName, statUpcoming, statSongs, balanceStr, balanceNeg, me, roleLabel, go, openNotifications, openChangelog } = useGuataca();
   const is = (v: View) => view === v;
   const upBadge = <span className="font-mono font-semibold text-[11px] leading-normal text-emerald bg-[var(--color-tint-emerald)] p-[2px_7px] rounded-[20px]">{statUpcoming}</span>;
   const songBadge = <span className="font-mono font-semibold text-[11px] leading-normal text-ink-muted">{statSongs}</span>;
@@ -80,6 +81,17 @@ export function Sidebar() {
         >
           <Bell size={16} strokeWidth={1.9} className="flex-none text-ink-muted" />
           <span className="hidden lg:inline font-sans font-medium text-[12.5px] text-ink-muted">{t.notifications}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => openChangelog()}
+          title={t.whatsNew}
+          aria-label={t.whatsNew}
+          className="flex items-center gap-[9px] w-full min-h-[44px] rounded-[9px] border border-line bg-surface px-[10px] justify-center lg:justify-start cursor-pointer hover:border-emerald/40 transition-colors"
+        >
+          <Sparkles size={16} strokeWidth={1.9} className="flex-none text-ink-muted" />
+          <span className="hidden lg:inline font-sans font-medium text-[12.5px] text-ink-muted">{t.whatsNew}</span>
+          <span className="hidden lg:inline ml-auto font-mono text-[11px] text-ink-dim">v{APP_VERSION}</span>
         </button>
         <div className="flex items-center gap-[9px] p-[2px_2px] justify-center lg:justify-start">
           <div className="avatar w-7 h-7 rounded-[9px] text-violet-light flex-none">{me.initial}</div>
