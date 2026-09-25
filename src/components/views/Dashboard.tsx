@@ -2,7 +2,7 @@
  * Dashboard view — stat cards, upcoming events, stale songs and recent ledger movements.
  * Markup mirrors the design's `isDash` block (Guataca.dc.html lines 140–251).
  */
-import { ExternalLink, Instagram, TriangleAlert } from 'lucide-react';
+import { ExternalLink, TriangleAlert } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { Badge, Eyebrow } from '@/components/ui';
 
@@ -13,7 +13,7 @@ export function Dashboard() {
     nextEvent,
     statSongs, statStale, staleHint,
     dashUpcoming, staleSongs, recentTx, txCount,
-    go, openEvent, openShare, toggleSong,
+    go, openEvent, toggleSong,
   } = useGuataca();
 
   const staleTop = staleSongs.slice(0, 5);
@@ -89,16 +89,6 @@ export function Dashboard() {
                   </div>
                   <div className="text-[12px] text-ink-muted mt-[7px]">{e.timeStr}{e.hoursStr ? ' · ' + e.hoursStr : ''} · {e.venue} · {e.setlistCount} {t.setlist}</div>
                 </div>
-                {e.isGig && (
-                  <button
-                    type="button"
-                    onClick={(ev) => { ev.stopPropagation(); openShare(e.id); }}
-                    title={t.prepIg}
-                    className="grid place-items-center w-[34px] h-[34px] rounded-[10px] border border-violet/40 bg-[var(--color-tint-violet)] text-violet-lighter cursor-pointer flex-none hover:bg-[var(--color-tint-violet)]"
-                  >
-                    <Instagram size={16} strokeWidth={1.9} />
-                  </button>
-                )}
               </div>
             ))}
           </div>

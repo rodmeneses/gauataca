@@ -2,13 +2,13 @@
  * Calendar view — Upcoming / History pills, "New event" (admin) or "Admins only" lock note
  * (member), and the grid of event cards. Mirrors design lines 253–339.
  */
-import { Clock, Instagram, Lock, MapPin, Mic, Music, Pin, RefreshCcw } from 'lucide-react';
+import { Clock, Lock, MapPin, Mic, Music, Pin, RefreshCcw } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { AddButton, Badge, Button, Card, Pill, Segment } from '@/components/ui';
 import { PhotoStrip } from '@/components/ui/PhotoStrip';
 
 export function CalendarView() {
-  const { t, state, isAdmin, isMember, calList, setCalTab, openNewEvent, openEvent, openShare, toggleEventPin } = useGuataca();
+  const { t, state, isAdmin, isMember, calList, setCalTab, openNewEvent, openEvent, toggleEventPin } = useGuataca();
   const tab = state.calTab;
 
   return (
@@ -136,16 +136,6 @@ export function CalendarView() {
                 <Button variant="ghost" className="flex-1 py-[9px] px-3 text-[12.5px]" onClick={() => openEvent(e.id)}>
                   {t.viewDetails}
                 </Button>
-                {e.isGig && (
-                  <button
-                    type="button"
-                    onClick={() => openShare(e.id)}
-                    className="flex items-center gap-[7px] py-[9px] px-3 rounded-[9px] border border-violet/40 bg-[var(--color-tint-violet)] text-violet-lighter font-sans font-semibold text-[12.5px] cursor-pointer hover:bg-[var(--color-tint-violet)]"
-                  >
-                    <Instagram size={14} strokeWidth={1.9} />
-                    Instagram
-                  </button>
-                )}
               </div>
             </div>
           </Card>

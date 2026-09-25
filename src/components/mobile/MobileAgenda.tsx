@@ -1,11 +1,11 @@
 /** Mobile "Agenda" tab: upcoming/history toggle, "New event" (admin), and event cards. */
-import { Instagram, Pin } from 'lucide-react';
+import { Pin } from 'lucide-react';
 import { useGuataca } from '../../store';
 import { AddButton, Pill, Segment } from '../ui';
 import { PhotoStrip } from '../ui/PhotoStrip';
 
 export function MobileAgenda() {
-  const { t, isAdmin, state, calList, setCalTab, openNewEvent, openShare, openEvent, toggleEventPin } = useGuataca();
+  const { t, isAdmin, state, calList, setCalTab, openNewEvent, openEvent, toggleEventPin } = useGuataca();
   const tab = state.calTab;
 
   return (
@@ -72,17 +72,6 @@ export function MobileAgenda() {
             <div>{e.venue}</div>
           </div>
           <PhotoStrip photos={e.photos} />
-          {e.isGig && (
-            <button
-              type="button"
-              onClick={() => openShare(e.id)}
-              className="flex items-center justify-center gap-2 w-full min-h-[48px] rounded-xl border-none text-white font-sans font-semibold text-[14px] cursor-pointer whitespace-nowrap"
-              style={{ background: 'linear-gradient(100deg,var(--color-violet),var(--color-fuchsia))' }}
-            >
-              <Instagram size={18} strokeWidth={2} />
-              {t.prepIg}
-            </button>
-          )}
           <button
             type="button"
             onClick={() => openEvent(e.id)}
