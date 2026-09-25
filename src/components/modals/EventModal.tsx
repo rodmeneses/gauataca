@@ -119,6 +119,16 @@ export function EventModal() {
         </div>
       </div>
 
+      {/* ---- Instagram prep (gigs) */}
+      {ev.isGig && (
+        <div className="py-4 px-6 border-b border-line-soft">
+          <Button variant="brand" onClick={() => openShare(ev.id)} className="w-full justify-center py-[12px] px-4 rounded-[11px]">
+            <Instagram size={16} strokeWidth={1.9} />
+            {t.prepIg}
+          </Button>
+        </div>
+      )}
+
       {/* ---- attendance / RSVP (code-first addition, see docs/design.md §5.4) */}
       {ev.hasAttendance && (
         <div className="py-5 px-6 border-b border-line-soft">
@@ -455,7 +465,7 @@ export function EventModal() {
       )}
 
       {/* ---- footer */}
-      <div className="py-[18px] px-6 flex gap-[10px] justify-end">
+      <div className="py-[18px] px-6 flex flex-wrap gap-[10px] justify-end">
         {isAdmin && (
           <Button variant="surface" onClick={() => openEditEvent(ev.id)} className="py-[11px] px-4 rounded-[11px]">
             <Pencil size={15} strokeWidth={1.9} />
@@ -465,12 +475,6 @@ export function EventModal() {
         {ev.canSettle && (
           <Button variant="primary" onClick={() => openSettle(ev.id)} className="py-[11px] px-4 rounded-[11px]">
             {t.settle}
-          </Button>
-        )}
-        {ev.isGig && (
-          <Button variant="brand" onClick={() => openShare(ev.id)} className="py-[11px] px-4 rounded-[11px]">
-            <Instagram size={15} strokeWidth={1.9} />
-            {t.prepIg}
           </Button>
         )}
         {!ev.past && !ev.cancelled && (
