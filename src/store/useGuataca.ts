@@ -219,13 +219,13 @@ export interface Guataca {
   /** Clear the pending scroll-to-movement request (called by the ledger views after scrolling). */
   clearScrollToTx: () => void;
   /** Copy a shareable deep link for an item (event / song / movement) to the clipboard. */
-  copyLink: (kind: 'event' | 'song' | 'tx', id: string) => void;
+  copyLink: (kind: 'event' | 'song' | 'tx' | 'thread', id: string, commentId?: number) => void;
   setQ: (q: string) => void;
   setGenre: (g: GenreId | 'all') => void;
   toggleStale: () => void;
   setSongSort: (s: SongSort) => void;
   openEvent: (id: string) => void;
-  openThread: (id: string) => void;
+  openThread: (id: string, commentId?: number) => void;
   openMember: (id: string, edit?: boolean) => void;
   openNewEvent: () => void;
   openEditEvent: (id: string) => void;
@@ -663,8 +663,8 @@ export function useGuataca(): Guataca {
       clearScrollToSong: () => set({ scrollToSong: null }),
       goToTx: (id) => set({ view: 'ledger', mobileTab: 'fund', scrollToTx: id, modal: null, palette: false }),
       clearScrollToTx: () => set({ scrollToTx: null }),
-      copyLink: (kind, id) => {
-        if (navigator.clipboard) navigator.clipboard.writeText(itemUrl(kind, id)).catch(() => {});
+      copyLink: (kind, id, commentId) => {
+        if (navigator.clipboard) navigator.clipboard.writeText(itemUrl(kind, id, commentId)).catch(() => {});
         toast(t.linkCopied);
       },
       setQ: (v) => set({ q: v }),
@@ -672,7 +672,7 @@ export function useGuataca(): Guataca {
       toggleStale: () => set((s) => ({ staleOnly: !s.staleOnly })),
       setSongSort: (s) => set({ songSort: s }),
       openEvent: (id) => set({ modal: { kind: 'event', id } }),
-      openThread: (id) => set({ modal: { kind: 'thread', id } }),
+      openThread: (id, commentId) => set({ modal: { kind: 'thread', id, commentId } }),
       openMember: (id, edit) => set({ modal: { kind: 'member', id, edit } }),
       openNewEvent: () => set({ modal: { kind: 'newEvent' }, form: {} }),
       openEditEvent: (id) => {

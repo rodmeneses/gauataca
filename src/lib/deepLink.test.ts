@@ -36,6 +36,28 @@ describe('readDeepLink', () => {
   });
 });
 
+describe('thread comment links', () => {
+  it('reads the comment id alongside a thread', () => {
+    setUrl('/?thread=t1&comment=42');
+    expect(readDeepLink()).toEqual({ kind: 'thread', id: 't1', commentId: 42 });
+  });
+
+  it('ignores a garbage comment id', () => {
+    setUrl('/?thread=t1&comment=abc');
+    expect(readDeepLink()).toEqual({ kind: 'thread', id: 't1' });
+  });
+
+  it('clears the comment param too', () => {
+    setUrl('/?thread=t1&comment=42&foo=bar');
+    clearDeepLink();
+    expect(window.location.search).toBe('?foo=bar');
+  });
+
+  it('builds a comment url', () => {
+    expect(itemUrl('thread', 't1', 42)).toBe(`${window.location.origin}${window.location.pathname}?thread=t1&comment=42`);
+  });
+});
+
 describe('clearDeepLink', () => {
   it('removes the shareable params but keeps others', () => {
     setUrl('/?foo=bar&event=e1');
