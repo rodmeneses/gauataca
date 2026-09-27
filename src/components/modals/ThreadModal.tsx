@@ -146,9 +146,9 @@ export function ThreadModal() {
           <ReactionButtons likes={c.likes} dislikes={c.dislikes} likedBy={c.likedBy} dislikedBy={c.dislikedBy} my={c.myReaction} onPick={(k) => setCommentReaction(c.id, k)} />
         </span>
       </div>
-      <p className="m-0 mt-[10px] text-[13px] text-ink-body leading-[1.65]">
+      <div className="mt-[10px] text-[13px] text-ink-body leading-[1.65]">
         <RichText text={c.text} />
-      </p>
+      </div>
       <RefChips refs={c.refs} onOpen={openRef} />
       <div className="mt-[10px]">
         <PhotoStrip photos={c.media} />
@@ -277,9 +277,9 @@ export function ThreadModal() {
 
       {/* body */}
       <div className="p-[20px_24px] border-b border-line-soft">
-        <p className="m-0 font-sans text-[14px] leading-[1.7] text-ink-body">
+        <div className="font-sans text-[14px] leading-[1.7] text-ink-body">
           <RichText text={th.body} />
-        </p>
+        </div>
         <RefChips refs={th.refs} onOpen={openRef} />
         <div className="mt-[12px]">
           <PhotoStrip photos={th.media} />
