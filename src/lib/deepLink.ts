@@ -29,6 +29,34 @@ export function readDeepLink(): DeepLink | null {
   return null;
 }
 
+const PENDING_KEY = 'guataca:pendingDeepLink';
+
+/**
+ * Stash a deep link across a full-page round trip that would otherwise lose it
+ * (Google's OAuth redirect always comes back to a bare origin — see
+ * `signInWithGoogle` in `src/lib/auth.tsx`). Consumed once by `readDeepLink`'s
+ * sessionStorage fallback, or left to expire with the tab.
+ */
+export function savePendingDeepLink(dl: DeepLink): void {
+  try {
+    sessionStorage.setItem(PENDING_KEY, JSON.stringify(dl));
+  } catch {
+    // Storage disabled/full — the link is simply not recoverable across the redirect.
+  }
+}
+
+/** Read and clear the deep link saved by `savePendingDeepLink`, if any. */
+export function takePendingDeepLink(): DeepLink | null {
+  try {
+    const raw = sessionStorage.getItem(PENDING_KEY);
+    if (!raw) return null;
+    sessionStorage.removeItem(PENDING_KEY);
+    return JSON.parse(raw) as DeepLink;
+  } catch {
+    return null;
+  }
+}
+
 /** Remove the shareable-item params, preserving any other query params. */
 export function clearDeepLink(): void {
   const q = new URLSearchParams(window.location.search);

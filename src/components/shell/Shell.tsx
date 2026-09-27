@@ -1,7 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { useGuataca } from '../../store';
 import { useAuth } from '../../lib/auth';
-import { clearDeepLink, readDeepLink } from '../../lib/deepLink';
+import { clearDeepLink, readDeepLink, takePendingDeepLink } from '../../lib/deepLink';
 import { readSeenVersion, writeSeenVersion } from '../../lib/prefs';
 import { APP_VERSION, entriesSince } from '../../data/changelog';
 import { LoginPage } from '../auth/LoginPage';
@@ -71,18 +71,22 @@ export function Shell() {
   }, [user, bs.loading, modal]);
 
   // Shareable deep link (?event= / ?song= / ?tx= / ?thread=[&comment=]): apply once data is loaded,
-  // then strip the params so a refresh doesn't re-open the item.
+  // then strip the params so a refresh doesn't re-open the item. Falls back to a
+  // link stashed in sessionStorage (see savePendingDeepLink) for round trips that
+  // drop the URL, e.g. the Google OAuth redirect in src/lib/auth.tsx.
   const deepLinkApplied = useRef(false);
   useEffect(() => {
     if (deepLinkApplied.current || bs.loading) return;
     deepLinkApplied.current = true;
     const dl = readDeepLink();
-    if (!dl) return;
-    clearDeepLink();
-    if (dl.kind === 'event') bs.openEvent(dl.id);
-    else if (dl.kind === 'song') bs.goToSong(dl.id);
-    else if (dl.kind === 'tx') bs.goToTx(dl.id);
-    else bs.openThread(dl.id, dl.commentId);
+    if (dl) clearDeepLink();
+    const target = dl ?? takePendingDeepLink();
+    if (!target) return;
+    const { kind, id, commentId } = target;
+    if (kind === 'event') bs.openEvent(id);
+    else if (kind === 'song') bs.goToSong(id);
+    else if (kind === 'tx') bs.goToTx(id);
+    else bs.openThread(id, commentId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bs.loading]);
 
