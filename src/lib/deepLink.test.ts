@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { readDeepLink, clearDeepLink, itemUrl } from './deepLink';
+import { readDeepLink, clearDeepLink, itemUrl, savePendingDeepLink, takePendingDeepLink } from './deepLink';
 
 function setUrl(url: string) {
   window.history.replaceState(null, '', url);
@@ -7,6 +7,7 @@ function setUrl(url: string) {
 
 beforeEach(() => {
   setUrl('/');
+  sessionStorage.clear();
 });
 
 describe('readDeepLink', () => {
@@ -76,5 +77,27 @@ describe('itemUrl', () => {
   it('builds an absolute shareable url with the id encoded', () => {
     const url = itemUrl('song', 'a b/c');
     expect(url).toBe(`${window.location.origin}${window.location.pathname}?song=a%20b%2Fc`);
+  });
+});
+
+describe('pending deep link (sessionStorage round trip)', () => {
+  it('returns null when nothing was saved', () => {
+    expect(takePendingDeepLink()).toBeNull();
+  });
+
+  it('round-trips a saved deep link and clears it after reading', () => {
+    savePendingDeepLink({ kind: 'event', id: 'e1' });
+    expect(takePendingDeepLink()).toEqual({ kind: 'event', id: 'e1' });
+    expect(takePendingDeepLink()).toBeNull();
+  });
+
+  it('round-trips a thread link with a comment id', () => {
+    savePendingDeepLink({ kind: 'thread', id: 't1', commentId: 42 });
+    expect(takePendingDeepLink()).toEqual({ kind: 'thread', id: 't1', commentId: 42 });
+  });
+
+  it('returns null for corrupted stored JSON instead of throwing', () => {
+    sessionStorage.setItem('guataca:pendingDeepLink', '{not json');
+    expect(takePendingDeepLink()).toBeNull();
   });
 });

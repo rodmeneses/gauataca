@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { supabase } from './supabase';
+import { readDeepLink, savePendingDeepLink } from './deepLink';
 import type { Profile } from '../types';
 
 interface AuthContextValue {
@@ -103,6 +104,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signInWithGoogle = useCallback(async () => {
+    // Google's redirect always lands back on a bare origin (no path/query), so
+    // stash any pending deep link now — Shell re-reads it once signed in.
+    const dl = readDeepLink();
+    if (dl) savePendingDeepLink(dl);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.origin },
