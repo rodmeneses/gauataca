@@ -5,7 +5,7 @@ import type {
 } from '../types';
 import {
   L, memberById, songVm, takeVm, rsvpLabel, eventVm, txVm, contributionVm, gearVm,
-  threadVm, memberVm, feedbackVm, igCaption, tint, type Ctx,
+  threadVm, threadPollVm, memberVm, feedbackVm, igCaption, tint, type Ctx,
 } from './vm';
 
 const admin: Member = {
@@ -179,8 +179,10 @@ describe('eventVm', () => {
     const e = baseEvent({
       id: 'e1', date: '2026-09-01', settled: true, setlist: ['s1'], fee: 600, cost: 50,
       media: [{ id: 1, kind: 'photo', label: { es: '', en: '' }, url: 'https://img/1.jpg' }],
+      hours: 2.5,
     });
     const vm = eventVm(e, songs, baseCtx());
+    expect(vm.hoursStr).toBe('2.5h');
     expect(vm.past).toBe(true);
     expect(vm.hasAttendance).toBe(false);
     expect(vm.canRsvp).toBe(false);
@@ -392,6 +394,11 @@ describe('threadVm', () => {
       title: { es: '', en: 'New venue idea' }, body: { es: '', en: 'What about downtown?' },
       reactions: { like: 2, dislike: 0, likedBy: ['m1', 'm2'], dislikedBy: [] }, myReaction: 'like',
       media: [], refs: [], pinned: false, archived: false,
+      poll: {
+        question: { es: '', en: 'Where?' },
+        options: [{ id: 1, label: { es: '', en: 'Downtown' }, votes: 1 }],
+        myOptionId: null,
+      },
       comments: [
         {
           id: 10, parentId: null, by: 'm2', text: { es: '', en: 'Love it' }, createdAt: '2026-09-02T10:00:00Z',
@@ -413,6 +420,7 @@ describe('threadVm', () => {
     expect(vm.likedBy).toEqual(['Ana', 'Beto']);
     expect(vm.dislikedBy).toEqual([]);
     expect(vm.myReaction).toBe('like');
+    expect(vm.poll).toEqual({ question: 'Where?', total: '1', options: [{ id: 1, label: 'Downtown', v: '1', pct: '100%', picked: false }] });
     expect(vm.commentCount).toBe('2'); // 1 top-level + 1 reply
     expect(vm.comments).toHaveLength(1);
     expect(vm.comments[0].author).toBe('Beto');
@@ -439,6 +447,37 @@ describe('threadVm', () => {
       { id: 1, kind: 'song', refId: 's1', label: 'Alma Llanera' },
       { id: 2, kind: 'event', refId: 'e1', label: 'Party' },
     ]);
+  });
+});
+
+describe('threadPollVm', () => {
+  it('computes vote totals, percentages and the picked option', () => {
+    const poll = {
+      question: { es: '', en: 'Next gig venue?' },
+      options: [
+        { id: 1, label: { es: '', en: 'Downtown' }, votes: 3 },
+        { id: 2, label: { es: '', en: 'Uptown' }, votes: 1 },
+      ],
+      myOptionId: 2,
+    };
+    const vm = threadPollVm(poll, baseCtx());
+    expect(vm.question).toBe('Next gig venue?');
+    expect(vm.total).toBe('4');
+    expect(vm.options).toEqual([
+      { id: 1, label: 'Downtown', v: '3', pct: '75%', picked: false },
+      { id: 2, label: 'Uptown', v: '1', pct: '25%', picked: true },
+    ]);
+  });
+
+  it('falls back to a 0% denominator when there are no votes yet', () => {
+    const poll = {
+      question: { es: '', en: 'Next gig venue?' },
+      options: [{ id: 1, label: { es: '', en: 'Downtown' }, votes: 0 }],
+      myOptionId: null,
+    };
+    const vm = threadPollVm(poll, baseCtx());
+    expect(vm.total).toBe('0');
+    expect(vm.options).toEqual([{ id: 1, label: 'Downtown', v: '0', pct: '0%', picked: false }]);
   });
 });
 
@@ -471,7 +510,10 @@ describe('feedbackVm', () => {
     const f: EventFeedback = {
       sound: 4.5, perf: 3.8, log: 2.0, energy: 4.2, responses: 4,
       well: [{ by: 'Ana', anon: false, text: { es: '', en: 'Great energy' } }, { by: null, anon: true, text: { es: '', en: 'Solid set' } }],
-      improve: [{ by: null, anon: true, text: { es: '', en: 'Start on time' } }],
+      improve: [
+        { by: null, anon: true, text: { es: '', en: 'Start on time' } },
+        { by: null, anon: false, text: { es: '', en: 'Untracked author' } },
+      ],
       poll: { q: { es: '', en: 'Next venue?' }, options: [{ label: { es: '', en: 'Downtown' }, v: 3 }, { label: { es: '', en: 'Uptown' }, v: 1 }] },
     };
     const vm = feedbackVm(f, 0, baseCtx());
@@ -483,6 +525,10 @@ describe('feedbackVm', () => {
     expect(vm.well).toEqual([
       { text: 'Great energy', by: 'Ana', anon: false },
       { text: 'Solid set', by: 'Anonymous', anon: true },
+    ]);
+    expect(vm.improve).toEqual([
+      { text: 'Start on time', by: 'Anonymous', anon: true },
+      { text: 'Untracked author', by: 'Anonymous', anon: false },
     ]);
     expect(vm.pollQ).toBe('Next venue?');
     expect(vm.pollOpts).toEqual([

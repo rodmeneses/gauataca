@@ -13,6 +13,8 @@ repertoire, ledger/gear, brainstorm, members, and a design-system view.
 ## Commands
 
 - `npm run build` — `tsc -b && vite build` (the CI gate)
+- `npm run coverage` — `vitest run --coverage` (also a CI gate; enforces the
+  thresholds in `vitest.config.ts`)
 - `npm run dev` — local dev (service worker disabled by design)
 - `npm run assets:fonts` / `npm run assets:icons` — regenerate PWA assets
 
@@ -40,6 +42,13 @@ repertoire, ledger/gear, brainstorm, members, and a design-system view.
 - **Device detection:** `src/store/useGuataca.ts` — `isMobileViewport =
   isPhoneViewport || (isCoarsePointer && isTabletViewport)`. Touch devices up to tablet
   width get the phone layout.
+- **Unit test coverage:** `vitest.config.ts` enforces a 95% threshold
+  (lines/statements/functions/branches) over its coverage `include` list — the
+  business-logic modules that have a dedicated `*.test.ts` file (`src/lib`, `src/store/vm.ts`,
+  `src/i18n.ts`, `src/data/changelog.ts`, …), not components. When you add a new module to
+  that list, either add it fully tested or don't add it — a half-covered module will fail
+  the threshold. This is also a CI gate (`npm run coverage` in `.github/workflows/test.yml`),
+  so a PR that drops coverage below 95% fails to merge.
 
 ## Gotchas
 
