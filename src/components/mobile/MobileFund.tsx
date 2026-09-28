@@ -87,8 +87,8 @@ export function MobileFund() {
               </button>
               <span className="font-mono font-semibold text-[14px] flex-none" style={{ color: x.color }}>{x.amountStr}</span>
             </div>
-            <div className="flex items-center gap-2.5">
-              <span className="text-[13px] text-ink-muted flex-1">{x.dateStr} · {x.by}</span>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="text-[13px] text-ink-muted flex-1 min-w-[130px]">{x.dateStr} · {x.by}</span>
               {isAdmin && (
                 <>
                   <button

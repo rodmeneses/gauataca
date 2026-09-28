@@ -68,7 +68,7 @@ export function Brainstorm() {
               )}
               <span className="flex items-center gap-[7px] text-ink-muted font-sans font-medium text-[12px] whitespace-nowrap">
                 <MessageSquare size={14} strokeWidth={1.9} />
-                {b.commentCount} {t.comments}
+                {b.commentCount} {b.commentCount === '1' ? t.comment : t.comments}
               </span>
               {b.poll && (
                 <Badge color="var(--color-violet-light)">{b.poll.total} {t.votes}</Badge>

@@ -65,7 +65,7 @@ export function MobileBrainstorm() {
             <div className="flex items-center gap-2 mt-3 flex-wrap">
               <span className="flex items-center gap-1.5 text-ink-muted font-sans font-semibold text-[13px]">
                 <MessageSquare size={15} strokeWidth={1.9} />
-                {b.commentCount} {t.comments}
+                {b.commentCount} {b.commentCount === '1' ? t.comment : t.comments}
               </span>
               {b.poll && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--color-tint-violet)] text-violet-lighter font-sans font-semibold text-[12px]">

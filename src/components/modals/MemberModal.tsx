@@ -98,6 +98,9 @@ export function MemberModal() {
           <div>
             <div className="font-display font-semibold text-[10.5px] tracking-[.11em] uppercase text-ink-muted mb-[10px]">{t.vocalsL}</div>
             <div className="flex gap-2 flex-wrap">
+              {mb.vocals.length === 0 && (
+                <span className="font-sans text-[12px] text-ink-dim">{t.none}</span>
+              )}
               {mb.vocals.map((v) => (
                 <span key={v.label} className="font-sans font-medium text-[12px] text-ink-meta bg-surface border border-line p-[6px_12px] rounded-[20px]">
                   {v.label}

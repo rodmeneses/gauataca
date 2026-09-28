@@ -72,6 +72,18 @@ export interface StoreApi {
 
 const StoreContext = createContext<StoreApi | null>(null);
 
+/** Maps a deep-linked `view` (desktop shell) onto its mobile bottom-tab equivalent. */
+function mobileTabForView(view: View): MobileTab {
+  switch (view) {
+    case 'repertoire': return 'repertoire';
+    case 'ledger': return 'fund';
+    case 'brainstorm': return 'brainstorm';
+    case 'members': return 'profile';
+    case 'system': return 'profile';
+    default: return 'agenda';
+  }
+}
+
 export function initialState(props: AppProps): State {
   return {
     lang: props.initialLang === 'en' ? 'en' : 'es',
@@ -106,7 +118,7 @@ export function initialState(props: AppProps): State {
     form: {},
     txFilter: 'all',
     txDate: 'all',
-    mobileTab: 'agenda',
+    mobileTab: mobileTabForView(props.startView || 'dashboard'),
     sheet: null,
     custody: null,
     settle: null,
