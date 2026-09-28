@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
-  THEME_KEY, LANG_KEY, readThemePref, writeThemePref, readLangPref, writeLangPref,
-  prefersDark, resolveTheme, applyTheme,
+  THEME_KEY, LANG_KEY, SEEN_VERSION_KEY, readThemePref, writeThemePref, readLangPref,
+  writeLangPref, readSeenVersion, writeSeenVersion, prefersDark, resolveTheme, applyTheme,
 } from './prefs';
 
 beforeEach(() => {
@@ -26,11 +26,17 @@ describe('theme pref', () => {
   });
 
   it('read/write survive localStorage throwing', () => {
-    const spy = vi.spyOn(window.localStorage.__proto__, 'getItem').mockImplementation(() => {
+    const getSpy = vi.spyOn(window.localStorage.__proto__, 'getItem').mockImplementation(() => {
       throw new Error('blocked');
     });
     expect(readThemePref()).toBe('system');
-    spy.mockRestore();
+    getSpy.mockRestore();
+
+    const setSpy = vi.spyOn(window.localStorage.__proto__, 'setItem').mockImplementation(() => {
+      throw new Error('quota exceeded');
+    });
+    expect(() => writeThemePref('dark')).not.toThrow();
+    setSpy.mockRestore();
   });
 });
 
@@ -48,6 +54,18 @@ describe('lang pref', () => {
   it('returns null for a garbage stored value', () => {
     window.localStorage.setItem(LANG_KEY, 'fr');
     expect(readLangPref()).toBeNull();
+  });
+});
+
+describe('seen version', () => {
+  it('defaults to null when unset', () => {
+    expect(readSeenVersion()).toBeNull();
+  });
+
+  it('round-trips a written value', () => {
+    writeSeenVersion('0.2.0');
+    expect(window.localStorage.getItem(SEEN_VERSION_KEY)).toBe('0.2.0');
+    expect(readSeenVersion()).toBe('0.2.0');
   });
 });
 

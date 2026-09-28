@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { readDeepLink, clearDeepLink, itemUrl, savePendingDeepLink, takePendingDeepLink } from './deepLink';
 
 function setUrl(url: string) {
@@ -99,5 +99,13 @@ describe('pending deep link (sessionStorage round trip)', () => {
   it('returns null for corrupted stored JSON instead of throwing', () => {
     sessionStorage.setItem('guataca:pendingDeepLink', '{not json');
     expect(takePendingDeepLink()).toBeNull();
+  });
+
+  it('survives sessionStorage throwing on save', () => {
+    const spy = vi.spyOn(sessionStorage.__proto__, 'setItem').mockImplementation(() => {
+      throw new Error('storage disabled');
+    });
+    expect(() => savePendingDeepLink({ kind: 'event', id: 'e1' })).not.toThrow();
+    spy.mockRestore();
   });
 });

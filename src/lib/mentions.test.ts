@@ -47,4 +47,9 @@ describe('getPartialMention', () => {
   it('returns null when no @-token precedes the caret', () => {
     expect(getPartialMention('plain text', 4)).toBeNull();
   });
+
+  it('returns null when the @ is not a well-formed mention opener', () => {
+    const text = '@nope more text';
+    expect(getPartialMention(text, text.length)).toBeNull();
+  });
 });

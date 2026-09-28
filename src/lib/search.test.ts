@@ -77,6 +77,25 @@ describe('searchAll', () => {
     expect(hit).toMatchObject({ kind: 'idea', id: 'b1', title: 'Tocar gaitas en diciembre', sub: 'Luis: Yo llevo el bajo' });
   });
 
+  it('truncates a long comment snippet with an ellipsis', () => {
+    const long = 'bajo '.repeat(30);
+    const threads: SearchSources['threads'] = [
+      { id: 'b2', date: '2026-08-01', title: 'Idea', body: '', author: 'Ana', dateStr: '', comments: [{ text: long, author: 'Luis', date: '2026-08-05' }] },
+    ];
+    const [hit] = searchAll('bajo', { ...src, threads });
+    expect(hit.sub.length).toBeLessThan(long.length);
+    expect(hit.sub.endsWith('…')).toBe(true);
+  });
+
+  it('keeps input order when two hits share the same date', () => {
+    const events: SearchSources['events'] = [
+      { id: 'e1', date: '2026-08-01', title: 'Joropo uno', venue: '', note: '', typeLabel: '', dateStr: '' },
+      { id: 'e2', date: '2026-08-01', title: 'Joropo dos', venue: '', note: '', typeLabel: '', dateStr: '' },
+    ];
+    const hits = searchAll('joropo', { ...src, events, songs: [], tx: [], threads: [] });
+    expect(hits.map((h) => h.id)).toEqual(['e1', 'e2']);
+  });
+
   it('ranks an idea matched via a comment by that comment\'s date', () => {
     const t = (id: string, date: string, cdate: string) => ({
       id, date, title: `Idea ${id}`, body: '', author: 'Ana', dateStr: '',

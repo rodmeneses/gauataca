@@ -53,7 +53,6 @@ export function getPartialMention(text: string, caret: number): PartialMention |
   for (let i = caret - 1; i >= lineStart; i--) {
     const ch = text[i];
     if (ch === '}') return null; // the token is already closed before the caret
-    if (ch === '\n') return null;
     if (ch === '@') {
       const tail = text.slice(i, caret);
       const m = /^@\{\s*(song|event)\s*:\s*([^}]*)$/.exec(tail);
