@@ -48,6 +48,9 @@ export function Members() {
           <div>
             <div className="font-display font-semibold text-[10px] tracking-[.12em] uppercase text-ink-dim mb-[9px]">{t.vocalsL}</div>
             <div className="flex gap-[7px] flex-wrap">
+              {m.vocals.length === 0 && (
+                <span className="font-sans text-[11.5px] text-ink-dim">{t.none}</span>
+              )}
               {m.vocals.map((v) => (
                 <span
                   key={v.label}

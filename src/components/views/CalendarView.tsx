@@ -39,8 +39,8 @@ export function CalendarView() {
       {/* ---- event cards */}
       <div className="grid grid-cols-[repeat(auto-fill,minmax(370px,1fr))] gap-[14px]">
         {calList.map((e) => (
-          <Card key={e.id} as="article" className="overflow-hidden flex flex-col">
-            <div className="h-[3px] opacity-70" style={{ background: e.typeColor }} />
+          <Card key={e.id} as="article" className={`overflow-hidden flex flex-col ${e.state === 'cancelled' ? 'opacity-60' : ''}`}>
+            <div className="h-[3px] opacity-70" style={{ background: e.state === 'cancelled' ? 'var(--color-ink-muted)' : e.typeColor }} />
             <div className="p-[17px_18px] flex flex-col gap-[13px] flex-1">
               {/* date tile + title + badges */}
               <div className="flex gap-[14px] items-start">

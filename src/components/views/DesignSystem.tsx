@@ -118,6 +118,9 @@ export function DesignSystem() {
       </section>
 
       {/* ------------------------------------------------ handoff notes */}
+      {/* Dev-only: internal build notes for whoever is implementing the next phase,
+          not band-facing content — never ship them in production. */}
+      {import.meta.env.DEV && (
       <section>
         <div className="flex items-baseline gap-[12px] mb-[14px]">
           <h2 className="m-0 font-display font-semibold text-[15px] leading-none text-ink">{t.handoff}</h2>
@@ -139,6 +142,7 @@ export function DesignSystem() {
           ))}
         </div>
       </section>
+      )}
     </div>
   );
 }

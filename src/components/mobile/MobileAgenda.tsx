@@ -23,7 +23,7 @@ export function MobileAgenda() {
       )}
 
       {calList.map((e) => (
-        <article key={e.id} className="bg-surface border border-line rounded-2xl p-4 flex flex-col gap-3">
+        <article key={e.id} className={`bg-surface border border-line rounded-2xl p-4 flex flex-col gap-3 ${e.state === 'cancelled' ? 'opacity-60' : ''}`}>
           <div className="flex items-center gap-1.5 flex-wrap">
             <span
               className="font-display font-semibold text-[11px] tracking-[.05em] uppercase whitespace-nowrap py-1 px-2 rounded-md"

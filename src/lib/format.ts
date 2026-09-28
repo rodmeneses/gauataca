@@ -52,6 +52,7 @@ export function rel(iso: string, lang: Lang): string {
   if (n === 0) return t.today;
   if (n === 1) return t.tomorrow;
   if (n > 0) return t.inDays.replace('%d', String(n));
+  if (n === -1) return t.dayAgo.replace('%d', String(-n));
   return t.daysAgo.replace('%d', String(-n));
 }
 
