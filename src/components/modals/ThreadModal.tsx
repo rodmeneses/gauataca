@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Archive, ArchiveRestore, CalendarDays, ChartColumn, ImagePlus, Link, MessageCircle, Music, Pin, Trash2, X } from 'lucide-react';
 import { useGuataca } from '@/store';
-import { Avatar, Button, CloseButton, Modal, useConfirm } from '@/components/ui';
+import { Avatar, Button, CloseButton, Modal, cx, useConfirm } from '@/components/ui';
 import { PhotoStrip } from '@/components/ui/PhotoStrip';
 import { ReactionButtons } from '@/components/ReactionButtons';
 import { Composer } from './Composer';
@@ -132,58 +132,73 @@ export function ThreadModal() {
 
   const openRef = (kind: 'song' | 'event', id: string) => (kind === 'song' ? goToSong(id) : openEvent(id));
 
-  const renderComment = (c: CommentVm, isReply: boolean) => (
-    <div
-      id={`comment-${c.id}`}
-      className="bg-surface border rounded-[12px] p-[13px_14px]"
-      style={{ borderColor: c.id === targetComment ? 'color-mix(in srgb, var(--color-emerald) 50%, transparent)' : 'var(--color-line-soft)' }}
-    >
-      <div className="flex items-center gap-[9px]">
-        <Avatar initial={c.initial} size={26} radius={8} style={{ fontSize: 9.5 }} />
-        <span className="font-sans font-semibold text-[12.5px] text-ink">{c.author}</span>
-        <span className="text-[11.5px] text-ink-dim">{c.dateStr}</span>
-        <span className="ml-auto flex-none">
-          <ReactionButtons likes={c.likes} dislikes={c.dislikes} likedBy={c.likedBy} dislikedBy={c.dislikedBy} my={c.myReaction} onPick={(k) => setCommentReaction(c.id, k)} />
-        </span>
-      </div>
-      <div className="mt-[10px] text-[13px] text-ink-body leading-[1.65]">
-        <RichText text={c.text} />
-      </div>
-      <RefChips refs={c.refs} onOpen={openRef} />
-      <div className="mt-[10px]">
-        <PhotoStrip photos={c.media} />
-      </div>
-      <div className="mt-[10px] flex items-center gap-[8px]">
-        {!isReply && (
-          <button
-            type="button"
-            onClick={() => setReplyTarget(state.replyTarget === c.id ? null : c.id)}
-            className="inline-flex items-center gap-[6px] py-[6px] px-[10px] rounded-[9px] border border-line bg-raised text-ink-muted font-sans font-semibold text-[12px] leading-[normal] cursor-pointer hover:text-violet-light hover:border-violet/40"
-          >
-            <MessageCircle size={13} strokeWidth={2} />
-            {t.reply}
-          </button>
+  // Chat-style message bubble: own comments align right (no avatar), others' align
+  // left with an avatar shown only on the first message of a consecutive run from
+  // the same author (`showHeader`), iMessage/Discord-style.
+  const renderComment = (c: CommentVm, isReply: boolean, showHeader: boolean) => (
+    <div className={cx('flex items-end gap-[8px]', c.mine ? 'flex-row-reverse' : 'flex-row')}>
+      {!c.mine && (
+        <div className="w-[26px] flex-none">{showHeader && <Avatar initial={c.initial} size={26} radius={8} style={{ fontSize: 9.5 }} />}</div>
+      )}
+      <div id={`comment-${c.id}`} className={cx('flex flex-col gap-[4px] max-w-[78%]', c.mine ? 'items-end' : 'items-start')}>
+        {showHeader && !c.mine && (
+          <div className="flex items-center gap-[7px] px-[3px]">
+            <span className="font-sans font-semibold text-[12px] text-ink">{c.author}</span>
+            <span className="text-[11px] text-ink-dim">{c.dateStr}</span>
+          </div>
         )}
-        <button
-          type="button"
-          title={t.copyLink}
-          aria-label={t.copyLink}
-          onClick={() => copyLink('thread', th.id, c.id)}
-          className="ml-auto grid place-items-center min-w-[32px] min-h-[32px] rounded-[9px] border border-line bg-raised text-ink-muted cursor-pointer hover:text-ink-body hover:border-line-hover"
+        <div
+          className={cx('py-[9px] px-[13px] text-[13px] leading-[1.6] font-sans', c.mine ? 'rounded-[16px] rounded-br-[5px]' : 'rounded-[16px] rounded-bl-[5px]')}
+          style={{
+            background: c.mine ? 'var(--color-emerald)' : 'var(--color-raised)',
+            color: c.mine ? 'var(--color-base)' : 'var(--color-ink-body)',
+            border: c.mine ? 'none' : '1px solid var(--color-line-soft)',
+            boxShadow: c.id === targetComment ? '0 0 0 2px color-mix(in srgb, var(--color-emerald) 55%, transparent)' : undefined,
+          }}
         >
-          <Link size={13} strokeWidth={2} />
-        </button>
-        {c.mine && (
+          <RichText text={c.text} />
+          <RefChips refs={c.refs} onOpen={openRef} />
+          {c.media.length > 0 && (
+            <div className="mt-[8px]">
+              <PhotoStrip photos={c.media} />
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-[6px] px-[3px]">
+          {c.mine && <span className="text-[11px] text-ink-dim">{c.dateStr}</span>}
+          <ReactionButtons likes={c.likes} dislikes={c.dislikes} likedBy={c.likedBy} dislikedBy={c.dislikedBy} my={c.myReaction} onPick={(k) => setCommentReaction(c.id, k)} />
+          {!isReply && (
+            <button
+              type="button"
+              onClick={() => setReplyTarget(state.replyTarget === c.id ? null : c.id)}
+              title={t.reply}
+              aria-label={t.reply}
+              className="grid place-items-center min-w-[26px] min-h-[26px] rounded-[8px] text-ink-faint cursor-pointer hover:text-violet-light"
+            >
+              <MessageCircle size={13} strokeWidth={2} />
+            </button>
+          )}
           <button
             type="button"
-            title={t.deleteComment}
-            aria-label={t.deleteComment}
-            onClick={() => confirm({ message: t.confirmDeleteComment, onConfirm: () => deleteComment(c.id) })}
-            className="grid place-items-center min-w-[32px] min-h-[32px] rounded-[9px] border border-line bg-raised text-ink-muted cursor-pointer hover:text-red hover:border-red/40"
+            title={t.copyLink}
+            aria-label={t.copyLink}
+            onClick={() => copyLink('thread', th.id, c.id)}
+            className="grid place-items-center min-w-[26px] min-h-[26px] rounded-[8px] text-ink-faint cursor-pointer hover:text-ink-body"
           >
-            <Trash2 size={13} strokeWidth={2} />
+            <Link size={13} strokeWidth={2} />
           </button>
-        )}
+          {c.mine && (
+            <button
+              type="button"
+              title={t.deleteComment}
+              aria-label={t.deleteComment}
+              onClick={() => confirm({ message: t.confirmDeleteComment, onConfirm: () => deleteComment(c.id) })}
+              className="grid place-items-center min-w-[26px] min-h-[26px] rounded-[8px] text-ink-faint cursor-pointer hover:text-red"
+            >
+              <Trash2 size={13} strokeWidth={2} />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -321,16 +336,16 @@ export function ThreadModal() {
         {th.comments.length === 0 && (
           <p className="m-0 font-sans font-normal text-[13px] text-ink-dim">{t.noCommentsYet}</p>
         )}
-        {th.comments.map((c) => (
+        {th.comments.map((c, i) => (
           <div key={c.id} className="flex flex-col gap-[8px]">
-            {renderComment(c, false)}
+            {renderComment(c, false, i === 0 || th.comments[i - 1].author !== c.author)}
             {c.replies.length > 0 && (
-              <div className="flex flex-col gap-[8px] ml-[30px] border-l border-line-soft pl-[14px]">
-                {c.replies.map((r) => renderComment(r, true))}
+              <div className="flex flex-col gap-[8px] ml-[34px] border-l border-line-soft pl-[14px]">
+                {c.replies.map((r, j) => renderComment(r, true, j === 0 || c.replies[j - 1].author !== r.author))}
               </div>
             )}
             {state.replyTarget === c.id && (
-              <div className="ml-[30px]">
+              <div className="ml-[34px]">
                 <ComposerRow
                   value={state.replyDraft}
                   onChange={setReplyDraft}
