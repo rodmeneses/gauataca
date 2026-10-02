@@ -437,6 +437,7 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
+    padding: 11px 17px;
     border-radius: 10px;
     border: 1px solid transparent;
     font: 600 13px var(--font-sans);

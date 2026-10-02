@@ -65,7 +65,7 @@ export function MemberModal() {
             </Field>
           </div>
           <div className="p-[16px_24px] border-t border-line-soft flex gap-[10px] justify-end">
-            <button type="button" onClick={cancel} className="p-[11px_17px] rounded-[10px] border border-line bg-surface text-ink-body font-sans font-semibold text-[13px] leading-[normal] cursor-pointer">
+            <button type="button" onClick={cancel} className="min-h-[44px] p-[11px_17px] rounded-[10px] border border-line bg-surface text-ink-body font-sans font-semibold text-[13px] leading-[normal] cursor-pointer">
               {t.cancel}
             </button>
             <Button variant="primary" className="p-[11px_17px]" onClick={save}>
