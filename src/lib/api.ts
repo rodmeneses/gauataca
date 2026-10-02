@@ -846,14 +846,18 @@ export async function createThreadPoll(
 }
 
 /** Set the signed-in member's vote on a poll option; re-picking moves the vote. */
+/** Set the member's vote on a poll option; voting again on the picked option removes the vote. */
 export async function voteThreadPoll(optionId: number, userId: string): Promise<void> {
   const { data: opt } = await supabase.from('thread_poll_options').select('poll_id').eq('id', optionId).single();
   const pollId = opt?.poll_id;
   if (!pollId) return;
   const { data: opts } = await supabase.from('thread_poll_options').select('id').eq('poll_id', pollId);
   const optIds = (opts ?? []).map((o) => o.id);
+  const { data: mine } = await supabase.from('thread_poll_votes').select('option_id').in('option_id', optIds).eq('profile_id', userId);
   await supabase.from('thread_poll_votes').delete().in('option_id', optIds).eq('profile_id', userId);
-  await supabase.from('thread_poll_votes').insert({ option_id: optionId, profile_id: userId });
+  if (!(mine ?? []).some((v) => v.option_id === optionId)) {
+    await supabase.from('thread_poll_votes').insert({ option_id: optionId, profile_id: userId });
+  }
 }
 
 /** Set the signed-in member's like/dislike on an idea; `null` removes it. */

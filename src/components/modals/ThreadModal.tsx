@@ -299,6 +299,8 @@ export function ThreadModal() {
                   key={o.id}
                   type="button"
                   onClick={() => voteThreadPoll(o.id)}
+                  aria-pressed={o.picked}
+                  title={o.picked ? t.removePollVote : undefined}
                   className="flex items-center gap-3 w-full py-[11px] px-[13px] rounded-[10px] border text-ink-body cursor-pointer text-left font-sans font-medium text-[13px] leading-[normal]"
                   style={{ borderColor: o.picked ? 'color-mix(in srgb, var(--color-emerald) 40%, transparent)' : 'var(--color-line)', background: o.picked ? 'color-mix(in srgb, var(--color-emerald) 11%, transparent)' : 'var(--color-raised)' }}
                 >

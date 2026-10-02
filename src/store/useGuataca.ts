@@ -920,8 +920,9 @@ export function useGuataca(): Guataca {
         toast(b.archived ? t.unarchived : t.archived);
       },
       voteThreadPoll: async (optionId) => {
+        const removing = thSel?.poll?.myOptionId === optionId;
         await persistVoteThreadPoll(optionId);
-        toast(t.voted);
+        toast(removing ? t.voteRemoved : t.voted);
       },
       pickPoll: async (i) => {
         if (!evSel) return;
