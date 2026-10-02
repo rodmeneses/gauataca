@@ -12,7 +12,7 @@ import { Composer } from './Composer';
 import { RefPicker, type PickedRef } from './RefPicker';
 
 export function NewThreadModal() {
-  const { t, form, setForm, closeModal, saveThread } = useGuataca();
+  const { t, form, setForm, closeModal, saveThread, isAdmin } = useGuataca();
   const [files, setFiles] = useState<File[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
   const previews = useMemo(() => files.map((f) => URL.createObjectURL(f)), [files]);
@@ -22,6 +22,7 @@ export function NewThreadModal() {
   const [pollQ, setPollQ] = useState('');
   const [pollOpts, setPollOpts] = useState<string[]>(['', '']);
   const poll = pollOn ? { question: pollQ, options: pollOpts } : null;
+  const pollComplete = pollQ.trim() !== '' && pollOpts.filter((o) => o.trim()).length >= 2;
 
   const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const picked = Array.from(e.target.files ?? []);
@@ -31,7 +32,8 @@ export function NewThreadModal() {
   };
 
   const setRefs = (refs: PickedRef[]) => setForm('threadRefs', refs);
-  const canSave = (form.threadTitle || '').trim() !== '' || (form.threadBody || '').trim() !== '';
+  const hasContent = (form.threadTitle || '').trim() !== '' || (form.threadBody || '').trim() !== '';
+  const canSave = hasContent && (!pollOn || pollComplete);
 
   return (
     <Modal onClose={closeModal} maxWidth={560}>
@@ -62,18 +64,38 @@ export function NewThreadModal() {
         </Field>
         <RefPicker selected={form.threadRefs || []} onChange={setRefs} />
 
-        {/* optional poll */}
+        {/* optional poll (admin-only: the DB rejects poll writes from members) */}
         <div>
-          <button
-            type="button"
-            onClick={() => setPollOn((v) => !v)}
-            className="inline-flex items-center gap-[6px] py-[8px] px-[12px] rounded-[9px] border border-violet/40 bg-[var(--color-tint-violet)] text-violet-lighter font-sans font-semibold text-[12.5px] leading-[normal] cursor-pointer hover:bg-[var(--color-tint-violet)]"
-          >
-            <BarChart3 size={14} strokeWidth={2} />
-            {t.addPoll}
-          </button>
-          {pollOn && (
-            <div className="mt-[9px] flex flex-col gap-[8px] p-[12px] rounded-[12px] border border-line-soft bg-raised">
+          {!pollOn ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setPollOn(true)}
+                disabled={!isAdmin}
+                className="inline-flex items-center gap-[6px] py-[8px] px-[12px] rounded-[9px] border border-violet/40 bg-[var(--color-tint-violet)] text-violet-lighter font-sans font-semibold text-[12.5px] leading-[normal] cursor-pointer hover:bg-[var(--color-tint-violet)] disabled:opacity-45 disabled:cursor-not-allowed"
+              >
+                <BarChart3 size={14} strokeWidth={2} />
+                {t.addPoll}
+              </button>
+              <div className="mt-[6px] font-sans text-[11.5px] leading-[1.4] text-ink-muted">
+                {isAdmin ? t.pollHint : t.pollAdminOnly}
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col gap-[8px] p-[12px] rounded-[12px] border border-violet/40 bg-raised">
+              <div className="flex items-center gap-[6px] text-violet-lighter font-sans font-semibold text-[12.5px] leading-[normal]">
+                <BarChart3 size={14} strokeWidth={2} />
+                {t.poll}
+                <button
+                  type="button"
+                  onClick={() => setPollOn(false)}
+                  title={t.removePoll}
+                  aria-label={t.removePoll}
+                  className="ml-auto grid place-items-center w-[26px] h-[26px] rounded-[8px] border border-line bg-surface text-ink-muted hover:text-ink-body hover:border-rose/40 cursor-pointer"
+                >
+                  <X size={14} strokeWidth={2.2} />
+                </button>
+              </div>
               <Field label={t.pollQuestion}>
                 <Input value={pollQ} onChange={(e) => setPollQ(e.target.value)} placeholder={t.pollQuestionPh} />
               </Field>
@@ -105,6 +127,9 @@ export function NewThreadModal() {
                 <Plus size={13} strokeWidth={2.2} />
                 {t.addOption}
               </button>
+              {!pollComplete && (
+                <div className="font-sans text-[11.5px] leading-[1.4] text-amber">{t.pollIncomplete}</div>
+              )}
             </div>
           )}
         </div>
@@ -146,6 +171,7 @@ export function NewThreadModal() {
         cancel={t.cancel}
         save={t.save}
         onCancel={closeModal}
+        saveDisabled={!canSave}
         onSave={() => {
           if (canSave) {
             saveThread(files, poll);
