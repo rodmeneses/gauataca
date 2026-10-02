@@ -6,6 +6,7 @@ import { CalendarView } from '../views/CalendarView';
 import { Repertoire } from '../views/Repertoire';
 import { Ledger } from '../views/Ledger';
 import { Brainstorm } from '../views/Brainstorm';
+import { Links } from '../views/Links';
 import { Members } from '../views/Members';
 import { DesignSystem } from '../views/DesignSystem';
 
@@ -23,6 +24,7 @@ export function DesktopShell() {
           {view === 'repertoire' && <Repertoire />}
           {view === 'ledger' && <Ledger />}
           {view === 'brainstorm' && <Brainstorm />}
+          {view === 'links' && <Links />}
           {view === 'members' && <Members />}
           {view === 'system' && <DesignSystem />}
         </main>

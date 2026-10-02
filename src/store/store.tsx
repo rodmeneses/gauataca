@@ -78,6 +78,7 @@ function mobileTabForView(view: View): MobileTab {
     case 'repertoire': return 'repertoire';
     case 'ledger': return 'fund';
     case 'brainstorm': return 'brainstorm';
+    case 'links': return 'links';
     case 'members': return 'profile';
     case 'system': return 'profile';
     default: return 'agenda';

@@ -6,7 +6,7 @@
  * 392px phone-preview frame with the dev controls.
  */
 import { useEffect, useState, type ReactNode } from 'react';
-import { Calendar, Lightbulb, Monitor, Music, Receipt, RefreshCw, Search, Smartphone, User, WifiHigh } from 'lucide-react';
+import { Calendar, Lightbulb, Link2, Monitor, Music, Receipt, RefreshCw, Search, Smartphone, WifiHigh } from 'lucide-react';
 import { useGuataca } from '../../store';
 import { useData } from '../../lib/data';
 import { usePullToRefresh } from './usePullToRefresh';
@@ -17,6 +17,7 @@ import { MobileAgenda } from './MobileAgenda';
 import { MobileRepertoire } from './MobileRepertoire';
 import { MobileFund } from './MobileFund';
 import { MobileBrainstorm } from './MobileBrainstorm';
+import { LinksPanel } from '../links/LinksPanel';
 import { MobileProfile } from './MobileProfile';
 
 /* devPill(v): 30x26 icon toggle inside the device Segment */
@@ -60,7 +61,7 @@ function useKeyboardOpen(): boolean {
 
 /** The actual mobile app: header + scroll area + bottom tab bar. */
 function MobileApp({ banner }: { banner?: ReactNode }) {
-  const { t, bandName, balanceStr, balanceNeg, state, setMobileTab, openSearch } = useGuataca();
+  const { t, bandName, balanceStr, balanceNeg, state, setMobileTab, openSearch, me } = useGuataca();
   const tab: MobileTab = state.mobileTab;
   const keyboardOpen = useKeyboardOpen();
   const { reload } = useData();
@@ -93,6 +94,16 @@ function MobileApp({ banner }: { banner?: ReactNode }) {
         >
           <Search size={21} strokeWidth={2} />
         </button>
+        <button
+          type="button"
+          aria-label={t.profile}
+          aria-current={tab === 'profile' ? 'page' : undefined}
+          onClick={() => setMobileTab('profile')}
+          className={`w-9 h-9 -ml-1 rounded-xl border grid place-items-center font-display font-semibold text-[13px] cursor-pointer flex-none ${tab === 'profile' ? 'border-emerald text-emerald' : 'border-line-strong text-violet-lighter'}`}
+          style={{ background: 'linear-gradient(145deg,var(--color-line),var(--color-raised))' }}
+        >
+          {me.initial}
+        </button>
       </div>
 
       {/* scroll area */}
@@ -117,6 +128,7 @@ function MobileApp({ banner }: { banner?: ReactNode }) {
           {tab === 'repertoire' && <MobileRepertoire />}
           {tab === 'fund' && <MobileFund />}
           {tab === 'brainstorm' && <MobileBrainstorm />}
+          {tab === 'links' && <LinksPanel />}
           {tab === 'profile' && <MobileProfile />}
         </div>
       </div>
@@ -132,7 +144,7 @@ function MobileApp({ banner }: { banner?: ReactNode }) {
         <TabButton active={tab === 'repertoire'} onClick={() => setMobileTab('repertoire')} icon={<Music size={22} strokeWidth={1.9} />} label={t.repertoire} />
         <TabButton active={tab === 'fund'} onClick={() => setMobileTab('fund')} icon={<Receipt size={22} strokeWidth={1.9} />} label={t.fund} />
         <TabButton active={tab === 'brainstorm'} onClick={() => setMobileTab('brainstorm')} icon={<Lightbulb size={22} strokeWidth={1.9} />} label={t.brainstorm} />
-        <TabButton active={tab === 'profile'} onClick={() => setMobileTab('profile')} icon={<User size={22} strokeWidth={1.9} />} label={t.profile} />
+        <TabButton active={tab === 'links'} onClick={() => setMobileTab('links')} icon={<Link2 size={22} strokeWidth={1.9} />} label={t.links} />
       </nav>
     </>
   );

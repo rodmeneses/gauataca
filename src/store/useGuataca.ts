@@ -508,6 +508,7 @@ export function useGuataca(): Guataca {
       { group: t.navigate, label: t.repertoire, sub: '', run: () => go('repertoire') },
       { group: t.navigate, label: t.ledger, sub: '', run: () => go('ledger') },
       { group: t.navigate, label: t.brainstorm, sub: '', run: () => go('brainstorm') },
+      { group: t.navigate, label: t.links, sub: '', run: () => go('links') },
       { group: t.navigate, label: t.members, sub: '', run: () => go('members') },
       { group: t.navigate, label: t.system, sub: '', run: () => go('system') },
       { group: t.actions, label: t.newEvent, sub: '', run: () => set({ palette: false, view: 'calendar', modal: { kind: 'newEvent' }, form: {} }) },

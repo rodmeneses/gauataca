@@ -142,6 +142,10 @@ const es = {
   // notifications (Web Push)
   notifications: 'Notificaciones',
   whatsNew: 'Novedades',
+  subLinks: 'Carpetas, listas y chats del grupo', newLink: 'Nuevo enlace', noLinks: 'Aún no hay enlaces.',
+  linkTitle: 'Título', linkCategory: 'Categoría', linkInvalidUrl: 'Escribe una URL válida (https://…)',
+  catDocs: 'Documentos', catMusic: 'Música', catSocial: 'Redes', catLogistics: 'Logística', catOther: 'Otros',
+  deleteLink: 'Eliminar enlace', confirmDeleteLink: 'Se eliminará este enlace para todo el grupo. No se puede deshacer.',
   changelogNew: 'Nuevo',
   changelogClose: 'Entendido',
   version: 'Versión',
@@ -304,6 +308,10 @@ const en: typeof es = {
   // notifications (Web Push)
   notifications: 'Notifications',
   whatsNew: "What's new",
+  subLinks: 'Folders, playlists and group chats', newLink: 'New link', noLinks: 'No links yet.',
+  linkTitle: 'Title', linkCategory: 'Category', linkInvalidUrl: 'Enter a valid URL (https://…)',
+  catDocs: 'Docs', catMusic: 'Music', catSocial: 'Social', catLogistics: 'Logistics', catOther: 'Other',
+  deleteLink: 'Delete link', confirmDeleteLink: 'This link will be deleted for the whole band. This can\'t be undone.',
   changelogNew: 'New',
   changelogClose: 'Got it',
   version: 'Version',
