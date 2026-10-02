@@ -28,14 +28,14 @@ export function FormBody({ children }: { children: ReactNode }) {
   return <div className="p-[20px_22px] flex flex-col gap-[14px]">{children}</div>;
 }
 
-export function FormFooter({ cancel, save, onCancel, onSave }: { cancel: string; save: string; onCancel: () => void; onSave: () => void }) {
+export function FormFooter({ cancel, save, onCancel, onSave, saveDisabled }: { cancel: string; save: string; onCancel: () => void; onSave: () => void; saveDisabled?: boolean }) {
   return (
     <div className="p-[16px_22px] border-t border-line-soft flex gap-[10px] justify-end">
       {/* Inline (not Button surface): the design's cancel has no hover; `.btn-surface` adds one. */}
       <button type="button" onClick={onCancel} className="p-[11px_17px] rounded-[10px] border border-line bg-surface text-ink-body font-sans font-semibold text-[13px] leading-[normal] cursor-pointer">
         {cancel}
       </button>
-      <Button variant="primary" className="p-[11px_17px]" onClick={onSave}>
+      <Button variant="primary" className="p-[11px_17px] disabled:opacity-45 disabled:cursor-not-allowed" onClick={onSave} disabled={saveDisabled}>
         {save}
       </Button>
     </div>

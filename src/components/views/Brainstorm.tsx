@@ -3,7 +3,7 @@
  * card: like/dislike reactions, title, body, author/date,
  * comment count, and a "view details" button (pin/archive/convert live in the thread modal).
  */
-import { Lightbulb, MessageSquare } from 'lucide-react';
+import { BarChart3, Lightbulb, MessageSquare } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { AddButton, Badge, Button, Card, Pill, Segment } from '@/components/ui';
 import { ReactionButtons } from '@/components/ReactionButtons';
@@ -71,7 +71,10 @@ export function Brainstorm() {
                 {b.commentCount} {b.commentCount === '1' ? t.comment : t.comments}
               </span>
               {b.poll && (
-                <Badge color="var(--color-violet-light)">{b.poll.total} {t.votes}</Badge>
+                <Badge color="var(--color-violet-light)">
+                  <BarChart3 size={11} strokeWidth={2.2} className="inline mr-[4px] -mt-px" />
+                  {t.poll} · {b.poll.total} {t.votes}
+                </Badge>
               )}
             </div>
             <div className="flex gap-2 border-t border-line-soft pt-[13px] mt-[14px]">

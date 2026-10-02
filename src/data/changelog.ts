@@ -25,6 +25,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       { es: 'Todos los botones de "crear" (evento, tema, canción, movimiento, equipo) tienen el mismo estilo.', en: 'Every "create" button (event, topic, song, transaction, gear) now looks the same.' },
       { es: 'Ideas ahora es un foro: temas, comentarios, reacciones, y botón "Ver detalles" para abrir cada hilo.', en: 'Ideas is now a forum: topics, comments, reactions, and a "View details" button to open each thread.' },
       { es: 'Encuestas en las ideas del foro.', en: 'Polls on forum ideas.' },
+      { es: 'Crear encuestas es más claro: explicación, botón para quitarla, aviso si está incompleta y etiqueta "Encuesta" en las ideas.', en: 'Creating polls is clearer: a helper line, a remove button, a warning when incomplete, and a "Poll" label on ideas.' },
       { es: 'Fija eventos e ideas, y archiva ideas del foro.', en: 'Pin events and ideas, and archive forum ideas.' },
       { es: 'Ves quién dio like o dislike a ideas y comentarios.', en: 'See who liked or disliked ideas and comments.' },
       { es: 'Borra tus propios comentarios; los saltos de línea se respetan.', en: 'Delete your own comments; line breaks are preserved.' },

@@ -70,7 +70,7 @@ export function MobileBrainstorm() {
               {b.poll && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--color-tint-violet)] text-violet-lighter font-sans font-semibold text-[12px]">
                   <BarChart3 size={13} strokeWidth={2} />
-                  {b.poll.total} {t.votes}
+                  {t.poll} · {b.poll.total} {t.votes}
                 </span>
               )}
             </div>
