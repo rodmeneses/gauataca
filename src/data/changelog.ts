@@ -20,6 +20,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-09-25',
     title: { es: 'Foro, notificaciones y búsqueda', en: 'Forum, notifications and search' },
     changes: [
+      { es: 'Nueva sección de Enlaces para carpetas, listas y chats del grupo, con botón para copiar cada enlace. En el móvil, tu perfil ahora está en el avatar de arriba.', en: 'New Links section for the band\'s folders, playlists and chats, with a button to copy each link. On mobile, your profile is now behind the avatar at the top.' },
       { es: 'Novedades: ahora puedes ver este historial de cambios y se abre solo cuando hay una versión nueva.', en: "What's new: you can now see this changelog, and it opens by itself after a new version." },
       { es: 'Desliza hacia abajo para actualizar en el móvil.', en: 'Pull down to refresh on mobile.' },
       { es: 'Todos los botones de "crear" (evento, tema, canción, movimiento, equipo) tienen el mismo estilo.', en: 'Every "create" button (event, topic, song, transaction, gear) now looks the same.' },

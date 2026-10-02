@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Bell, Calendar, LayoutDashboard, Lightbulb, Music, Palette, Receipt, Sparkles, Users } from 'lucide-react';
+import { Bell, Calendar, LayoutDashboard, Lightbulb, Link2, Music, Palette, Receipt, Sparkles, Users } from 'lucide-react';
 import { useGuataca } from '../../store';
 import type { View } from '../../types';
 import { APP_VERSION } from '../../data/changelog';
@@ -56,6 +56,7 @@ export function Sidebar() {
         <NavItem active={is('repertoire')} onClick={() => go('repertoire')} icon={<Music size={18} strokeWidth={1.9} className="flex-none" />} label={t.repertoire} badge={songBadge} />
         <NavItem active={is('ledger')} onClick={() => go('ledger')} icon={<Receipt size={18} strokeWidth={1.9} className="flex-none" />} label={t.ledger} />
         <NavItem active={is('brainstorm')} onClick={() => go('brainstorm')} icon={<Lightbulb size={18} strokeWidth={1.9} className="flex-none" />} label={t.brainstorm} />
+        <NavItem active={is('links')} onClick={() => go('links')} icon={<Link2 size={18} strokeWidth={1.9} className="flex-none" />} label={t.links} />
         <div className="eyebrow-xs p-[16px_10px_8px] hidden lg:block">{t.navBand}</div>
         <NavItem active={is('members')} onClick={() => go('members')} icon={<Users size={18} strokeWidth={1.9} className="flex-none" />} label={t.members} />
         <NavItem active={is('system')} onClick={() => go('system')} icon={<Palette size={18} strokeWidth={1.9} className="flex-none" />} label={t.system} />

@@ -3,14 +3,26 @@
 
 export type Lang = 'es' | 'en';
 export type Role = 'admin' | 'member';
-export type View = 'dashboard' | 'calendar' | 'repertoire' | 'ledger' | 'brainstorm' | 'members' | 'system';
+export type View = 'dashboard' | 'calendar' | 'repertoire' | 'ledger' | 'brainstorm' | 'links' | 'members' | 'system';
 /** Dev preview override for the layout tier. 'auto' follows the viewport. */
 export type Device = 'auto' | 'desktop' | 'tablet' | 'mobile';
 export type Layout = 'phone' | 'tablet' | 'desktop';
-export type MobileTab = 'agenda' | 'repertoire' | 'fund' | 'brainstorm' | 'profile';
+export type MobileTab = 'agenda' | 'repertoire' | 'fund' | 'brainstorm' | 'links' | 'profile';
 export type CalTab = 'upcoming' | 'history';
 /** Brainstorm/forum tab: everyday ideas, or ones an admin has archived. */
 export type ForumTab = 'active' | 'archived';
+
+/** Category of a shared band link. */
+export type LinkCategory = 'docs' | 'music' | 'social' | 'logistics' | 'other';
+
+/** A general band link (Drive folder, playlist, group chat, …). */
+export interface BandLink {
+  id: number;
+  title: string;
+  url: string;
+  category: LinkCategory;
+  createdBy: string;
+}
 
 /** A string that has a translation per language. */
 export type Localized = Record<Lang, string>;

@@ -7,13 +7,13 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useAuth } from './auth';
 import {
-  addComment as apiAddComment, addEventMedia as apiAddEventMedia, addEventPhotos as apiAddEventPhotos, addTake as apiAddTake, createEvent as apiCreateEvent, createGear as apiCreateGear, createInstrument as apiCreateInstrument,
+  addComment as apiAddComment, addEventMedia as apiAddEventMedia, addEventPhotos as apiAddEventPhotos, addTake as apiAddTake, createEvent as apiCreateEvent, createGear as apiCreateGear, createInstrument as apiCreateInstrument, createLink as apiCreateLink, deleteLink as apiDeleteLink,
   createSong as apiCreateSong, createThread as apiCreateThread, createThreadPoll as apiCreateThreadPoll, createTransaction as apiCreateTransaction, deleteComment as apiDeleteComment, deleteEventMedia as apiDeleteEventMedia, deleteTake as apiDeleteTake, deleteThreadMedia as apiDeleteThreadMedia, deleteTransaction as apiDeleteTransaction, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
   setEventPinned as apiSetEventPinned, setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, setSongInstruments as apiSetSongInstruments, setSongLinks as apiSetSongLinks,
   addThreadMedia as apiAddThreadMedia, addThreadRefs as apiAddThreadRefs, settleEvent as apiSettleEvent, setCommentReaction as apiSetCommentReaction, setThreadArchived as apiSetThreadArchived, setThreadPinned as apiSetThreadPinned, setThreadReaction as apiSetThreadReaction, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateEvent as apiUpdateEvent, updateMemberInstruments as apiUpdateMemberInstruments, updateSong as apiUpdateSong, updateTransaction as apiUpdateTransaction, voteThreadPoll as apiVoteThreadPoll,
   uploadEventPhoto as apiUploadEventPhoto, uploadForumPhoto as apiUploadForumPhoto, uploadProof as apiUploadProof, type DataSnapshot,
 } from './api';
-import type { EventType, GearCondition, GenreId, LinkKind, Proficiency, ProofKind, ReactionKind, RsvpStatus, TxCategory, TxKind, VocalFlag } from '../types';
+import type { EventType, LinkCategory, GearCondition, GenreId, LinkKind, Proficiency, ProofKind, ReactionKind, RsvpStatus, TxCategory, TxKind, VocalFlag } from '../types';
 
 export interface CreateThreadInput { title: string; body: string; }
 export interface CreateEventInput { title: string; venue: string; date: string; time: string; hours: number; fee: number; cost: number; note: string; type: EventType; }
@@ -54,6 +54,8 @@ interface DataValue extends DataSnapshot {
   setRsvp: (eventId: string, status: RsvpStatus | null) => Promise<void>;
   /** Pin/unpin an event. */
   setEventPinned: (id: string, pinned: boolean) => Promise<void>;
+  createLink: (input: { title: string; url: string; category: LinkCategory }) => Promise<void>;
+  deleteLink: (id: number) => Promise<void>;
   createThread: (input: CreateThreadInput) => Promise<string | undefined>;
   /** Add a comment — or, with `parentId`, a one-level reply. Resolves to the new comment id. */
   addComment: (threadId: string, body: string, parentId?: number | null) => Promise<number | undefined>;
@@ -91,6 +93,7 @@ const EMPTY: DataSnapshot = {
   transactions: [],
   gear: [],
   threads: [],
+  links: [],
   members: [],
   instruments: [],
   takes: [],
@@ -183,6 +186,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
       },
       setRsvp: (eventId, status) => run(() => apiSetRsvp(eventId, status, uid)),
       setEventPinned: (id, pinned) => run(() => apiSetEventPinned(id, pinned)),
+      createLink: (input) => run(() => apiCreateLink(input, uid)),
+      deleteLink: (id) => run(() => apiDeleteLink(id)),
       createThread: (input) => run(() => apiCreateThread(input, uid)),
       addComment: (threadId, body, parentId = null) => run(() => apiAddComment(threadId, body, uid, parentId)),
       setThreadReaction: (threadId, kind) => run(() => apiSetThreadReaction(threadId, kind, uid)),

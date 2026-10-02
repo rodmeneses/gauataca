@@ -6,7 +6,7 @@
 import { supabase } from './supabase';
 import { notifyCreated } from './notify';
 import type {
-  BandEvent, EventFeedback, EventType, Gear, GearCondition, GenreId, Instrument, LinkKind, Member, Proficiency, ProofKind, ReactionKind, ReactionTally, RsvpStatus, Song, Take, Thread, ThreadComment, ThreadPoll, Transaction, TxCategory, TxKind, VocalFlag,
+  BandEvent, BandLink, LinkCategory, EventFeedback, EventType, Gear, GearCondition, GenreId, Instrument, LinkKind, Member, Proficiency, ProofKind, ReactionKind, ReactionTally, RsvpStatus, Song, Take, Thread, ThreadComment, ThreadPoll, Transaction, TxCategory, TxKind, VocalFlag,
 } from '../types';
 
 type Row = Record<string, any>;
@@ -17,6 +17,7 @@ export interface DataSnapshot {
   transactions: Transaction[];
   gear: Gear[];
   threads: Thread[];
+  links: BandLink[];
   members: Member[];
   /** Shared instrument catalog (basic + custom). */
   instruments: Instrument[];
@@ -323,7 +324,7 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
   const [
     profiles, profileInstruments, vocals, songs, songInstruments, songLinks, events, eventSongs, eventMedia, attendance,
     feedback, polls, pollOptions, pollVotes, gear, transactions, threads, threadReactions, threadComments, threadCommentReactions,
-    threadMedia, threadRefs, threadPolls, threadPollOptions, threadPollVotes, instruments, takes,
+    threadMedia, threadRefs, threadPolls, threadPollOptions, threadPollVotes, instruments, takes, links,
   ] = await Promise.all([
     supabase.from('profiles').select('*'),
     supabase.from('profile_instruments').select('*'),
@@ -352,6 +353,7 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
     supabase.from('thread_poll_votes').select('*'),
     supabase.from('instruments').select('*'),
     supabase.from('takes').select('*'),
+    supabase.from('links').select('*').order('created_at', { ascending: false }),
   ]);
 
   const members = mapMembers(profiles.data ?? [], profileInstruments.data ?? [], vocals.data ?? []);
@@ -382,6 +384,7 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
       threads.data ?? [], threadReactions.data ?? [], threadCommentReactions.data ?? [], threadComments.data ?? [],
       threadMedia.data ?? [], threadRefs.data ?? [], threadPolls.data ?? [], threadPollOptions.data ?? [], threadPollVotes.data ?? [], userId,
     ),
+    links: (links.data ?? []).map((l): BandLink => ({ id: l.id, title: l.title, url: l.url, category: l.category as LinkCategory, createdBy: l.created_by })),
     members,
     instruments: mapInstruments(instruments.data ?? []),
     takes: mapTakes(takes.data ?? []),
@@ -799,6 +802,16 @@ export async function createThread(input: { title: string; body: string }, userI
   });
   void notifyCreated({ kind: 'thread', id });
   return id;
+}
+
+/** Add a general band link. */
+export async function createLink(input: { title: string; url: string; category: LinkCategory }, userId: string): Promise<void> {
+  await supabase.from('links').insert({ title: input.title, url: input.url, category: input.category, created_by: userId });
+}
+
+/** Remove a general band link. */
+export async function deleteLink(id: number): Promise<void> {
+  await supabase.from('links').delete().eq('id', id);
 }
 
 /** Pin/unpin a forum idea — pinned ideas sort to the top of the active/archived list. */
