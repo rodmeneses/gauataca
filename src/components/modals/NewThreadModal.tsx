@@ -72,7 +72,7 @@ export function NewThreadModal() {
                 type="button"
                 onClick={() => setPollOn(true)}
                 disabled={!isAdmin}
-                className="inline-flex items-center gap-[6px] py-[8px] px-[12px] rounded-[9px] border border-violet/40 bg-[var(--color-tint-violet)] text-violet-lighter font-sans font-semibold text-[12.5px] leading-[normal] cursor-pointer hover:bg-[var(--color-tint-violet)] disabled:opacity-45 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-[6px] min-h-[44px] py-[8px] px-[12px] rounded-[9px] border border-violet/40 bg-[var(--color-tint-violet)] text-violet-lighter font-sans font-semibold text-[12.5px] leading-[normal] cursor-pointer hover:bg-[var(--color-tint-violet)] disabled:opacity-45 disabled:cursor-not-allowed"
               >
                 <BarChart3 size={14} strokeWidth={2} />
                 {t.addPoll}
@@ -122,7 +122,7 @@ export function NewThreadModal() {
               <button
                 type="button"
                 onClick={() => setPollOpts((cur) => [...cur, ''])}
-                className="self-start inline-flex items-center gap-[6px] py-[7px] px-[11px] rounded-[9px] border border-emerald/40 bg-[var(--color-tint-emerald)] text-emerald-light font-sans font-semibold text-[12px] leading-[normal] cursor-pointer hover:bg-[var(--color-tint-emerald)]"
+                className="self-start inline-flex items-center gap-[6px] min-h-[44px] py-[7px] px-[11px] rounded-[9px] border border-emerald/40 bg-[var(--color-tint-emerald)] text-emerald-light font-sans font-semibold text-[12px] leading-[normal] cursor-pointer hover:bg-[var(--color-tint-emerald)]"
               >
                 <Plus size={13} strokeWidth={2.2} />
                 {t.addOption}
@@ -149,7 +149,7 @@ export function NewThreadModal() {
                       setFiles((cur) => cur.filter((_, n) => n !== i));
                     }}
                     aria-label={t.removeRef}
-                    className="absolute top-1 right-1 grid place-items-center w-[22px] h-[22px] rounded-full bg-black/55 text-white cursor-pointer p-0 border-none hover:bg-black/75"
+                    className="absolute top-1 right-1 grid place-items-center w-[22px] h-[22px] rounded-full after:content-[''] after:absolute after:-inset-3 bg-black/55 text-white cursor-pointer p-0 border-none hover:bg-black/75"
                   >
                     <X size={13} strokeWidth={2.4} />
                   </button>
@@ -160,7 +160,7 @@ export function NewThreadModal() {
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            className="inline-flex items-center gap-[6px] py-[8px] px-[12px] rounded-[9px] border border-emerald/40 bg-[var(--color-tint-emerald)] text-emerald-light font-sans font-semibold text-[12.5px] leading-[normal] cursor-pointer hover:bg-[var(--color-tint-emerald)]"
+            className="inline-flex items-center gap-[6px] min-h-[44px] py-[8px] px-[12px] rounded-[9px] border border-emerald/40 bg-[var(--color-tint-emerald)] text-emerald-light font-sans font-semibold text-[12.5px] leading-[normal] cursor-pointer hover:bg-[var(--color-tint-emerald)]"
           >
             <ImagePlus size={14} strokeWidth={2} />
             {t.attachPhoto}

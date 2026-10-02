@@ -31,7 +31,7 @@ export function OnboardModal() {
         </Field>
       </div>
       <div className="p-[16px_22px] border-t border-line-soft flex gap-[10px] justify-end">
-        <button type="button" onClick={skipOnboard} className="p-[11px_17px] rounded-[10px] border border-line bg-surface text-ink-body font-sans font-semibold text-[13px] leading-[normal] cursor-pointer">
+        <button type="button" onClick={skipOnboard} className="min-h-[44px] p-[11px_17px] rounded-[10px] border border-line bg-surface text-ink-body font-sans font-semibold text-[13px] leading-[normal] cursor-pointer">
           {t.skip}
         </button>
         <Button variant="primary" className="p-[11px_17px]" onClick={finish}>
