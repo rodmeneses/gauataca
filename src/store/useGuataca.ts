@@ -350,6 +350,9 @@ function profileToMember(p: Profile): Member {
   };
 }
 
+/** True while a poll vote is saving, so rapid taps don't stack votes or toasts. */
+let votingThreadPoll = false;
+
 export function useGuataca(): Guataca {
   const { state: st, props, set, toast, dismissToast } = useStore();
   const { user, profile, signOut, refreshProfile } = useAuth();
@@ -920,8 +923,15 @@ export function useGuataca(): Guataca {
         toast(b.archived ? t.unarchived : t.archived);
       },
       voteThreadPoll: async (optionId) => {
-        await persistVoteThreadPoll(optionId);
-        toast(t.voted);
+        if (votingThreadPoll) return;
+        votingThreadPoll = true;
+        try {
+          const removing = thSel?.poll?.myOptionId === optionId;
+          await persistVoteThreadPoll(optionId);
+          toast(removing ? t.voteRemoved : t.voted);
+        } finally {
+          votingThreadPoll = false;
+        }
       },
       pickPoll: async (i) => {
         if (!evSel) return;
