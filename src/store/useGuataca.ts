@@ -359,7 +359,7 @@ export function useGuataca(): Guataca {
   const { state: st, props, set, toast, dismissToast } = useStore();
   const { user, profile, signOut, refreshProfile } = useAuth();
   const {
-    songs: dbSongs, events: dbEvents, transactions: dbTx, gear: dbGear, threads: dbThreads, members: dbMembers,
+    songs: dbSongs, events: dbEvents, transactions: dbTx, gear: dbGear, threads: dbThreads, members: dbMembers, links: dbLinks,
     instruments: dbInstruments, takes: dbTakes, myPollPicks, loading, mutating, error,
     createEvent, updateEvent, createSong, updateSong, setSongLinks: persistSongLinks, createTransaction, updateTransaction: persistUpdateTransaction, deleteTransaction: persistDeleteTransaction, createGear: persistGear, createInstrument: persistInstrument,
     onboard: persistOnboard, updateMemberInstruments: persistMemberInstruments, setSongInstruments: persistSongInstruments,
@@ -536,7 +536,7 @@ export function useGuataca(): Guataca {
       .slice(0, 9)
       .map((i, n) => ({ ...i, idx: String(n + 1) }));
 
-    /* ---- global search (mobile): events, songs, fund movements, ideas */
+    /* ---- global search (mobile): events, songs, fund movements, ideas, polls, links */
     const searchResults: SearchResult[] = st.search
       ? searchAll(st.sq, {
           events: allEvents.map((e) => ({ ...evm(e), date: e.date })),
@@ -551,11 +551,31 @@ export function useGuataca(): Guataca {
               date: c.createdAt.slice(0, 10),
             })),
           })),
+          polls: dbThreads.flatMap((b) =>
+            b.poll
+              ? [{
+                  id: b.id,
+                  date: b.date,
+                  question: Lx(b.poll.question),
+                  options: b.poll.options.map((o) => Lx(o.label)),
+                  threadTitle: Lx(b.title),
+                  author: memberById(dbMembers, b.by).short,
+                }]
+              : [],
+          ),
+          links: dbLinks.map((l) => ({
+            id: l.id,
+            title: l.title,
+            url: l.url,
+            categoryLabel: { docs: t.catDocs, music: t.catMusic, social: t.catSocial, logistics: t.catLogistics, other: t.catOther }[l.category],
+            by: memberById(dbMembers, l.createdBy).short,
+          })),
         }).map((h) => ({
           ...h,
           run:
             h.kind === 'event' ? () => set({ search: false, modal: { kind: 'event', id: h.id } })
-            : h.kind === 'idea' ? () => set({ search: false, mobileTab: 'brainstorm', view: 'brainstorm', modal: { kind: 'thread', id: h.id } })
+            : h.kind === 'idea' || h.kind === 'poll' ? () => set({ search: false, mobileTab: 'brainstorm', view: 'brainstorm', modal: { kind: 'thread', id: h.id } })
+            : h.kind === 'link' ? () => set({ search: false, modal: null, view: 'links', mobileTab: 'links' })
             : h.kind === 'song' ? () => set({ search: false, modal: null, view: 'repertoire', mobileTab: 'repertoire', openSong: h.id, scrollToSong: h.id, q: '', genre: 'all', staleOnly: false })
             : () => set({ search: false, modal: null, view: 'ledger', mobileTab: 'fund', scrollToTx: h.id, txFilter: 'all', txDate: 'all' }),
         }))
@@ -1048,5 +1068,5 @@ export function useGuataca(): Guataca {
       toast,
       dismissToast,
     };
-  }, [st, props, set, toast, dismissToast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes, myPollPicks, loading, mutating, error, isPhoneViewport, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, updateEvent, createSong, updateSong, persistSongLinks, createTransaction, persistUpdateTransaction, persistDeleteTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistAddEventMedia, persistAddEventPhotos, persistDeleteEventMedia, persistUploadEventPhoto, persistRsvp, persistCreateThread, persistComment, persistThreadReaction, persistCommentReaction, persistDeleteComment, persistAddThreadMedia, persistDeleteThreadMedia, persistThreadRefs, persistUploadForumPhoto, persistCreateThreadPoll, persistAddThreadPollOption, persistVoteThreadPoll, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
+  }, [st, props, set, toast, dismissToast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbLinks, dbInstruments, dbTakes, myPollPicks, loading, mutating, error, isPhoneViewport, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, updateEvent, createSong, updateSong, persistSongLinks, createTransaction, persistUpdateTransaction, persistDeleteTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistAddEventMedia, persistAddEventPhotos, persistDeleteEventMedia, persistUploadEventPhoto, persistRsvp, persistCreateThread, persistComment, persistThreadReaction, persistCommentReaction, persistDeleteComment, persistAddThreadMedia, persistDeleteThreadMedia, persistThreadRefs, persistUploadForumPhoto, persistCreateThreadPoll, persistAddThreadPollOption, persistVoteThreadPoll, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
 }

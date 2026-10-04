@@ -15,6 +15,8 @@ const src: SearchSources = {
     { id: 't2', date: '2026-08-02', desc: 'Cuerdas de cuatro', dateStr: '2 ago 2026', amountStr: '−$47.30', by: 'Luis', categoryLabel: null, eventLabel: null, gearLabel: 'Cuatro' },
   ],
   threads: [{ id: 'b1', date: '2026-08-01', comments: [{ text: 'Yo llevo el bajo', author: 'Luis', date: '2026-08-05' }], title: 'Tocar gaitas en diciembre', body: 'Podríamos armar un set navideño', author: 'Ana', dateStr: '1 ago 2026' }],
+  polls: [{ id: 'b1', date: '2026-08-01', question: '¿Qué día ensayamos?', options: ['Martes', 'Jueves'], threadTitle: 'Tocar gaitas en diciembre', author: 'Ana' }],
+  links: [{ id: 7, title: 'Carpeta de partituras', url: 'https://drive.google.com/abc', categoryLabel: 'Documentos', by: 'Luis' }],
 };
 
 describe('normalize', () => {
@@ -47,7 +49,7 @@ describe('searchAll', () => {
   it('matches on secondary fields (gear, note, body, author)', () => {
     expect(searchAll('cuatro', src).map((h) => h.id)).toEqual(['t2']);
     expect(searchAll('navideño', src).map((h) => h.id)).toEqual(['b1']);
-    expect(searchAll('luis', src).map((h) => h.id)).toEqual(['e2', 't2', 'b1']);
+    expect(searchAll('luis', src).map((h) => h.id)).toEqual(['e2', 't2', 'b1', '7']);
   });
 
   it('builds a readable sub line', () => {
@@ -92,7 +94,7 @@ describe('searchAll', () => {
       { id: 'e1', date: '2026-08-01', title: 'Joropo uno', venue: '', note: '', typeLabel: '', dateStr: '' },
       { id: 'e2', date: '2026-08-01', title: 'Joropo dos', venue: '', note: '', typeLabel: '', dateStr: '' },
     ];
-    const hits = searchAll('joropo', { ...src, events, songs: [], tx: [], threads: [] });
+    const hits = searchAll('joropo', { ...src, events, songs: [], tx: [], threads: [], polls: [], links: [] });
     expect(hits.map((h) => h.id)).toEqual(['e1', 'e2']);
   });
 
@@ -113,5 +115,22 @@ describe('searchAll', () => {
     const hits = searchAll('tema', many);
     expect(hits).toHaveLength(SEARCH_LIMIT_PER_KIND);
     expect(hits.every((h) => h.kind === 'song')).toBe(true);
+  });
+
+  it('finds polls by question or option and links by title, url or category', () => {
+    expect(searchAll('jueves', src)).toEqual([
+      { kind: 'poll', id: 'b1', title: '¿Qué día ensayamos?', sub: 'Tocar gaitas en diciembre · Martes / Jueves' },
+    ]);
+    expect(searchAll('drive', src)).toEqual([{ kind: 'link', id: '7', title: 'Carpeta de partituras', sub: 'Documentos · drive.google.com/abc' }]);
+    expect(searchAll('documentos', src).map((h) => h.kind)).toEqual(['link']);
+  });
+
+  it('caps polls and links per type', () => {
+    const polls = Array.from({ length: SEARCH_LIMIT_PER_KIND + 2 }, (_, i) => ({ id: `p${i}`, date: `2026-01-${10 + i}`, question: 'Votar', options: [], threadTitle: '', author: '' }));
+    const links = Array.from({ length: SEARCH_LIMIT_PER_KIND + 2 }, (_, i) => ({ id: i, title: 'Votar', url: 'x.com', categoryLabel: '', by: '' }));
+    const hits = searchAll('votar', { ...src, polls, links });
+    expect(hits.filter((h) => h.kind === 'poll')).toHaveLength(SEARCH_LIMIT_PER_KIND);
+    expect(hits.filter((h) => h.kind === 'link')).toHaveLength(SEARCH_LIMIT_PER_KIND);
+    expect(hits[0].id).toBe(`p${SEARCH_LIMIT_PER_KIND + 1}`);
   });
 });

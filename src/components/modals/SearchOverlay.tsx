@@ -1,10 +1,10 @@
 /**
  * Mobile global search: full-screen overlay that searches events, songs, fund
- * movements and brainstorm ideas. Each hit shows its type; tapping it jumps to
+ * movements, brainstorm ideas, polls and links. Each hit shows its type; tapping it jumps to
  * the resource (see `searchResults` in useGuataca).
  */
 import { useEffect, useState, type ReactNode } from 'react';
-import { Calendar, Lightbulb, Music, Receipt, Search, X } from 'lucide-react';
+import { BarChart3, Calendar, Lightbulb, Link2, Music, Receipt, Search, X } from 'lucide-react';
 import { useGuataca } from '../../store';
 import type { SearchKind } from '../../lib/search';
 
@@ -13,6 +13,8 @@ const KIND_STYLE: Record<SearchKind, { icon: ReactNode; color: string; bg: strin
   song: { icon: <Music size={18} strokeWidth={1.9} />, color: 'var(--color-emerald)', bg: 'var(--color-tint-emerald)' },
   fund: { icon: <Receipt size={18} strokeWidth={1.9} />, color: 'var(--color-amber)', bg: 'var(--color-tint-amber)' },
   idea: { icon: <Lightbulb size={18} strokeWidth={1.9} />, color: 'var(--color-sky)', bg: 'var(--color-tint-sky)' },
+  poll: { icon: <BarChart3 size={18} strokeWidth={1.9} />, color: 'var(--color-sky)', bg: 'var(--color-tint-sky)' },
+  link: { icon: <Link2 size={18} strokeWidth={1.9} />, color: 'var(--color-violet-light)', bg: 'var(--color-tint-violet)' },
 };
 
 /** Height of the visible area, so the result list stays above the on-screen keyboard. */
@@ -33,7 +35,7 @@ export function SearchOverlay() {
   const { t, state, setSq, closeSearch, searchResults } = useGuataca();
   const height = useVisibleHeight();
   const q = state.sq;
-  const kindLabel: Record<SearchKind, string> = { event: t.refEvents, song: t.refSongs, fund: t.fund, idea: t.brainstorm };
+  const kindLabel: Record<SearchKind, string> = { event: t.refEvents, song: t.refSongs, fund: t.fund, idea: t.brainstorm, poll: t.poll, link: t.links };
   const px = 'pl-[max(16px,env(safe-area-inset-left))] pr-[max(16px,env(safe-area-inset-right))]';
 
   return (
