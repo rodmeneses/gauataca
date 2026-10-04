@@ -4,7 +4,7 @@
  * comment + per-comment reply) — each with @-mentions and photo attach.
  */
 import { useEffect, useRef, useState } from 'react';
-import { Archive, ArchiveRestore, CalendarDays, ChartColumn, ImagePlus, Link, MessageCircle, Music, Pin, Trash2, X } from 'lucide-react';
+import { Archive, ArchiveRestore, CalendarDays, ChartColumn, ImagePlus, Link, MessageCircle, Music, Pin, Plus, Trash2, X } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { Avatar, Button, CloseButton, Modal, useConfirm } from '@/components/ui';
 import { PhotoStrip } from '@/components/ui/PhotoStrip';
@@ -116,11 +116,12 @@ export function ThreadModal() {
   const {
     t, state, th, isAdmin, closeModal,
     setCommentDraft, sendComment, setReplyDraft, setReplyTarget, sendReply,
-    setThreadReaction, setCommentReaction, voteThreadPoll, addThreadPhotos, convertThread, goToSong, openEvent,
+    setThreadReaction, setCommentReaction, voteThreadPoll, addThreadPollOption, addThreadPhotos, convertThread, goToSong, openEvent,
     toggleThreadPin, toggleThreadArchive, deleteComment, copyLink,
   } = useGuataca();
   const { confirm, dialog } = useConfirm();
   const ideaFileRef = useRef<HTMLInputElement>(null);
+  const [newOption, setNewOption] = useState('');
   const targetComment = state.modal?.kind === 'thread' ? state.modal.commentId : undefined;
   const threadId = th?.id;
   // Deep link to a comment/reply: scroll it into view once the thread renders.
@@ -317,6 +318,35 @@ export function ThreadModal() {
                 </button>
               ))}
             </div>
+            {isAdmin && (
+              <form
+                className="flex gap-2 mt-3"
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  const label = newOption.trim();
+                  if (!label) return;
+                  setNewOption('');
+                  await addThreadPollOption(label);
+                }}
+              >
+                <input
+                  value={newOption}
+                  onChange={(e) => setNewOption(e.target.value)}
+                  placeholder={t.newOptionPh}
+                  aria-label={t.addOption}
+                  className="flex-1 min-w-0 h-[38px] px-3 rounded-[9px] border border-line bg-surface text-ink-base font-sans text-[13px]"
+                />
+                <button
+                  type="submit"
+                  disabled={!newOption.trim()}
+                  title={t.addOption}
+                  aria-label={t.addOption}
+                  className="grid place-items-center flex-none w-[38px] h-[38px] rounded-[9px] border border-line bg-surface text-ink-muted hover:text-ink-body cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+                >
+                  <Plus size={15} strokeWidth={2.2} />
+                </button>
+              </form>
+            )}
           </div>
         )}
       </div>

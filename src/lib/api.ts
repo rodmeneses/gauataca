@@ -860,6 +860,13 @@ export async function createThreadPoll(
   }
 }
 
+/** Add another option to an existing idea poll (admins only, enforced by RLS). */
+export async function addThreadPollOption(threadId: string, label: string): Promise<void> {
+  const { data: poll } = await supabase.from('thread_polls').select('id').eq('thread_id', threadId).single();
+  if (!poll?.id) return;
+  await supabase.from('thread_poll_options').insert({ poll_id: poll.id, label_es: label, label_en: label });
+}
+
 /**
  * Vote on a poll option. Single-choice polls: re-picking moves the vote, and voting
  * again on the picked option removes it. Multiple-choice polls: toggles that option.
