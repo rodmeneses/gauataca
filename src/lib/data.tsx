@@ -8,7 +8,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { useAuth } from './auth';
 import {
   addComment as apiAddComment, addEventMedia as apiAddEventMedia, addEventPhotos as apiAddEventPhotos, addTake as apiAddTake, createEvent as apiCreateEvent, createGear as apiCreateGear, createInstrument as apiCreateInstrument, createLink as apiCreateLink, deleteLink as apiDeleteLink,
-  createSong as apiCreateSong, createThread as apiCreateThread, createThreadPoll as apiCreateThreadPoll, createTransaction as apiCreateTransaction, deleteComment as apiDeleteComment, deleteEventMedia as apiDeleteEventMedia, deleteTake as apiDeleteTake, deleteThreadMedia as apiDeleteThreadMedia, deleteTransaction as apiDeleteTransaction, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
+  createSong as apiCreateSong, createThread as apiCreateThread, addThreadPollOption as apiAddThreadPollOption, createThreadPoll as apiCreateThreadPoll, createTransaction as apiCreateTransaction, deleteComment as apiDeleteComment, deleteEventMedia as apiDeleteEventMedia, deleteTake as apiDeleteTake, deleteThreadMedia as apiDeleteThreadMedia, deleteTransaction as apiDeleteTransaction, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
   setEventPinned as apiSetEventPinned, setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, setSongInstruments as apiSetSongInstruments, setSongLinks as apiSetSongLinks,
   addThreadMedia as apiAddThreadMedia, addThreadRefs as apiAddThreadRefs, settleEvent as apiSettleEvent, setCommentReaction as apiSetCommentReaction, setThreadArchived as apiSetThreadArchived, setThreadPinned as apiSetThreadPinned, setThreadReaction as apiSetThreadReaction, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateEvent as apiUpdateEvent, updateMemberInstruments as apiUpdateMemberInstruments, updateSong as apiUpdateSong, updateTransaction as apiUpdateTransaction, voteThreadPoll as apiVoteThreadPoll,
   uploadEventPhoto as apiUploadEventPhoto, uploadForumPhoto as apiUploadForumPhoto, uploadProof as apiUploadProof, type DataSnapshot,
@@ -79,6 +79,8 @@ interface DataValue extends DataSnapshot {
   settleEvent: (eventId: string, input: { happened: boolean; fee: number; cost: number }) => Promise<void>;
   /** Attach a poll to an idea (created alongside it). */
   createThreadPoll: (threadId: string, question: string, options: string[], multiple: boolean) => Promise<void>;
+  /** Add an option to an idea's existing poll. */
+  addThreadPollOption: (threadId: string, label: string) => Promise<void>;
   /** Set the signed-in member's vote on a poll option. */
   voteThreadPoll: (optionId: number) => Promise<void>;
   /** Upload a receipt/invoice file; resolves to its public URL. */
@@ -207,6 +209,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setEventSetlist: (eventId, songIds) => run(() => apiSetEventSetlist(eventId, songIds, uid)),
       settleEvent: (eventId, input) => run(() => apiSettleEvent(eventId, input, uid)),
       createThreadPoll: (threadId, question, options, multiple) => run(() => apiCreateThreadPoll(threadId, question, options, multiple, uid)),
+      addThreadPollOption: (threadId, label) => run(() => apiAddThreadPollOption(threadId, label)),
       voteThreadPoll: (optionId) => run(() => apiVoteThreadPoll(optionId, uid)),
       uploadProof: async (file) => {
         return apiUploadProof(file);
