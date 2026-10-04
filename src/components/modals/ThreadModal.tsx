@@ -293,6 +293,9 @@ export function ThreadModal() {
               <span className="font-sans font-semibold text-[12.5px] leading-[normal] text-ink-base">{th.poll.question}</span>
               <span className="ml-auto font-mono font-medium text-[11px] leading-[normal] text-ink-dim">{th.poll.total} {t.votes}</span>
             </div>
+            {th.poll.multiple && (
+              <div className="mb-2 font-sans text-[11.5px] leading-[1.4] text-ink-dim">{t.pollMultipleHint}</div>
+            )}
             <div className="flex flex-col gap-2">
               {th.poll.options.map((o) => (
                 <button

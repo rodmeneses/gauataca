@@ -619,6 +619,8 @@ export interface ThreadPollOptionVm {
 
 export interface ThreadPollVm {
   question: string;
+  /** True when members may pick several options. */
+  multiple: boolean;
   /** Total votes, as text. */
   total: string;
   options: ThreadPollOptionVm[];
@@ -630,13 +632,14 @@ export function threadPollVm(p: ThreadPoll, ctx: Ctx): ThreadPollVm {
   const denom = total || 1;
   return {
     question: L(lang, p.question),
+    multiple: p.multiple,
     total: String(total),
     options: p.options.map((o) => ({
       id: o.id,
       label: L(lang, o.label),
       v: String(o.votes),
       pct: Math.round((o.votes / denom) * 100) + '%',
-      picked: p.myOptionId === o.id,
+      picked: p.myOptionIds.includes(o.id),
     })),
   };
 }

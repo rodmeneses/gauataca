@@ -21,7 +21,8 @@ export function NewThreadModal() {
   const [pollOn, setPollOn] = useState(false);
   const [pollQ, setPollQ] = useState('');
   const [pollOpts, setPollOpts] = useState<string[]>(['', '']);
-  const poll = pollOn ? { question: pollQ, options: pollOpts } : null;
+  const [pollMultiple, setPollMultiple] = useState(false);
+  const poll = pollOn ? { question: pollQ, options: pollOpts, multiple: pollMultiple } : null;
   const pollComplete = pollQ.trim() !== '' && pollOpts.filter((o) => o.trim()).length >= 2;
 
   const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,6 +128,10 @@ export function NewThreadModal() {
                 <Plus size={13} strokeWidth={2.2} />
                 {t.addOption}
               </button>
+              <label className="inline-flex items-center gap-2 min-h-[44px] font-sans font-medium text-[12.5px] text-ink-body cursor-pointer">
+                <input type="checkbox" checked={pollMultiple} onChange={(e) => setPollMultiple(e.target.checked)} />
+                {t.pollMultiple}
+              </label>
               {!pollComplete && (
                 <div className="font-sans text-[11.5px] leading-[1.4] text-amber">{t.pollIncomplete}</div>
               )}

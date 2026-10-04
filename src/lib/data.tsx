@@ -78,7 +78,7 @@ interface DataValue extends DataSnapshot {
   setEventSetlist: (eventId: string, songIds: string[]) => Promise<void>;
   settleEvent: (eventId: string, input: { happened: boolean; fee: number; cost: number }) => Promise<void>;
   /** Attach a poll to an idea (created alongside it). */
-  createThreadPoll: (threadId: string, question: string, options: string[]) => Promise<void>;
+  createThreadPoll: (threadId: string, question: string, options: string[], multiple: boolean) => Promise<void>;
   /** Set the signed-in member's vote on a poll option. */
   voteThreadPoll: (optionId: number) => Promise<void>;
   /** Upload a receipt/invoice file; resolves to its public URL. */
@@ -206,7 +206,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       transferCustody: (gearId, toMemberId) => run(() => apiTransferCustody(gearId, toMemberId, uid)),
       setEventSetlist: (eventId, songIds) => run(() => apiSetEventSetlist(eventId, songIds, uid)),
       settleEvent: (eventId, input) => run(() => apiSettleEvent(eventId, input, uid)),
-      createThreadPoll: (threadId, question, options) => run(() => apiCreateThreadPoll(threadId, question, options, uid)),
+      createThreadPoll: (threadId, question, options, multiple) => run(() => apiCreateThreadPoll(threadId, question, options, multiple, uid)),
       voteThreadPoll: (optionId) => run(() => apiVoteThreadPoll(optionId, uid)),
       uploadProof: async (file) => {
         return apiUploadProof(file);

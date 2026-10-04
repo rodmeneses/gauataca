@@ -397,7 +397,8 @@ describe('threadVm', () => {
       poll: {
         question: { es: '', en: 'Where?' },
         options: [{ id: 1, label: { es: '', en: 'Downtown' }, votes: 1 }],
-        myOptionId: null,
+        multiple: false,
+        myOptionIds: [],
       },
       comments: [
         {
@@ -420,7 +421,7 @@ describe('threadVm', () => {
     expect(vm.likedBy).toEqual(['Ana', 'Beto']);
     expect(vm.dislikedBy).toEqual([]);
     expect(vm.myReaction).toBe('like');
-    expect(vm.poll).toEqual({ question: 'Where?', total: '1', options: [{ id: 1, label: 'Downtown', v: '1', pct: '100%', picked: false }] });
+    expect(vm.poll).toEqual({ question: 'Where?', multiple: false, total: '1', options: [{ id: 1, label: 'Downtown', v: '1', pct: '100%', picked: false }] });
     expect(vm.commentCount).toBe('2'); // 1 top-level + 1 reply
     expect(vm.comments).toHaveLength(1);
     expect(vm.comments[0].author).toBe('Beto');
@@ -458,7 +459,8 @@ describe('threadPollVm', () => {
         { id: 1, label: { es: '', en: 'Downtown' }, votes: 3 },
         { id: 2, label: { es: '', en: 'Uptown' }, votes: 1 },
       ],
-      myOptionId: 2,
+      multiple: false,
+      myOptionIds: [2],
     };
     const vm = threadPollVm(poll, baseCtx());
     expect(vm.question).toBe('Next gig venue?');
@@ -469,11 +471,28 @@ describe('threadPollVm', () => {
     ]);
   });
 
+  it('marks every picked option on a multiple-choice poll', () => {
+    const poll = {
+      question: { es: '', en: 'Which days?' },
+      options: [
+        { id: 1, label: { es: '', en: 'Fri' }, votes: 2 },
+        { id: 2, label: { es: '', en: 'Sat' }, votes: 2 },
+        { id: 3, label: { es: '', en: 'Sun' }, votes: 0 },
+      ],
+      multiple: true,
+      myOptionIds: [1, 2],
+    };
+    const vm = threadPollVm(poll, baseCtx());
+    expect(vm.multiple).toBe(true);
+    expect(vm.options.map((o) => o.picked)).toEqual([true, true, false]);
+  });
+
   it('falls back to a 0% denominator when there are no votes yet', () => {
     const poll = {
       question: { es: '', en: 'Next gig venue?' },
       options: [{ id: 1, label: { es: '', en: 'Downtown' }, votes: 0 }],
-      myOptionId: null,
+      multiple: false,
+      myOptionIds: [],
     };
     const vm = threadPollVm(poll, baseCtx());
     expect(vm.total).toBe('0');
