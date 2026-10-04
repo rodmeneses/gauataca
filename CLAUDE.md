@@ -49,12 +49,14 @@ repertoire, ledger/gear, brainstorm, members, and a design-system view.
   that list, either add it fully tested or don't add it — a half-covered module will fail
   the threshold. This is also a CI gate (`npm run coverage` in `.github/workflows/test.yml`),
   so a PR that drops coverage below 95% fails to merge.
-- **Changelog:** `src/data/changelog.ts` — `CHANGELOG` array (newest first), shown to
+- **Changelog (MANDATORY on every PR):** `src/data/changelog.ts` — `CHANGELOG` array (newest first), shown to
   members as a "What's new" dialog. Every PR with a user-facing change must add one
   `{es, en}` bullet to it: either to the current unreleased version's `changes` list, or,
   if starting a new release, a new entry at the top with `version` bumped to match
   `package.json` (a test enforces they match). Skip it only for pure refactors, internal
-  tooling, or dev-only changes with nothing a band member would notice.
+  tooling, or dev-only changes with nothing a band member would notice. Before opening or
+  finishing any PR, check `git diff` for `src/data/changelog.ts`; if it's absent and the
+  change is user-visible, add the bullet before committing — never wait to be reminded.
 
 ## Gotchas
 
