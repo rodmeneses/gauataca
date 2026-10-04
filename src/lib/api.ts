@@ -263,13 +263,13 @@ function mapThreads(
     const poll = pollsByThread.get(threadId)?.[0];
     if (!poll) return undefined;
     const opts = (optsByPoll.get(poll.id) ?? []).sort((a, b) => a.id - b.id);
-    let myOptionId: number | null = null;
+    const myOptionIds: number[] = [];
     const options = opts.map((o) => {
       const rows = votesByOpt.get(o.id) ?? [];
-      if (userId && rows.some((v) => v.profile_id === userId)) myOptionId = o.id;
+      if (userId && rows.some((v) => v.profile_id === userId)) myOptionIds.push(o.id);
       return { id: o.id, label: { es: o.label_es, en: o.label_en }, votes: rows.length };
     });
-    return { question: { es: poll.question_es, en: poll.question_en }, options, myOptionId };
+    return { question: { es: poll.question_es, en: poll.question_en }, options, multiple: !!poll.multiple, myOptionIds };
   };
 
   const commentVm = (c: Row): ThreadComment => {
@@ -843,12 +843,14 @@ export async function createThreadPoll(
   threadId: string,
   question: string,
   options: string[],
+  multiple: boolean,
   _userId: string,
 ): Promise<void> {
   const { data } = await supabase.from('thread_polls').insert({
     thread_id: threadId,
     question_es: question,
     question_en: question,
+    multiple,
   }).select('id').single();
   const pollId = data?.id;
   if (pollId && options.length) {
@@ -858,17 +860,26 @@ export async function createThreadPoll(
   }
 }
 
-/** Set the signed-in member's vote on a poll option; re-picking moves the vote. */
-/** Set the member's vote on a poll option; voting again on the picked option removes the vote. */
+/**
+ * Vote on a poll option. Single-choice polls: re-picking moves the vote, and voting
+ * again on the picked option removes it. Multiple-choice polls: toggles that option.
+ */
 export async function voteThreadPoll(optionId: number, userId: string): Promise<void> {
   const { data: opt } = await supabase.from('thread_poll_options').select('poll_id').eq('id', optionId).single();
   const pollId = opt?.poll_id;
   if (!pollId) return;
+  const { data: poll } = await supabase.from('thread_polls').select('multiple').eq('id', pollId).single();
   const { data: opts } = await supabase.from('thread_poll_options').select('id').eq('poll_id', pollId);
   const optIds = (opts ?? []).map((o) => o.id);
   const { data: mine } = await supabase.from('thread_poll_votes').select('option_id').in('option_id', optIds).eq('profile_id', userId);
+  const picked = (mine ?? []).some((v) => v.option_id === optionId);
+  if (poll?.multiple) {
+    if (picked) await supabase.from('thread_poll_votes').delete().eq('option_id', optionId).eq('profile_id', userId);
+    else await supabase.from('thread_poll_votes').insert({ option_id: optionId, profile_id: userId });
+    return;
+  }
   await supabase.from('thread_poll_votes').delete().in('option_id', optIds).eq('profile_id', userId);
-  if (!(mine ?? []).some((v) => v.option_id === optionId)) {
+  if (!picked) {
     await supabase.from('thread_poll_votes').insert({ option_id: optionId, profile_id: userId });
   }
 }

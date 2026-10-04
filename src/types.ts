@@ -212,8 +212,10 @@ export interface ThreadMedia {
 export interface ThreadPoll {
   question: Localized;
   options: { id: number; label: Localized; votes: number }[];
-  /** Option id the signed-in member picked, or null. */
-  myOptionId: number | null;
+  /** True when members may pick several options. */
+  multiple: boolean;
+  /** Option ids the signed-in member picked (at most one unless `multiple`). */
+  myOptionIds: number[];
 }
 
 /** A comment on an idea. Replies are flat — a reply holds `parentId` and no nested replies. */

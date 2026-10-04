@@ -236,7 +236,7 @@ export interface Guataca {
   openNewGear: () => void;
   openNewThread: () => void;
   /** Create a forum idea (title/body/refs) and upload its photos; an optional poll rides along. */
-  saveThread: (photos: File[], poll?: { question: string; options: string[] } | null) => Promise<void>;
+  saveThread: (photos: File[], poll?: { question: string; options: string[]; multiple?: boolean } | null) => Promise<void>;
   setThreadReaction: (threadId: string, kind: ReactionKind | null) => Promise<void>;
   setCommentReaction: (commentId: number, kind: ReactionKind | null) => Promise<void>;
   /** Delete one of your own comments (its replies go with it). */
@@ -905,7 +905,7 @@ export function useGuataca(): Guataca {
         if (refs.length) await persistThreadRefs(id, refs);
         const pollOpts = (poll?.options ?? []).map((o) => o.trim()).filter(Boolean);
         if (poll && (poll.question || '').trim() && pollOpts.length >= 2) {
-          await persistCreateThreadPoll(id, poll.question.trim(), pollOpts);
+          await persistCreateThreadPoll(id, poll.question.trim(), pollOpts, !!poll.multiple);
         }
         if (photos.length) await uploadToThread(id, photos);
         toast(t.ideaCreated);
@@ -927,7 +927,7 @@ export function useGuataca(): Guataca {
         if (votingThreadPoll) return;
         votingThreadPoll = true;
         try {
-          const removing = thSel?.poll?.myOptionId === optionId;
+          const removing = !!thSel?.poll?.myOptionIds.includes(optionId);
           await persistVoteThreadPoll(optionId);
           toast(removing ? t.voteRemoved : t.voted);
         } finally {
