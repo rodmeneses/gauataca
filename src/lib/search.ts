@@ -1,9 +1,9 @@
 /**
- * Global search across events, songs, fund movements and brainstorm ideas.
+ * Global search across events, songs, fund movements, brainstorm ideas, idea polls and band links.
  * Pure: takes the already-built view-models and returns a flat, typed list.
  */
 
-export type SearchKind = 'event' | 'song' | 'fund' | 'idea';
+export type SearchKind = 'event' | 'song' | 'fund' | 'idea' | 'poll' | 'link';
 
 export interface SearchHit {
   kind: SearchKind;
@@ -37,6 +37,10 @@ export interface SearchSources {
     dateStr: string;
     comments: { text: string; author: string; date: string }[];
   }[];
+  /** Polls attached to forum ideas; `id` is the idea's id (a poll hit opens its idea). */
+  polls: { id: string; date: string; question: string; options: string[]; threadTitle: string; author: string }[];
+  /** Shared band links. */
+  links: { id: number; title: string; url: string; categoryLabel: string; by: string }[];
 }
 
 /** Max results per type, so one noisy type can't push the others off-screen. */
@@ -64,7 +68,7 @@ function matches(terms: string[], fields: (string | null | undefined)[]): boolea
   return terms.every((term) => hay.includes(term));
 }
 
-/** Ordered by type (events, songs, fund, ideas), newest first within each type. Empty query → no results. */
+/** Ordered by type (events, songs, fund, ideas, polls, links), newest first within each type. Empty query → no results. */
 export function searchAll(query: string, src: SearchSources): SearchHit[] {
   const terms = normalize(query).split(/\s+/).filter(Boolean);
   if (terms.length === 0) return [];
@@ -98,5 +102,16 @@ export function searchAll(query: string, src: SearchSources): SearchHit[] {
     .sort(newestFirst)
     .slice(0, SEARCH_LIMIT_PER_KIND);
 
-  return [...events, ...songs, ...fund, ...ideas];
+  const polls = src.polls
+    .filter((p) => matches(terms, [p.question, ...p.options]))
+    .sort(newestFirst)
+    .slice(0, SEARCH_LIMIT_PER_KIND)
+    .map((p): SearchHit => ({ kind: 'poll', id: p.id, title: p.question, sub: [p.threadTitle, p.options.join(' / ')].filter(Boolean).join(' · ') }));
+
+  const links = src.links
+    .filter((l) => matches(terms, [l.title, l.url, l.categoryLabel, l.by]))
+    .slice(0, SEARCH_LIMIT_PER_KIND)
+    .map((l): SearchHit => ({ kind: 'link', id: String(l.id), title: l.title, sub: [l.categoryLabel, l.url.replace(/^https?:\/\//, '')].filter(Boolean).join(' · ') }));
+
+  return [...events, ...songs, ...fund, ...ideas, ...polls, ...links];
 }
