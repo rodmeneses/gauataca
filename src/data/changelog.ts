@@ -20,6 +20,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-10-03',
     title: { es: 'Encuestas más completas y Enlaces', en: 'Better polls and Links' },
     changes: [
+      { es: 'Los administradores pueden cancelar un evento (y reactivarlo): pasa al historial marcado como cancelado.', en: 'Admins can cancel an event (and reinstate it): it moves to history marked as cancelled.' },
       { es: 'La búsqueda general ahora también encuentra encuestas y enlaces (además de ideas y sus respuestas).', en: 'Global search now also finds polls and links (in addition to ideas and their replies).' },
       { es: 'Los admins pueden agregar opciones a una encuesta ya creada.', en: 'Admins can add options to a poll after it is created.' },
       { es: 'Las encuestas del foro pueden permitir elegir varias opciones.', en: 'Forum polls can allow picking multiple options.' },
