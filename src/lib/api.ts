@@ -292,7 +292,9 @@ function mapThreads(
     };
   };
 
-  return threads.map((b) => {
+  // Newest first; the store's pinnedFirst sort is stable, so this order holds within pinned/unpinned.
+  const newestFirst = [...threads].sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')));
+  return newestFirst.map((b) => {
     const sorted = (commentsByThread.get(b.id) ?? []).sort((a, c) => a.id - c.id);
     const r = tallyReactions(reactionsByThread.get(b.id) ?? [], userId);
     return {
