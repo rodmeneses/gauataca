@@ -21,7 +21,7 @@ const textareaCls =
   'w-full py-[11px] px-[13px] rounded-[10px] border border-line bg-base text-ink-base font-sans font-normal text-[13px] leading-[normal] outline-none resize-y';
 
 export function EventModal() {
-  const { t, ev, fb, state, songs, isAdmin, closeModal, openShare, openSettle, openEditEvent, pickPoll, setRating, toggleAnon, setFbWell, setFbImprove, submitFb, setRsvp, setEventSetlist, addTake, deleteTake, addEventVideo, addEventPhotos, deleteEventMedia, goToSong, copyLink, toggleEventPin } = useGuataca();
+  const { t, ev, fb, state, songs, isAdmin, closeModal, openShare, openSettle, openEditEvent, pickPoll, setRating, toggleAnon, setFbWell, setFbImprove, submitFb, setRsvp, setEventSetlist, addTake, deleteTake, addEventVideo, addEventPhotos, deleteEventMedia, goToSong, copyLink, toggleEventPin, toggleEventCancelled } = useGuataca();
   const [videoLabel, setVideoLabel] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -470,6 +470,15 @@ export function EventModal() {
           <Button variant="surface" onClick={() => openEditEvent(ev.id)} className="py-[11px] px-4 rounded-[11px]">
             <Pencil size={15} strokeWidth={1.9} />
             {t.edit}
+          </Button>
+        )}
+        {isAdmin && !ev.settled && (
+          <Button
+            variant="surface"
+            onClick={() => (ev.cancelled ? toggleEventCancelled(ev.id) : confirm({ title: t.cancelEvent, message: t.confirmCancelEvent, confirmLabel: t.cancelEvent, onConfirm: () => toggleEventCancelled(ev.id) }))}
+            className="py-[11px] px-4 rounded-[11px]"
+          >
+            {ev.cancelled ? t.reinstateEvent : t.cancelEvent}
           </Button>
         )}
         {ev.canSettle && (

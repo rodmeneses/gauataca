@@ -452,6 +452,11 @@ export async function setEventPinned(id: string, pinned: boolean): Promise<void>
   await supabase.from('events').update({ pinned }).eq('id', id);
 }
 
+/** Cancel or reinstate an event — cancelled events move to the history list. */
+export async function setEventState(id: string, state: 'active' | 'cancelled'): Promise<void> {
+  await supabase.from('events').update({ state }).eq('id', id);
+}
+
 export async function createSong(
   input: { title: string; genre: GenreId; key: string; bpm: number; dur: string },
   _userId: string,

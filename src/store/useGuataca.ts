@@ -286,6 +286,8 @@ export interface Guataca {
   setRsvp: (eventId: string, status: RsvpStatus) => Promise<void>;
   /** Toggle an event's pinned state (admin only). */
   toggleEventPin: (eventId: string) => Promise<void>;
+  /** Cancel an event (it moves to history) or reinstate a cancelled one (admin only). */
+  toggleEventCancelled: (eventId: string) => Promise<void>;
   /** Replace an event's setlist (ordered song ids). */
   setEventSetlist: (eventId: string, songIds: string[]) => Promise<void>;
   /** Add a recording ("take") of a song during a practice event. */
@@ -365,7 +367,7 @@ export function useGuataca(): Guataca {
     onboard: persistOnboard, updateMemberInstruments: persistMemberInstruments, setSongInstruments: persistSongInstruments,
     addTake: persistTake, deleteTake: persistDeleteTake,
     addEventMedia: persistAddEventMedia, addEventPhotos: persistAddEventPhotos, deleteEventMedia: persistDeleteEventMedia, uploadEventPhoto: persistUploadEventPhoto,
-    setRsvp: persistRsvp, setEventPinned: persistEventPinned,
+    setRsvp: persistRsvp, setEventPinned: persistEventPinned, setEventState: persistEventState,
     createThread: persistCreateThread, addComment: persistComment, setThreadReaction: persistThreadReaction, setCommentReaction: persistCommentReaction, deleteComment: persistDeleteComment,
     setThreadPinned: persistThreadPinned, setThreadArchived: persistThreadArchived,
     addThreadMedia: persistAddThreadMedia, deleteThreadMedia: persistDeleteThreadMedia, addThreadRefs: persistThreadRefs, uploadForumPhoto: persistUploadForumPhoto,
@@ -410,8 +412,8 @@ export function useGuataca(): Guataca {
     const expense = allTx.filter((x) => x.kind === 'out').reduce((a, b) => a + b.amt, 0);
     const balance = income - expense;
 
-    const upcomingRaw = allEvents.filter((e) => days(e.date) >= 0).sort((a, b) => d(a.date).getTime() - d(b.date).getTime());
-    const historyRaw = allEvents.filter((e) => days(e.date) < 0).sort((a, b) => d(b.date).getTime() - d(a.date).getTime());
+    const upcomingRaw = allEvents.filter((e) => days(e.date) >= 0 && e.state !== 'cancelled').sort((a, b) => d(a.date).getTime() - d(b.date).getTime());
+    const historyRaw = allEvents.filter((e) => days(e.date) < 0 || e.state === 'cancelled').sort((a, b) => d(b.date).getTime() - d(a.date).getTime());
     const nextRaw = upcomingRaw.find((e) => e.state === 'active') ?? null;
 
     const songs = allSongs.map((s) => songVm(s, allEvents, st.openSong, ctx));
@@ -823,6 +825,13 @@ export function useGuataca(): Guataca {
         if (!e) return;
         await persistEventPinned(eventId, !e.pinned);
         toast(e.pinned ? t.unpinned : t.pinned);
+      },
+      toggleEventCancelled: async (eventId) => {
+        const e = allEvents.find((x) => x.id === eventId);
+        if (!e) return;
+        const cancel = e.state !== 'cancelled';
+        await persistEventState(eventId, cancel ? 'cancelled' : 'active');
+        toast(cancel ? t.eventCancelled : t.eventReinstated);
       },
       setEventSetlist: async (eventId, songIds) => {
         await persistSetlist(eventId, songIds);
