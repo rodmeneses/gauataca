@@ -16,6 +16,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.2.1',
+    date: '2026-10-07',
+    title: { es: 'Foro más ordenado', en: 'Tidier forum' },
+    changes: [
+      { es: 'Las ideas del foro ahora se ordenan de la más reciente a la más antigua (las fijadas siguen arriba).', en: 'Forum ideas are now sorted newest first (pinned ones stay on top).' },
+    ],
+  },
+  {
     version: '0.2.0',
     date: '2026-09-25',
     title: { es: 'Foro, notificaciones y búsqueda', en: 'Forum, notifications and search' },
