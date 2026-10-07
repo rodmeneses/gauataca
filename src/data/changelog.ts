@@ -16,11 +16,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.0',
+    date: '2026-10-07',
+    title: { es: 'Cancelar eventos', en: 'Cancel events' },
+    changes: [
+      { es: 'Los administradores pueden cancelar un evento (y reactivarlo): pasa al historial marcado como cancelado.', en: 'Admins can cancel an event (and reinstate it): it moves to history marked as cancelled.' },
+    ],
+  },
+  {
     version: '0.2.0',
     date: '2026-09-25',
     title: { es: 'Foro, notificaciones y búsqueda', en: 'Forum, notifications and search' },
     changes: [
-      { es: 'Los administradores pueden cancelar un evento (y reactivarlo): pasa al historial marcado como cancelado.', en: 'Admins can cancel an event (and reinstate it): it moves to history marked as cancelled.' },
       { es: 'La búsqueda general ahora también encuentra encuestas y enlaces (además de ideas y sus respuestas).', en: 'Global search now also finds polls and links (in addition to ideas and their replies).' },
       { es: 'Nueva sección de Enlaces para carpetas, listas y chats del grupo, con botón para copiar cada enlace. En el móvil, tu perfil ahora está en el avatar de arriba.', en: 'New Links section for the band\'s folders, playlists and chats, with a button to copy each link. On mobile, your profile is now behind the avatar at the top.' },
       { es: 'Novedades: ahora puedes ver este historial de cambios y se abre solo cuando hay una versión nueva.', en: "What's new: you can now see this changelog, and it opens by itself after a new version." },
