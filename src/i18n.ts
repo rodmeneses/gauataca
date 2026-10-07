@@ -128,6 +128,7 @@ const es = {
   recordings: 'Grabaciones', addRecording: 'Agregar grabación', takeN: 'Toma %d',
   recordingUrl: 'Enlace de la grabación', recordingAdded: 'Grabación agregada',
   recordingDeleted: 'Grabación eliminada', pickSong: 'Elegir canción',
+  cancelEvent: 'Cancelar evento', reinstateEvent: 'Reactivar evento', confirmCancelEvent: 'El evento se marcará como cancelado y pasará al historial. Puedes reactivarlo después.', eventCancelled: 'Evento cancelado', eventReinstated: 'Evento reactivado',
   delete: 'Eliminar', confirmDeleteTitle: '¿Eliminar?', confirmDeleteTake: 'Se eliminará esta grabación. No se puede deshacer.', confirmDeleteTx: 'Se eliminará este movimiento del fondo. No se puede deshacer.', confirmDeleteMedia: 'Se eliminará este elemento del evento. No se puede deshacer.',
   // repertoire dashboard: sort + song links
   sortRecorded: 'Más grabadas', sortName: 'Nombre', sortTakes: 'Menos grabadas',
@@ -294,6 +295,7 @@ const en: typeof es = {
   recordings: 'Recordings', addRecording: 'Add recording', takeN: 'Take %d',
   recordingUrl: 'Recording link', recordingAdded: 'Recording added',
   recordingDeleted: 'Recording deleted', pickSong: 'Pick a song',
+  cancelEvent: 'Cancel event', reinstateEvent: 'Reinstate event', confirmCancelEvent: 'The event will be marked as cancelled and moved to history. You can reinstate it later.', eventCancelled: 'Event cancelled', eventReinstated: 'Event reinstated',
   delete: 'Delete', confirmDeleteTitle: 'Delete?', confirmDeleteTake: 'This recording will be deleted. This can\'t be undone.', confirmDeleteTx: 'This movement will be removed from the fund. This can\'t be undone.', confirmDeleteMedia: 'This item will be removed from the event. This can\'t be undone.',
   // repertoire dashboard: sort + song links
   sortRecorded: 'Most recorded', sortName: 'Name', sortTakes: 'Fewest takes',
