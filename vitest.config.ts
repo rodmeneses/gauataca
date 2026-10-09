@@ -23,6 +23,7 @@ export default defineConfig({
         'src/lib/ics.ts',
         'src/lib/search.ts',
         'src/lib/notify.ts',
+        'src/lib/optimistic.ts',
         'src/lib/image.ts',
         'api/notify.ts',
         'src/store/vm.ts',

@@ -20,6 +20,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-09-25',
     title: { es: 'Foro, notificaciones y búsqueda', en: 'Forum, notifications and search' },
     changes: [
+      { es: 'Fijar, archivar, responder asistencia y reaccionar a ideas ahora se ven al instante, sin esperar la recarga de datos.', en: 'Pinning, archiving, RSVPs and reacting to ideas now show up instantly instead of waiting for the data reload.' },
       { es: 'Copiar enlaces o leyendas ahora avisa si el portapapeles falla en vez de decir que se copió.', en: 'Copying links or captions now tells you if the clipboard fails instead of claiming it copied.' },
       { es: 'El idioma de la página ahora se actualiza al cambiar entre español e inglés (mejora lectores de pantalla y traducción automática).', en: 'The page language now updates when you switch between Spanish and English (better for screen readers and auto-translate).' },
       { es: 'La búsqueda general ahora también encuentra encuestas y enlaces (además de ideas y sus respuestas).', en: 'Global search now also finds polls and links (in addition to ideas and their replies).' },
