@@ -8,26 +8,32 @@ import { AppSkeleton } from '../ui';
 import { LoginPage } from '../auth/LoginPage';
 import { DesktopShell } from './DesktopShell';
 import { MobileShell } from '../mobile/MobileShell';
-import { EventModal } from '../modals/EventModal';
-import { NewEventModal, NewGearModal, NewSongModal, NewTxModal } from '../modals/FormModals';
-import { NewThreadModal } from '../modals/NewThreadModal';
-import { ThreadModal } from '../modals/ThreadModal';
-import { MemberModal } from '../modals/MemberModal';
-import { OnboardModal } from '../modals/OnboardModal';
-import { SignInModal } from '../modals/SignInModal';
-import { ChangelogModal } from '../changelog/ChangelogModal';
-import { NotificationPrefsModal } from '../notifications/NotificationPrefsModal';
-import { ShareSheet } from '../modals/ShareSheet';
-import { CustodyDialog } from '../modals/CustodyDialog';
-import { SettleDialog } from '../modals/SettleDialog';
-import { CommandPalette } from '../modals/CommandPalette';
-import { SearchOverlay } from '../modals/SearchOverlay';
-import { HandoffPanel } from '../modals/HandoffPanel';
-import { TourOverlay } from '../modals/TourOverlay';
 import { Toasts } from '../modals/Toasts';
 import { TopProgress } from './TopProgress';
 import { UpdatePrompt } from '../pwa/UpdatePrompt';
 import { OfflineBanner } from '../pwa/OfflineBanner';
+import { LazyBoundary, lazyNamed } from '../ui/lazy';
+
+// Code-split: loaded on first use.
+const EventModal = lazyNamed(() => import('../modals/EventModal'), 'EventModal');
+const NewEventModal = lazyNamed(() => import('../modals/FormModals'), 'NewEventModal');
+const NewGearModal = lazyNamed(() => import('../modals/FormModals'), 'NewGearModal');
+const NewSongModal = lazyNamed(() => import('../modals/FormModals'), 'NewSongModal');
+const NewTxModal = lazyNamed(() => import('../modals/FormModals'), 'NewTxModal');
+const NewThreadModal = lazyNamed(() => import('../modals/NewThreadModal'), 'NewThreadModal');
+const ThreadModal = lazyNamed(() => import('../modals/ThreadModal'), 'ThreadModal');
+const MemberModal = lazyNamed(() => import('../modals/MemberModal'), 'MemberModal');
+const OnboardModal = lazyNamed(() => import('../modals/OnboardModal'), 'OnboardModal');
+const SignInModal = lazyNamed(() => import('../modals/SignInModal'), 'SignInModal');
+const ChangelogModal = lazyNamed(() => import('../changelog/ChangelogModal'), 'ChangelogModal');
+const NotificationPrefsModal = lazyNamed(() => import('../notifications/NotificationPrefsModal'), 'NotificationPrefsModal');
+const ShareSheet = lazyNamed(() => import('../modals/ShareSheet'), 'ShareSheet');
+const CustodyDialog = lazyNamed(() => import('../modals/CustodyDialog'), 'CustodyDialog');
+const SettleDialog = lazyNamed(() => import('../modals/SettleDialog'), 'SettleDialog');
+const CommandPalette = lazyNamed(() => import('../modals/CommandPalette'), 'CommandPalette');
+const SearchOverlay = lazyNamed(() => import('../modals/SearchOverlay'), 'SearchOverlay');
+const HandoffPanel = lazyNamed(() => import('../modals/HandoffPanel'), 'HandoffPanel');
+const TourOverlay = lazyNamed(() => import('../modals/TourOverlay'), 'TourOverlay');
 
 /** Locks page scroll while the fixed-position phone shell is mounted. */
 function PhoneFrame({ children }: { children: ReactNode }) {
@@ -126,6 +132,7 @@ export function Shell() {
         </>
       )}
 
+      <LazyBoundary>
       {modal?.kind === 'event' && bs.ev && <EventModal />}
       {modal?.kind === 'newEvent' && <NewEventModal />}
       {modal?.kind === 'newTx' && <NewTxModal />}
@@ -146,6 +153,7 @@ export function Shell() {
       {bs.state.search && <SearchOverlay />}
       {bs.state.handoff && <HandoffPanel />}
       {bs.tour.on && <TourOverlay />}
+      </LazyBoundary>
       {bs.toasts.length > 0 && <Toasts />}
       <TopProgress />
       <OfflineBanner />

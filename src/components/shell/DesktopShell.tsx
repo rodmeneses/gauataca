@@ -2,13 +2,17 @@ import { useGuataca } from '../../store';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { Dashboard } from '../views/Dashboard';
-import { CalendarView } from '../views/CalendarView';
-import { Repertoire } from '../views/Repertoire';
-import { Ledger } from '../views/Ledger';
-import { Brainstorm } from '../views/Brainstorm';
-import { Links } from '../views/Links';
-import { Members } from '../views/Members';
-import { DesignSystem } from '../views/DesignSystem';
+import { ViewSkeleton } from '../ui';
+import { LazyBoundary, lazyNamed } from '../ui/lazy';
+
+// Code-split: loaded on first use.
+const CalendarView = lazyNamed(() => import('../views/CalendarView'), 'CalendarView');
+const Repertoire = lazyNamed(() => import('../views/Repertoire'), 'Repertoire');
+const Ledger = lazyNamed(() => import('../views/Ledger'), 'Ledger');
+const Brainstorm = lazyNamed(() => import('../views/Brainstorm'), 'Brainstorm');
+const Links = lazyNamed(() => import('../views/Links'), 'Links');
+const Members = lazyNamed(() => import('../views/Members'), 'Members');
+const DesignSystem = lazyNamed(() => import('../views/DesignSystem'), 'DesignSystem');
 
 /** 252px sticky sidebar + sticky header + padded main (design lines 37–139, 748–751). */
 export function DesktopShell() {
@@ -20,6 +24,7 @@ export function DesktopShell() {
         <TopBar />
         <main className="flex-1 min-w-0 pt-5 px-4 pb-16 lg:pt-6 lg:px-7 lg:pb-[72px]">
           {view === 'dashboard' && <Dashboard />}
+          <LazyBoundary fallback={<ViewSkeleton />}>
           {view === 'calendar' && <CalendarView />}
           {view === 'repertoire' && <Repertoire />}
           {view === 'ledger' && <Ledger />}
@@ -27,6 +32,7 @@ export function DesktopShell() {
           {view === 'links' && <Links />}
           {view === 'members' && <Members />}
           {view === 'system' && <DesignSystem />}
+          </LazyBoundary>
         </main>
       </div>
     </div>

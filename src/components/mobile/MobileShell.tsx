@@ -13,12 +13,16 @@ import { usePullToRefresh } from './usePullToRefresh';
 import { BrandMark, Pill, Segment } from '../ui';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import type { MobileTab } from '../../types';
-import { MobileAgenda } from './MobileAgenda';
-import { MobileRepertoire } from './MobileRepertoire';
-import { MobileFund } from './MobileFund';
-import { MobileBrainstorm } from './MobileBrainstorm';
-import { LinksPanel } from '../links/LinksPanel';
-import { MobileProfile } from './MobileProfile';
+import { ViewSkeleton } from '../ui';
+import { LazyBoundary, lazyNamed } from '../ui/lazy';
+
+// Code-split: loaded on first use.
+const MobileAgenda = lazyNamed(() => import('./MobileAgenda'), 'MobileAgenda');
+const MobileRepertoire = lazyNamed(() => import('./MobileRepertoire'), 'MobileRepertoire');
+const MobileFund = lazyNamed(() => import('./MobileFund'), 'MobileFund');
+const MobileBrainstorm = lazyNamed(() => import('./MobileBrainstorm'), 'MobileBrainstorm');
+const LinksPanel = lazyNamed(() => import('../links/LinksPanel'), 'LinksPanel');
+const MobileProfile = lazyNamed(() => import('./MobileProfile'), 'MobileProfile');
 
 /* devPill(v): 30x26 icon toggle inside the device Segment */
 const devPill = (active: boolean) => ({
@@ -124,12 +128,14 @@ function MobileApp({ banner }: { banner?: ReactNode }) {
               style={refreshing ? undefined : { transform: `rotate(${pull * 4}deg)`, color: ready ? 'var(--color-emerald)' : undefined }}
             />
           </span>
+          <LazyBoundary fallback={<ViewSkeleton />}>
           {tab === 'agenda' && <MobileAgenda />}
           {tab === 'repertoire' && <MobileRepertoire />}
           {tab === 'fund' && <MobileFund />}
           {tab === 'brainstorm' && <MobileBrainstorm />}
           {tab === 'links' && <LinksPanel />}
           {tab === 'profile' && <MobileProfile />}
+          </LazyBoundary>
         </div>
       </div>
 
