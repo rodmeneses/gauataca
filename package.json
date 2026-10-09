@@ -18,7 +18,8 @@
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "assets:fonts": "node scripts/vendor-fonts.mjs",
-    "assets:icons": "node scripts/gen-icons.mjs"
+    "assets:icons": "node scripts/gen-icons.mjs",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.4",
@@ -29,6 +30,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.64.0",
     "@resvg/resvg-js": "^2.6.2",
     "@tailwindcss/vite": "^4.0.0",
     "@testing-library/dom": "^10.4.2",
