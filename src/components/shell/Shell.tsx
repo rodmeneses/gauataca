@@ -49,6 +49,9 @@ export function Shell() {
   const { user, profile, loading: authLoading } = useAuth();
   const { modal } = bs;
 
+  // Keep <html lang> in sync with the chosen language (screen readers, hyphenation, translation prompts).
+  useEffect(() => { document.documentElement.lang = bs.lang; }, [bs.lang]);
+
   // First sign-in: open the instrument/vocal onboarding once, until completed or skipped.
   useEffect(() => {
     if (user && profile && profile.onboarded === false && !bs.state.onboardDismissed && !modal) {
