@@ -183,6 +183,16 @@ export function Modal({ onClose, maxWidth, align = 'center', z = 80, labelledBy,
   const sheet = useMediaQuery('(max-width: 767.98px), (pointer: coarse)');
   const cardRef = useRef<HTMLDivElement>(null);
   useDialogChrome(cardRef);
+  // Most modals don't pass `labelledBy`; name the dialog after its first heading so
+  // screen readers announce it instead of an anonymous "dialog".
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!card || labelledBy) return;
+    const h = card.querySelector('h1,h2,h3');
+    if (!h) return;
+    if (!h.id) h.id = `dlg-${Math.random().toString(36).slice(2, 8)}`;
+    card.setAttribute('aria-labelledby', h.id);
+  }, [labelledBy]);
 
   return (
     <div
