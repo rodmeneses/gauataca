@@ -20,6 +20,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-10-08',
     title: { es: 'Accesibilidad, modo sin conexión y calendario', en: 'Accessibility, offline mode and calendar' },
     changes: [
+      { es: 'Ahora puedes ver quién votó por cada opción en las encuestas de ideas.', en: 'You can now see who voted for each option in idea polls.' },
       { es: 'Pantalla de carga con esqueleto y mensajes claros cuando no hay movimientos, canciones, equipo o ideas.', en: 'A skeleton loading screen and friendly empty messages when there are no transactions, songs, gear or ideas.' },
       { es: 'Suscríbete al calendario de la banda desde Apple, Google u Outlook Calendar con un enlace privado (en Notificaciones, o en tu perfil en el móvil).', en: 'Subscribe to the band calendar from Apple, Google or Outlook Calendar with a private link (under Notifications, or in your profile on mobile).' },
       { es: 'Sin conexión, tus cambios se guardan en cola y se envían solos al volver el internet (mantén la app abierta).', en: 'Offline, your changes are queued and sent automatically when you\'re back online (keep the app open).' },

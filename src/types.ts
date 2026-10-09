@@ -211,7 +211,7 @@ export interface ThreadMedia {
 /** A poll attached to a forum idea. One poll per idea, created with the idea. */
 export interface ThreadPoll {
   question: Localized;
-  options: { id: number; label: Localized; votes: number }[];
+  options: { id: number; label: Localized; votes: number; /** Ids of the members who voted for it. */ voterIds: string[] }[];
   /** True when members may pick several options. */
   multiple: boolean;
   /** Option ids the signed-in member picked (at most one unless `multiple`). */
