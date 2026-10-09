@@ -20,6 +20,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-09-25',
     title: { es: 'Foro, notificaciones y búsqueda', en: 'Forum, notifications and search' },
     changes: [
+      { es: 'Suscríbete al calendario de la banda desde Apple, Google u Outlook Calendar con un enlace privado (en Notificaciones, o en tu perfil en el móvil).', en: 'Subscribe to the band calendar from Apple, Google or Outlook Calendar with a private link (under Notifications, or in your profile on mobile).' },
       { es: 'Sin conexión, tus cambios se guardan en cola y se envían solos al volver el internet (mantén la app abierta).', en: 'Offline, your changes are queued and sent automatically when you\'re back online (keep the app open).' },
       { es: 'Los avisos (toasts) y los diálogos ahora se anuncian correctamente con lector de pantalla.', en: 'Toasts and dialogs are now announced properly by screen readers.' },
       { es: 'Las fotos y vistas previas ahora tienen descripción para lectores de pantalla.', en: 'Photos and previews now have descriptions for screen readers.' },
