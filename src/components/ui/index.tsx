@@ -8,6 +8,8 @@ import { useMediaQuery } from '../../lib/useMediaQuery';
 
 /** Lock body scroll (ref-counted) + trap focus inside `ref` while a dialog is open. */
 let scrollLocks = 0;
+/** Open dialogs, innermost last — only the top one traps focus. */
+const dialogStack: HTMLElement[] = [];
 function useDialogChrome(ref: React.RefObject<HTMLElement | null>) {
   useEffect(() => {
     const prevActive = document.activeElement as HTMLElement | null;
@@ -17,21 +19,28 @@ function useDialogChrome(ref: React.RefObject<HTMLElement | null>) {
       if (sbw > 0) document.body.style.paddingRight = `${sbw}px`;
     }
     const node = ref.current;
+    if (node) dialogStack.push(node);
     const focusable = () => node ? Array.from(node.querySelectorAll<HTMLElement>('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter((el) => el.offsetParent !== null) : [];
     (focusable()[0] ?? node)?.focus?.();
+    // On the document (not the card) so Tab can't escape to the page behind after
+    // a click on the scrim or a focused element unmounting leaves focus on <body>.
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab' || !node) return;
+      if (e.key !== 'Tab' || !node || dialogStack[dialogStack.length - 1] !== node) return;
       const items = focusable();
-      if (!items.length) return;
+      if (!items.length) { e.preventDefault(); node.focus(); return; }
       const first = items[0], last = items[items.length - 1];
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      const active = document.activeElement;
+      if (!node.contains(active)) { e.preventDefault(); (e.shiftKey ? last : first).focus(); }
+      else if (e.shiftKey && (active === first || active === node)) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
     };
-    node?.addEventListener('keydown', onKey);
+    document.addEventListener('keydown', onKey);
     return () => {
-      node?.removeEventListener('keydown', onKey);
+      document.removeEventListener('keydown', onKey);
+      const i = node ? dialogStack.lastIndexOf(node) : -1;
+      if (i >= 0) dialogStack.splice(i, 1);
       if (--scrollLocks === 0) { document.body.style.overflow = ''; document.body.style.paddingRight = ''; }
-      prevActive?.focus?.();
+      if (prevActive?.isConnected) prevActive.focus?.();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
