@@ -16,6 +16,19 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.8.0',
+    date: '2026-10-08',
+    title: { es: 'Más rápida y más fiable', en: 'Faster and more reliable' },
+    changes: [
+      { es: 'La app carga más rápido: las pantallas y ventanas se descargan solo cuando las abres.', en: 'The app loads faster: screens and dialogs are downloaded only when you open them.' },
+      { es: 'Tras cada cambio se actualizan solo los datos afectados, así que todo se siente más ágil.', en: 'After each change only the affected data is refreshed, so everything feels snappier.' },
+      { es: 'Con mala conexión la app reintenta la carga y deja de quedarse colgada; si algo falla, ahora lo avisa en vez de mostrar datos vacíos.', en: 'On a poor connection the app retries loading and no longer hangs; if something fails it now says so instead of showing empty data.' },
+      { es: 'Pantalla de carga con esqueleto también al iniciar sesión.', en: 'Skeleton loading screen when signing in, too.' },
+      { es: 'Las ventanas atrapan mejor el foco con el teclado y lo devuelven al cerrarse.', en: 'Dialogs now keep keyboard focus inside them more reliably and give it back when closed.' },
+      { es: 'Las notificaciones push ahora exigen sesión iniciada y tienen un límite anti-abuso.', en: 'Push notifications now require a signed-in session and have an anti-abuse limit.' },
+    ],
+  },
+  {
     version: '0.7.0',
     date: '2026-10-08',
     title: { es: 'Accesibilidad, modo sin conexión y calendario', en: 'Accessibility, offline mode and calendar' },
