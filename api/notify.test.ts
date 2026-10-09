@@ -53,10 +53,10 @@ async function run(handler: Handler, req: Req) {
   return res;
 }
 
-const post = (body: Record<string, unknown>, headers: Record<string, string> = {}): Req => ({ method: 'POST', body, headers });
+const post = (body: Record<string, unknown>, headers: Record<string, string> = { authorization: 'Bearer t' }): Req => ({ method: 'POST', body, headers });
 
 beforeEach(() => {
-  state.rows = {}; state.subs = []; state.user = null; state.getUserThrows = false; state.selectThrows = false;
+  state.rows = {}; state.subs = []; state.user = { id: 'u1' }; state.getUserThrows = false; state.selectThrows = false;
   state.deleted = []; state.filters = [];
   sendNotification.mockReset().mockResolvedValue({});
 });
@@ -76,6 +76,45 @@ describe('api/notify validation', () => {
   });
 });
 
+describe('api/notify hardening', () => {
+  it('requires a bearer token', async () => {
+    const h = await load();
+    expect((await run(h, post({ kind: 'event', id: 'e1' }, {}))).statusCode).toBe(401);
+    expect((await run(h, { method: 'POST', body: { kind: 'event', id: 'e1' } })).statusCode).toBe(401);
+  });
+  it('rejects an invalid session or a throwing auth lookup', async () => {
+    const h = await load();
+    state.user = null;
+    expect((await run(h, post({ kind: 'event', id: 'e1' }))).statusCode).toBe(401);
+    state.user = { id: 'u1' };
+    state.getUserThrows = true;
+    expect((await run(h, post({ kind: 'event', id: 'e1' }))).statusCode).toBe(401);
+  });
+  it('validates ids', async () => {
+    const h = await load();
+    expect((await run(h, post({ kind: 'event', id: 'a/../b' }))).statusCode).toBe(400);
+    expect((await run(h, post({ kind: 'event', id: 'x'.repeat(65) }))).statusCode).toBe(400);
+    expect((await run(h, post({ kind: 'comment', id: 't1', commentId: 'nope' }))).statusCode).toBe(400);
+    expect((await run(h, post({ kind: 'comment', id: 't1', commentId: 1.5 }))).statusCode).toBe(400);
+  });
+  it('forbids triggering thread and comment pushes for someone else\'s row', async () => {
+    const h = await load();
+    state.rows.threads = { title_es: 'Idea', author_id: 'someone-else' };
+    expect((await run(h, post({ kind: 'thread', id: 't1' }))).statusCode).toBe(403);
+    state.rows.thread_comments = { author_id: 'someone-else', body_es: 'hi', thread_id: 't1', threads: { title_es: 'Idea' } };
+    expect((await run(h, post({ kind: 'comment', id: 't1', commentId: 3 }))).statusCode).toBe(403);
+    expect(sendNotification).not.toHaveBeenCalled();
+  });
+  it('rate-limits a member to 30 calls a minute', async () => {
+    const h = await load();
+    state.rows.events = { title_es: 'Gala', starts_at: '2026-11-07T20:00:00Z', venue: '' };
+    for (let i = 0; i < 30; i++) expect((await run(h, post({ kind: 'event', id: 'e1' }))).statusCode).toBe(200);
+    expect((await run(h, post({ kind: 'event', id: 'e1' }))).statusCode).toBe(429);
+    state.user = { id: 'u2' };
+    expect((await run(h, post({ kind: 'event', id: 'e1' }))).statusCode).toBe(200);
+  });
+});
+
 describe('api/notify fan-out', () => {
   const sub = { endpoint: 'https://push/1', p256dh: 'k', auth: 'a' };
 
@@ -91,14 +130,11 @@ describe('api/notify fan-out', () => {
     expect(state.filters).toContainEqual(['profiles.notify_events', true]);
   });
 
-  it('copes with a missing venue, an invalid token and a throwing auth lookup', async () => {
+  it('copes with a missing venue and title', async () => {
     state.rows.events = { title_es: '', starts_at: '2026-11-07T20:00:00Z', venue: '' };
     state.subs = [sub];
-    const h = await load();
-    expect((await run(h, post({ kind: 'event', id: 'e1' }, { authorization: 'Bearer t' }))).statusCode).toBe(200);
-    state.getUserThrows = true;
-    expect((await run(h, post({ kind: 'event', id: 'e1' }, { authorization: 'Bearer t' }))).statusCode).toBe(200);
-    expect(state.filters.some(([c]) => c === '!profiles.id')).toBe(false);
+    expect((await run(await load(), post({ kind: 'event', id: 'e1' }))).statusCode).toBe(200);
+    expect(JSON.parse(sendNotification.mock.calls[0][1]).title).toBe('GUATACA');
   });
 
   it('404s when the row is missing', async () => {
@@ -113,6 +149,7 @@ describe('api/notify fan-out', () => {
   it('pushes a thread excluding its author', async () => {
     state.rows.threads = { title_es: 'Idea', author_id: 'a1' };
     state.subs = [sub];
+    state.user = { id: 'a1' };
     expect((await run(await load(), post({ kind: 'thread', id: 't1' }))).statusCode).toBe(200);
     expect(state.filters).toContainEqual(['!profiles.id', 'a1']);
     expect(state.filters).toContainEqual(['profiles.notify_forum', true]);
@@ -121,6 +158,7 @@ describe('api/notify fan-out', () => {
   it('pushes a comment (by commentId or id), truncating the body', async () => {
     state.rows.thread_comments = { author_id: 'a2', body_es: 'x'.repeat(200), thread_id: 't1', threads: { title_es: 'Idea' } };
     state.subs = [sub];
+    state.user = { id: 'a2' };
     const h = await load();
     expect((await run(h, post({ kind: 'comment', id: 't1', commentId: 5 }))).statusCode).toBe(200);
     expect((await run(h, post({ kind: 'comment', id: 7 }))).statusCode).toBe(200);
@@ -130,6 +168,7 @@ describe('api/notify fan-out', () => {
   it('falls back to default comment text and title', async () => {
     state.rows.thread_comments = { author_id: 'a2', body_es: '', thread_id: 't1', threads: null };
     state.subs = [sub];
+    state.user = { id: 'a2' };
     await run(await load(), post({ kind: 'comment', id: 7 }));
     expect(JSON.parse(sendNotification.mock.calls[0][1])).toMatchObject({ title: 'GUATACA', body: 'Nuevo comentario' });
   });
@@ -154,6 +193,7 @@ describe('api/notify fan-out', () => {
 
   it('returns 200 with no subscribers', async () => {
     state.rows.threads = { title_es: 'Idea', author_id: 'a1' };
+    state.user = { id: 'a1' };
     expect((await run(await load(), post({ kind: 'thread', id: 't1' }))).statusCode).toBe(200);
     expect(sendNotification).not.toHaveBeenCalled();
   });
@@ -161,6 +201,7 @@ describe('api/notify fan-out', () => {
   it('prunes expired subscriptions only', async () => {
     state.rows.threads = { title_es: 'Idea', author_id: 'a1' };
     state.subs = [sub, { ...sub, endpoint: 'gone' }, { ...sub, endpoint: 'err' }];
+    state.user = { id: 'a1' };
     sendNotification
       .mockResolvedValueOnce({})
       .mockRejectedValueOnce({ statusCode: 410 })

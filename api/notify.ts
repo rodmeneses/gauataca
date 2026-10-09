@@ -10,6 +10,10 @@
  *   3. sends a Web Push notification to every subscription whose category pref
  *      is on, pruning subscriptions the push service reports as expired.
  *
+ * Hardening: every call needs a valid member session (401), ids are validated (400),
+ * thread/comment pushes may only be triggered by the row's author (403), and each
+ * member is limited to 30 pushes per minute per instance (429).
+ *
  * Env vars (Vercel, server-only): SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
  * VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT.
  */
@@ -24,6 +28,21 @@ const publicKey = process.env.VAPID_PUBLIC_KEY || '';
 const privateKey = process.env.VAPID_PRIVATE_KEY || '';
 const subject = process.env.VAPID_SUBJECT || 'mailto:admin@gauataca.vercel.app';
 if (publicKey && privateKey) webpush.setVapidDetails(subject, publicKey, privateKey);
+
+const RATE_LIMIT = 30;
+const RATE_WINDOW_MS = 60_000;
+/** Best-effort, per serverless instance: actor id → timestamps of recent calls. */
+const hits = new Map<string, number[]>();
+
+function rateLimited(actor: string, now = Date.now()): boolean {
+  const recent = (hits.get(actor) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
+  recent.push(now);
+  hits.set(actor, recent);
+  return recent.length > RATE_LIMIT;
+}
+
+const validId = (v: unknown): boolean =>
+  (typeof v === 'string' && /^[\w-]{1,64}$/.test(v)) || (typeof v === 'number' && Number.isSafeInteger(v));
 
 function dateLabel(startsAt: string): string {
   return new Date(startsAt).toLocaleDateString('es-VE', { day: 'numeric', month: 'short' });
@@ -47,20 +66,22 @@ export default async function handler(req: { method?: string; body?: Record<stri
   const kind = body.kind;
   if (kind !== 'event' && kind !== 'thread' && kind !== 'comment' && kind !== 'reaction') return send(400, 'unknown kind');
   if (!body.id && body.commentId === undefined) return send(400, 'missing id');
+  if (body.id !== undefined && !validId(body.id)) return send(400, 'invalid id');
+  if (body.commentId !== undefined && !(typeof body.commentId === 'number' && Number.isSafeInteger(body.commentId))) return send(400, 'invalid commentId');
   if (!publicKey || !privateKey) return send(500, 'VAPID keys not configured');
 
-  // Event pushes go to everyone except the acting member; thread/comment
-  // pushes exclude by row author_id instead (resolved from the DB below).
-  const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
+  // Only signed-in members may trigger a push, and not in bulk.
+  const token = req.headers?.authorization?.replace(/^Bearer\s+/i, '');
+  if (!token) return send(401, 'unauthorized');
   let actor: string | null = null;
-  if (token && (kind === 'event' || kind === 'reaction')) {
-    try {
-      const { data, error } = await admin.auth.getUser(token);
-      actor = error ? null : (data.user?.id ?? null);
-    } catch {
-      actor = null;
-    }
+  try {
+    const { data, error } = await admin.auth.getUser(token);
+    actor = error ? null : (data.user?.id ?? null);
+  } catch {
+    actor = null;
   }
+  if (!actor) return send(401, 'unauthorized');
+  if (rateLimited(actor)) return send(429, 'too many requests');
 
   // Build the notification payload from the DB (never trust the request text).
   let title: string;
@@ -79,6 +100,7 @@ export default async function handler(req: { method?: string; body?: Record<stri
     } else if (kind === 'thread') {
       const { data } = await admin.from('threads').select('title_es, author_id').eq('id', body.id).single();
       if (!data) return send(404, 'thread not found');
+      if (data.author_id !== actor) return send(403, 'not the author');
       title = data.title_es || 'GUATACA';
       bodyText = 'Nuevo tema del foro';
       targetUrl = `/?view=brainstorm&thread=${encodeURIComponent(String(body.id))}`;
@@ -113,6 +135,7 @@ export default async function handler(req: { method?: string; body?: Record<stri
         .eq('id', commentId)
         .single();
       if (!data) return send(404, 'comment not found');
+      if (data.author_id !== actor) return send(403, 'not the author');
       title = data.threads?.title_es || 'GUATACA';
       bodyText = (data.body_es || '').slice(0, 120) || 'Nuevo comentario';
       targetUrl = `/?view=brainstorm&thread=${encodeURIComponent(data.thread_id)}`;
