@@ -27,7 +27,7 @@ export async function createEvent(
     title_en: input.title,
     note_es: input.note,
     note_en: input.note,
-  });
+  }).throwOnError();
   void notifyCreated({ kind: 'event', id });
   return id;
 }
@@ -51,7 +51,7 @@ export async function updateEvent(
     title_en: input.title,
     note_es: input.note,
     note_en: input.note,
-  }).eq('id', id);
+  }).eq('id', id).throwOnError();
   // A settled event's ledger movements mirror its fee/cost — keep them in sync
   // so a retroactive amount change flows through to the income/expense report.
   if (ev?.settled) {
@@ -61,12 +61,12 @@ export async function updateEvent(
 
 /** Pin/unpin an event — pinned events sort to the top of the calendar's upcoming/history lists. */
 export async function setEventPinned(id: string, pinned: boolean): Promise<void> {
-  await supabase.from('events').update({ pinned }).eq('id', id);
+  await supabase.from('events').update({ pinned }).eq('id', id).throwOnError();
 }
 
 /** Cancel or reinstate an event — cancelled events move to the history list. */
 export async function setEventState(id: string, state: 'active' | 'cancelled'): Promise<void> {
-  await supabase.from('events').update({ state }).eq('id', id);
+  await supabase.from('events').update({ state }).eq('id', id).throwOnError();
 }
 
 export async function createSong(
@@ -82,7 +82,7 @@ export async function createSong(
     key: input.key,
     bpm: input.bpm,
     duration: input.dur,
-  });
+  }).throwOnError();
   return id;
 }
 
@@ -99,7 +99,7 @@ export async function updateSong(
     key: input.key,
     bpm: input.bpm,
     duration: input.dur,
-  }).eq('id', id);
+  }).eq('id', id).throwOnError();
 }
 
 /** Replace a song's links (delete then insert, preserving order via position). */
@@ -107,18 +107,18 @@ export async function setSongLinks(
   songId: string,
   links: { kind: LinkKind; label: string; url: string }[],
 ): Promise<void> {
-  await supabase.from('song_links').delete().eq('song_id', songId);
+  await supabase.from('song_links').delete().eq('song_id', songId).throwOnError();
   if (links.length) {
     await supabase.from('song_links').insert(
       links.map((l, i) => ({ song_id: songId, kind: l.kind, label_es: l.label, label_en: l.label, url: l.url, position: i + 1 })),
-    );
+    ).throwOnError();
   }
 }
 
 /** Create a custom instrument in the catalog; returns its id. */
 export async function createInstrument(name: string): Promise<string> {
   const id = newId('i');
-  await supabase.from('instruments').insert({ id, name_es: name, name_en: name, is_basic: false });
+  await supabase.from('instruments').insert({ id, name_es: name, name_en: name, is_basic: false }).throwOnError();
   return id;
 }
 
@@ -128,15 +128,15 @@ export async function updateMemberInstruments(
   instruments: { id: string; lv: Proficiency }[],
   vocals: VocalFlag[],
 ): Promise<void> {
-  await supabase.from('profile_instruments').delete().eq('profile_id', profileId);
+  await supabase.from('profile_instruments').delete().eq('profile_id', profileId).throwOnError();
   if (instruments.length) {
     await supabase.from('profile_instruments').insert(
       instruments.map((i) => ({ profile_id: profileId, instrument_id: i.id, proficiency: i.lv })),
-    );
+    ).throwOnError();
   }
-  await supabase.from('profile_vocals').delete().eq('profile_id', profileId);
+  await supabase.from('profile_vocals').delete().eq('profile_id', profileId).throwOnError();
   if (vocals.length) {
-    await supabase.from('profile_vocals').insert(vocals.map((v) => ({ profile_id: profileId, flag: v })));
+    await supabase.from('profile_vocals').insert(vocals.map((v) => ({ profile_id: profileId, flag: v }))).throwOnError();
   }
 }
 
@@ -147,14 +147,14 @@ export async function onboard(
   vocals: VocalFlag[],
 ): Promise<void> {
   await updateMemberInstruments(profileId, instruments, vocals);
-  await supabase.from('profiles').update({ onboarded: true }).eq('id', profileId);
+  await supabase.from('profiles').update({ onboarded: true }).eq('id', profileId).throwOnError();
 }
 
 /** Replace a song's required instruments. */
 export async function setSongInstruments(songId: string, instrumentIds: string[]): Promise<void> {
-  await supabase.from('song_instruments').delete().eq('song_id', songId);
+  await supabase.from('song_instruments').delete().eq('song_id', songId).throwOnError();
   if (instrumentIds.length) {
-    await supabase.from('song_instruments').insert(instrumentIds.map((iid) => ({ song_id: songId, instrument_id: iid })));
+    await supabase.from('song_instruments').insert(instrumentIds.map((iid) => ({ song_id: songId, instrument_id: iid }))).throwOnError();
   }
 }
 
@@ -162,12 +162,12 @@ export async function setSongInstruments(songId: string, instrumentIds: string[]
 export async function addTake(eventId: string, songId: string, url: string): Promise<void> {
   const { data } = await supabase.from('takes').select('n').eq('song_id', songId).order('n', { ascending: false }).limit(1);
   const n = (data?.[0]?.n ?? 0) + 1;
-  await supabase.from('takes').insert({ id: newId('k'), event_id: eventId, song_id: songId, url, n });
+  await supabase.from('takes').insert({ id: newId('k'), event_id: eventId, song_id: songId, url, n }).throwOnError();
 }
 
 /** Remove a recording ("take"). */
 export async function deleteTake(id: string): Promise<void> {
-  await supabase.from('takes').delete().eq('id', id);
+  await supabase.from('takes').delete().eq('id', id).throwOnError();
 }
 
 export async function createTransaction(
@@ -188,7 +188,7 @@ export async function createTransaction(
     category: input.category ?? null,
     contributor_id: input.contributor ?? null,
     created_by: userId,
-  });
+  }).throwOnError();
 }
 
 /** Update an existing transaction's fields (amount, kind, date, desc, proof, links, category). */
@@ -209,12 +209,12 @@ export async function updateTransaction(
     gear_id: input.gear ?? null,
     category: input.category ?? null,
     contributor_id: input.contributor ?? null,
-  }).eq('id', id);
+  }).eq('id', id).throwOnError();
 }
 
 /** Delete a transaction. */
 export async function deleteTransaction(id: string): Promise<void> {
-  await supabase.from('transactions').delete().eq('id', id);
+  await supabase.from('transactions').delete().eq('id', id).throwOnError();
 }
 
 /** Upload a receipt/invoice image to the public `receipts` bucket; returns its public URL. */
@@ -241,7 +241,7 @@ export async function addEventMedia(
     label_en: input.labelEn,
     url: input.url,
     submitted_by: userId || null,
-  });
+  }).throwOnError();
 }
 
 /** Add several uploaded photo URLs to an event in a single insert; resolves true on success. */
@@ -263,7 +263,7 @@ export async function addEventPhotos(eventId: string, urls: string[], userId: st
 /** Remove an event media row; also deletes the storage object when it's an uploaded photo. */
 export async function deleteEventMedia(id: number): Promise<void> {
   const { data: row } = await supabase.from('event_media').select('url').eq('id', id).single();
-  await supabase.from('event_media').delete().eq('id', id);
+  await supabase.from('event_media').delete().eq('id', id).throwOnError();
   if (row?.url) {
     const marker = '/storage/v1/object/public/event-photos/';
     const idx = row.url.indexOf(marker);
@@ -300,7 +300,7 @@ export async function createGear(
     note_es: input.note,
     note_en: input.note,
     purchased_by: input.boughtBy,
-  });
+  }).throwOnError();
   // Only log an expense movement when the gear actually cost something.
   if (input.cost > 0) {
     await supabase.from('transactions').insert({
@@ -314,7 +314,7 @@ export async function createGear(
       proof_kind: input.proofKind,
       gear_id: id,
       created_by: input.boughtBy,
-    });
+    }).throwOnError();
   }
 }
 
@@ -340,7 +340,7 @@ async function syncEventTransactions(
   const { data: feeTx } = await supabase.from('transactions').select('id').eq('event_id', eventId).eq('kind', 'in').eq('category', 'fee');
   if (fee > 0) {
     if (feeTx?.length) {
-      await supabase.from('transactions').update({ amount_cents: Math.round(fee * 100) }).eq('id', feeTx[0].id);
+      await supabase.from('transactions').update({ amount_cents: Math.round(fee * 100) }).eq('id', feeTx[0].id).throwOnError();
     } else {
       await supabase.from('transactions').insert({
         id: newId('y'),
@@ -354,17 +354,17 @@ async function syncEventTransactions(
         event_id: eventId,
         category: 'fee',
         created_by: userId,
-      });
+      }).throwOnError();
     }
   } else if (feeTx?.length) {
-    await supabase.from('transactions').delete().eq('id', feeTx[0].id);
+    await supabase.from('transactions').delete().eq('id', feeTx[0].id).throwOnError();
   }
 
   // Expense (cost) — the settle flow creates a single 'out' movement for the event.
   const { data: costTx } = await supabase.from('transactions').select('id').eq('event_id', eventId).eq('kind', 'out');
   if (cost > 0) {
     if (costTx?.length) {
-      await supabase.from('transactions').update({ amount_cents: Math.round(cost * 100) }).eq('id', costTx[0].id);
+      await supabase.from('transactions').update({ amount_cents: Math.round(cost * 100) }).eq('id', costTx[0].id).throwOnError();
     } else {
       await supabase.from('transactions').insert({
         id: newId('y'),
@@ -377,10 +377,10 @@ async function syncEventTransactions(
         proof_kind: 'receipt',
         event_id: eventId,
         created_by: userId,
-      });
+      }).throwOnError();
     }
   } else if (costTx?.length) {
-    await supabase.from('transactions').delete().eq('id', costTx[0].id);
+    await supabase.from('transactions').delete().eq('id', costTx[0].id).throwOnError();
   }
 }
 
@@ -392,19 +392,19 @@ export async function settleEvent(
   // A cancelled event still records its cost (e.g. a lost deposit), so only the
   // income is gated on `happened`.
   await syncEventTransactions(eventId, input.happened ? input.fee : 0, input.cost, userId);
-  await supabase.from('events').update({ settled: true }).eq('id', eventId);
+  await supabase.from('events').update({ settled: true }).eq('id', eventId).throwOnError();
 }
 
 export async function setRsvp(eventId: string, status: RsvpStatus | null, userId: string): Promise<void> {
   if (status === null) {
-    await supabase.from('event_attendance').delete().eq('event_id', eventId).eq('profile_id', userId);
+    await supabase.from('event_attendance').delete().eq('event_id', eventId).eq('profile_id', userId).throwOnError();
   } else {
     await supabase.from('event_attendance').upsert({
       event_id: eventId,
       profile_id: userId,
       status,
       updated_at: new Date().toISOString(),
-    });
+    }).throwOnError();
   }
 }
 
@@ -426,7 +426,7 @@ export async function submitFeedback(
     went_well_en: input.well,
     improve_es: input.improve,
     improve_en: input.improve,
-  });
+  }).throwOnError();
 }
 
 export async function pickPoll(eventId: string, optionIndex: number, userId: string): Promise<void> {
@@ -437,22 +437,22 @@ export async function pickPoll(eventId: string, optionIndex: number, userId: str
   const opt = opts?.[optionIndex];
   if (!opt) return;
   const optIds = (opts ?? []).map((o) => o.id);
-  await supabase.from('poll_votes').delete().in('option_id', optIds).eq('profile_id', userId);
-  await supabase.from('poll_votes').insert({ option_id: opt.id, profile_id: userId });
+  await supabase.from('poll_votes').delete().in('option_id', optIds).eq('profile_id', userId).throwOnError();
+  await supabase.from('poll_votes').insert({ option_id: opt.id, profile_id: userId }).throwOnError();
 }
 
 export async function setEventSetlist(eventId: string, songIds: string[], _userId: string): Promise<void> {
-  await supabase.from('event_songs').delete().eq('event_id', eventId);
+  await supabase.from('event_songs').delete().eq('event_id', eventId).throwOnError();
   if (songIds.length) {
     await supabase.from('event_songs').insert(
       songIds.map((songId, i) => ({ event_id: eventId, song_id: songId, position: i + 1 })),
-    );
+    ).throwOnError();
   }
 }
 
 export async function transferCustody(gearId: string, toMemberId: string, _userId: string): Promise<void> {
   const { data } = await supabase.from('gear').select('custodian_id').eq('id', gearId).single();
   const fromId = data?.custodian_id ?? null;
-  await supabase.from('gear').update({ custodian_id: toMemberId }).eq('id', gearId);
-  await supabase.from('gear_custody_log').insert({ gear_id: gearId, from_id: fromId, to_id: toMemberId });
+  await supabase.from('gear').update({ custodian_id: toMemberId }).eq('id', gearId).throwOnError();
+  await supabase.from('gear_custody_log').insert({ gear_id: gearId, from_id: fromId, to_id: toMemberId }).throwOnError();
 }

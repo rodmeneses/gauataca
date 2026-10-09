@@ -10,12 +10,12 @@ export async function getCalendarToken(userId: string): Promise<string | null> {
   };
   const existing = await read();
   if (existing) return existing;
-  await supabase.from('calendar_tokens').insert({ profile_id: userId });
+  await supabase.from('calendar_tokens').insert({ profile_id: userId }).throwOnError();
   return read();
 }
 
 /** Invalidate the current feed URL and issue a new one. */
 export async function rotateCalendarToken(userId: string): Promise<string | null> {
-  await supabase.from('calendar_tokens').delete().eq('profile_id', userId);
+  await supabase.from('calendar_tokens').delete().eq('profile_id', userId).throwOnError();
   return getCalendarToken(userId);
 }

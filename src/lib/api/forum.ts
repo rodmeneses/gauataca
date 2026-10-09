@@ -15,29 +15,29 @@ export async function createThread(input: { title: string; body: string }, userI
     title_en: input.title,
     body_es: input.body,
     body_en: input.body,
-  });
+  }).throwOnError();
   void notifyCreated({ kind: 'thread', id });
   return id;
 }
 
 /** Add a general band link. */
 export async function createLink(input: { title: string; url: string; category: LinkCategory }, userId: string): Promise<void> {
-  await supabase.from('links').insert({ title: input.title, url: input.url, category: input.category, created_by: userId });
+  await supabase.from('links').insert({ title: input.title, url: input.url, category: input.category, created_by: userId }).throwOnError();
 }
 
 /** Remove a general band link. */
 export async function deleteLink(id: number): Promise<void> {
-  await supabase.from('links').delete().eq('id', id);
+  await supabase.from('links').delete().eq('id', id).throwOnError();
 }
 
 /** Pin/unpin a forum idea — pinned ideas sort to the top of the active/archived list. */
 export async function setThreadPinned(id: string, pinned: boolean): Promise<void> {
-  await supabase.from('threads').update({ pinned }).eq('id', id);
+  await supabase.from('threads').update({ pinned }).eq('id', id).throwOnError();
 }
 
 /** Archive/unarchive a forum idea — archived ideas move out of the active tab. */
 export async function setThreadArchived(id: string, archived: boolean): Promise<void> {
-  await supabase.from('threads').update({ archived }).eq('id', id);
+  await supabase.from('threads').update({ archived }).eq('id', id).throwOnError();
 }
 
 /** Add a comment (or, with `parentId`, a one-level reply) to an idea; returns the new comment id. */
@@ -48,7 +48,7 @@ export async function addComment(threadId: string, body: string, userId: string,
     author_id: userId,
     body_es: body,
     body_en: body,
-  }).select('id').single();
+  }).select('id').single().throwOnError();
   const cid = data?.id ?? 0;
   if (cid) void notifyCreated({ kind: 'comment', id: threadId, commentId: cid });
   return cid;
@@ -67,12 +67,12 @@ export async function createThreadPoll(
     question_es: question,
     question_en: question,
     multiple,
-  }).select('id').single();
+  }).select('id').single().throwOnError();
   const pollId = data?.id;
   if (pollId && options.length) {
     await supabase.from('thread_poll_options').insert(
       options.map((o) => ({ poll_id: pollId, label_es: o, label_en: o })),
-    );
+    ).throwOnError();
   }
 }
 
@@ -80,7 +80,7 @@ export async function createThreadPoll(
 export async function addThreadPollOption(threadId: string, label: string): Promise<void> {
   const { data: poll } = await supabase.from('thread_polls').select('id').eq('thread_id', threadId).single();
   if (!poll?.id) return;
-  await supabase.from('thread_poll_options').insert({ poll_id: poll.id, label_es: label, label_en: label });
+  await supabase.from('thread_poll_options').insert({ poll_id: poll.id, label_es: label, label_en: label }).throwOnError();
 }
 
 /**
@@ -97,25 +97,25 @@ export async function voteThreadPoll(optionId: number, userId: string): Promise<
   const { data: mine } = await supabase.from('thread_poll_votes').select('option_id').in('option_id', optIds).eq('profile_id', userId);
   const picked = (mine ?? []).some((v) => v.option_id === optionId);
   if (poll?.multiple) {
-    if (picked) await supabase.from('thread_poll_votes').delete().eq('option_id', optionId).eq('profile_id', userId);
-    else await supabase.from('thread_poll_votes').insert({ option_id: optionId, profile_id: userId });
+    if (picked) await supabase.from('thread_poll_votes').delete().eq('option_id', optionId).eq('profile_id', userId).throwOnError();
+    else await supabase.from('thread_poll_votes').insert({ option_id: optionId, profile_id: userId }).throwOnError();
     return;
   }
-  await supabase.from('thread_poll_votes').delete().in('option_id', optIds).eq('profile_id', userId);
+  await supabase.from('thread_poll_votes').delete().in('option_id', optIds).eq('profile_id', userId).throwOnError();
   if (!picked) {
-    await supabase.from('thread_poll_votes').insert({ option_id: optionId, profile_id: userId });
+    await supabase.from('thread_poll_votes').insert({ option_id: optionId, profile_id: userId }).throwOnError();
   }
 }
 
 /** Set the signed-in member's like/dislike on an idea; `null` removes it. */
 export async function setThreadReaction(threadId: string, kind: ReactionKind | null, userId: string): Promise<void> {
   if (kind === null) {
-    await supabase.from('thread_reactions').delete().eq('thread_id', threadId).eq('profile_id', userId);
+    await supabase.from('thread_reactions').delete().eq('thread_id', threadId).eq('profile_id', userId).throwOnError();
   } else {
     await supabase.from('thread_reactions').upsert(
       { thread_id: threadId, profile_id: userId, kind },
       { onConflict: 'thread_id,profile_id' },
-    );
+    ).throwOnError();
     if (kind === 'like') void notifyCreated({ kind: 'reaction', id: threadId });
   }
 }
@@ -134,12 +134,12 @@ export async function deleteComment(id: number): Promise<void> {
 /** Set the signed-in member's like/dislike on a comment; `null` removes it. */
 export async function setCommentReaction(commentId: number, kind: ReactionKind | null, userId: string): Promise<void> {
   if (kind === null) {
-    await supabase.from('thread_comment_reactions').delete().eq('comment_id', commentId).eq('profile_id', userId);
+    await supabase.from('thread_comment_reactions').delete().eq('comment_id', commentId).eq('profile_id', userId).throwOnError();
   } else {
     await supabase.from('thread_comment_reactions').upsert(
       { comment_id: commentId, profile_id: userId, kind },
       { onConflict: 'comment_id,profile_id' },
-    );
+    ).throwOnError();
     if (kind === 'like') void notifyCreated({ kind: 'reaction', commentId });
   }
 }
@@ -156,7 +156,7 @@ export async function addThreadMedia(threadId: string, urls: string[], userId: s
 /** Remove a thread-media row; also deletes the storage object when it's an uploaded photo. */
 export async function deleteThreadMedia(id: number): Promise<void> {
   const { data: row } = await supabase.from('thread_media').select('url').eq('id', id).single();
-  await supabase.from('thread_media').delete().eq('id', id);
+  await supabase.from('thread_media').delete().eq('id', id).throwOnError();
   if (row?.url) {
     const marker = '/storage/v1/object/public/forum-photos/';
     const idx = row.url.indexOf(marker);
