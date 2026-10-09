@@ -11,5 +11,5 @@
     "noEmit": true,
     "strict": true
   },
-  "include": ["vite.config.ts", "playwright.config.ts", "api", "e2e"]
+  "include": ["vite.config.ts", "api"]
 }

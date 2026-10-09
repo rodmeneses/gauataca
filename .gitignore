@@ -10,5 +10,3 @@ flyway_setup.sh
 .env
 .env.*
 !.env.example
-test-results
-playwright-report

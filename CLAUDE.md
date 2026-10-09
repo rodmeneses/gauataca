@@ -17,8 +17,6 @@ repertoire, ledger/gear, brainstorm, members, and a design-system view.
   thresholds in `vitest.config.ts`)
 - `npm run lint` — ESLint (CI gate; warnings allowed, errors fail)
 - `npm run size` — gzip JS budget check, run after `npm run build` (CI gate; budget in `scripts/check-bundle-size.mjs`)
-- `npm run e2e` — Playwright smoke tests (Supabase fully mocked in `e2e/support.ts`; first run needs
-  `npx playwright install chromium`; separate `e2e` job in CI)
 - `npm run dev` — local dev (service worker disabled by design)
 - `npm run assets:fonts` / `npm run assets:icons` — regenerate PWA assets
 
