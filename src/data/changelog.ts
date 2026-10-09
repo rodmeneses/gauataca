@@ -16,6 +16,20 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.9.0',
+    date: '2026-10-09',
+    title: { es: 'Fotos más rápidas y avisos de guardado fiables', en: 'Faster photos and reliable save errors' },
+    changes: [
+      { es: 'Si la base de datos rechaza un cambio (por ejemplo, por falta de permiso), la app ahora lo avisa en vez de mostrar que se guardó.', en: 'When the database rejects a change (for example, no permission), the app now tells you instead of acting as if it saved.' },
+      { es: 'Las fotos nuevas cargan más rápido: se suben con una miniatura para las galerías y el navegador las guarda en caché.', en: 'New photos load faster: they are uploaded with a thumbnail for the galleries and cached by the browser.' },
+      { es: 'Si una foto no se puede registrar después de subirla, ya no queda un archivo suelto en el almacenamiento.', en: 'If a photo can\'t be registered after uploading, it no longer leaves a stray file in storage.' },
+      { es: 'La búsqueda rápida (Ctrl/⌘ K) se maneja con las flechas y Enter, y los lectores de pantalla la entienden mejor; los botones de filtro, el selector de fecha y los avisos también son más accesibles.', en: 'Quick search (Ctrl/⌘ K) now works with the arrow keys and Enter and is better understood by screen readers; filter buttons, the date picker and notifications are more accessible too.' },
+      { es: 'Escribir en los formularios es más fluido: la app ya no recalcula todas las listas con cada tecla.', en: 'Typing in forms is smoother: the app no longer recalculates every list on each keystroke.' },
+      { es: 'Los avisos de error y las etiquetas de botones que estaban solo en inglés ahora salen en tu idioma.', en: 'Error messages and button labels that were English-only now appear in your language.' },
+      { es: 'La vista "Sistema de diseño" ya no aparece en la app (es una herramienta para desarrollo).', en: 'The "Design system" view no longer appears in the app (it is a development tool).' },
+    ],
+  },
+  {
     version: '0.8.0',
     date: '2026-10-08',
     title: { es: 'Más fiable y más rápida', en: 'More reliable and faster' },

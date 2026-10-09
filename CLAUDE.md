@@ -25,8 +25,8 @@ repertoire, ledger/gear, brainstorm, members, and a design-system view.
 ## Architecture
 
 - **State:** `src/store/store.tsx` (`State` + `GuatacaProvider`) → `src/store/useGuataca.ts`
-  (the `Guataca` view-model, derived from state + Supabase data) → `src/store/vm.ts`
-  (per-entity view-model builders).
+  (the `Guataca` view-model, derived from state + Supabase data) → `src/store/vm/`
+  (per-entity view-model builders; the expensive derived lists are memoised in `useDerived.ts`).
 - **Data:** `src/lib/data.tsx` (`DataProvider` + central `run()` mutation wrapper) →
   `src/lib/api.ts` (Supabase read/write). `src/lib/auth.ts` for auth.
 - **Shell:** `src/components/shell/Shell.tsx` picks phone vs desktop; mobile in
@@ -48,7 +48,7 @@ repertoire, ledger/gear, brainstorm, members, and a design-system view.
   width get the phone layout.
 - **Unit test coverage:** `vitest.config.ts` enforces a 95% threshold
   (lines/statements/functions/branches) over its coverage `include` list — the
-  business-logic modules that have a dedicated `*.test.ts` file (`src/lib`, `src/store/vm.ts`,
+  business-logic modules that have a dedicated `*.test.ts` file (`src/lib`, `src/store/vm/*.ts`,
   `src/i18n.ts`, `src/data/changelog.ts`, …), not components. When you add a new module to
   that list, either add it fully tested or don't add it — a half-covered module will fail
   the threshold. This is also a CI gate (`npm run coverage` in `.github/workflows/test.yml`),
