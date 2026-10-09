@@ -147,7 +147,7 @@ export function NewThreadModal() {
             <div className="grid grid-cols-3 gap-2 mb-2">
               {previews.map((url, i) => (
                 <div key={i} className="relative aspect-[4/3] rounded-[9px] overflow-hidden border border-line-soft bg-raised">
-                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <img src={url} alt={t.photo} className="w-full h-full object-cover" />
                   <button
                     type="button"
                     onClick={() => {

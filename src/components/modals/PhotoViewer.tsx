@@ -93,7 +93,7 @@ export function PhotoViewer({ photos, index, onClose }: {
         <img
           key={i}
           src={photo.url}
-          alt=""
+          alt={`${t.photo} ${i + 1} / ${count}`}
           draggable={false}
           className={cx('max-w-full max-h-full object-contain rounded-lg', dir >= 0 ? 'animate-slide' : 'animate-slide-rev')}
         />
