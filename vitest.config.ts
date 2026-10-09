@@ -10,7 +10,7 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'api/**/*.test.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
@@ -22,6 +22,9 @@ export default defineConfig({
         'src/lib/markdownLite.ts',
         'src/lib/ics.ts',
         'src/lib/search.ts',
+        'src/lib/notify.ts',
+        'src/lib/image.ts',
+        'api/notify.ts',
         'src/store/vm.ts',
         'src/data/changelog.ts',
         'src/i18n.ts',
