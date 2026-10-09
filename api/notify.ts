@@ -73,7 +73,7 @@ export default async function handler(req: { method?: string; body?: Record<stri
   // Only signed-in members may trigger a push, and not in bulk.
   const token = req.headers?.authorization?.replace(/^Bearer\s+/i, '');
   if (!token) return send(401, 'unauthorized');
-  let actor: string | null = null;
+  let actor: string | null;
   try {
     const { data, error } = await admin.auth.getUser(token);
     actor = error ? null : (data.user?.id ?? null);

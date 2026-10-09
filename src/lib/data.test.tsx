@@ -67,7 +67,7 @@ describe('DataProvider scoped refetch', () => {
     const queued = vi.fn();
     window.addEventListener('guataca:offline-write', queued);
     vi.mocked(api.setRsvp).mockClear();
-    await act(async () => { await data.setRsvp('e1', 'yes'); });
+    await act(async () => { await data.setRsvp('e1', 'going'); });
     expect(queued).toHaveBeenCalled();
     expect(api.setRsvp).not.toHaveBeenCalled();
     window.removeEventListener('guataca:offline-write', queued);
