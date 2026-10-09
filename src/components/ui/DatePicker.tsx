@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { fmt } from '../../lib/format';
+import { T } from '../../i18n';
 import type { Lang } from '../../types';
 
 const DOW: Record<Lang, string[]> = {
@@ -109,13 +110,13 @@ export function DatePicker({ value, onChange, lang, placeholder }: {
             style={{ top: pos.top, left: pos.left }}
           >
             <div className="flex items-center justify-between mb-2">
-              <button type="button" onClick={prev} aria-label="Previous month" className="grid place-items-center w-7 h-7 rounded-[8px] border border-line bg-surface text-ink-meta hover:text-ink cursor-pointer">
+              <button type="button" onClick={prev} aria-label={T[lang].prevMonth} className="grid place-items-center w-7 h-7 rounded-[8px] border border-line bg-surface text-ink-meta hover:text-ink cursor-pointer">
                 <ChevronLeft size={15} strokeWidth={2.2} />
               </button>
               <span className="font-display font-semibold text-[13px] text-ink-bright capitalize">
                 {MONTHS[lang][view.m]} {view.y}
               </span>
-              <button type="button" onClick={next} aria-label="Next month" className="grid place-items-center w-7 h-7 rounded-[8px] border border-line bg-surface text-ink-meta hover:text-ink cursor-pointer">
+              <button type="button" onClick={next} aria-label={T[lang].nextMonth} className="grid place-items-center w-7 h-7 rounded-[8px] border border-line bg-surface text-ink-meta hover:text-ink cursor-pointer">
                 <ChevronRight size={15} strokeWidth={2.2} />
               </button>
             </div>

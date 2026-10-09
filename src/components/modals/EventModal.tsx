@@ -80,7 +80,7 @@ export function EventModal() {
           <p className="mt-[10px] mb-0 mx-0 text-[13.5px] text-ink-meta leading-[1.6]">{ev.note}</p>
         </div>
         <div className="flex flex-col items-end gap-[8px] flex-none">
-          <CloseButton onClick={closeModal} size={34} />
+          <CloseButton onClick={closeModal} size={34} label={t.close} />
           {isAdmin && (
             <button
               type="button"

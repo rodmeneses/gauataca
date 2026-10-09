@@ -79,7 +79,7 @@ export function ReactionButtons({
             <div className="p-[18px_20px]">
               <div className="flex items-center justify-between gap-3 mb-[14px]">
                 <h3 id="who-reacted-title" className="m-0 font-display font-semibold text-[16px] text-ink-bright">{t.whoReacted}</h3>
-                <CloseButton onClick={() => setShowWho(false)} size={32} />
+                <CloseButton onClick={() => setShowWho(false)} size={32} label={t.close} />
               </div>
               {([['like', likedBy], ['dislike', dislikedBy]] as const).map(([kind, names]) =>
                 names.length === 0 ? null : (

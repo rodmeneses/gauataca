@@ -221,7 +221,7 @@ export function ThreadModal() {
           </div>
         </div>
         <div className="flex flex-col items-end gap-[8px] flex-none">
-          <CloseButton onClick={closeModal} size={34} />
+          <CloseButton onClick={closeModal} size={34} label={t.close} />
           {isAdmin && (
             <button
               type="button"

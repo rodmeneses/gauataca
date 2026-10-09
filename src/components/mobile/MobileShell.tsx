@@ -155,7 +155,7 @@ function MobileApp({ banner }: { banner?: ReactNode }) {
 }
 
 export function MobileShell({ banner }: { banner?: ReactNode }) {
-  const { lang, setLang, isAdmin, roleLabel, toggleRole, isDesktop, isMobile, setDevice, isMobileViewport } = useGuataca();
+  const { t, lang, setLang, isAdmin, roleLabel, toggleRole, isDesktop, isMobile, setDevice, isMobileViewport } = useGuataca();
 
   /* Real phone: full-screen app pinned with position:fixed (survives the iOS toolbar). */
   if (isMobileViewport) {
@@ -192,10 +192,10 @@ export function MobileShell({ banner }: { banner?: ReactNode }) {
           <span>{roleLabel}</span>
         </button>
         <Segment style={{ background: 'var(--color-raised)' }}>
-          <button type="button" aria-label="Desktop preview" onClick={() => setDevice('desktop')} className="grid place-items-center w-[30px] h-[26px] rounded-[7px] border-none cursor-pointer" style={devPill(isDesktop)}>
+          <button type="button" aria-label={t.desktopPreview} onClick={() => setDevice('desktop')} className="grid place-items-center w-[30px] h-[26px] rounded-[7px] border-none cursor-pointer" style={devPill(isDesktop)}>
             <Monitor size={15} strokeWidth={1.9} />
           </button>
-          <button type="button" aria-label="Mobile preview" onClick={() => setDevice('mobile')} className="grid place-items-center w-[30px] h-[26px] rounded-[7px] border-none cursor-pointer" style={devPill(isMobile)}>
+          <button type="button" aria-label={t.mobilePreview} onClick={() => setDevice('mobile')} className="grid place-items-center w-[30px] h-[26px] rounded-[7px] border-none cursor-pointer" style={devPill(isMobile)}>
             <Smartphone size={15} strokeWidth={1.9} />
           </button>
         </Segment>

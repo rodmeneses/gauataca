@@ -23,7 +23,7 @@ export function HandoffPanel() {
           <div className="font-display font-semibold text-[15px] leading-[normal] text-ink-bright">{t.handoff}</div>
           <div className="text-[11.5px] text-ink-muted mt-[4px]">{t.handoffSub}</div>
         </div>
-        <CloseButton size={32} onClick={closeHandoff} />
+        <CloseButton size={32} onClick={closeHandoff} label={t.close} />
       </div>
       <div className="flex-1 overflow-y-auto p-[20px_22px] flex flex-col gap-[20px]">
         {handoffNotes.map((h) => (

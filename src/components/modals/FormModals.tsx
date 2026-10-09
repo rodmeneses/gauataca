@@ -13,11 +13,12 @@ import type { EventType, GearCondition, GenreId, LinkKind, ProofKind, TxCategory
 
 /* ------------------------------------------------------------ shared frame */
 export function FormHeader({ title, onClose }: { title: string; onClose: () => void }) {
+  const { t } = useGuataca();
   return (
     <div className="p-[20px_22px] border-b border-line-soft flex items-center gap-[14px]">
       <h2 className="m-0 flex-1 font-display font-semibold text-[17px] leading-[normal] text-ink-bright">{title}</h2>
       {/* Inline (not CloseButton): the design's 32px close in these modals has no hover state. */}
-      <button type="button" onClick={onClose} aria-label="Close" className="grid place-items-center w-8 h-8 rounded-[9px] border border-line bg-surface text-ink-meta cursor-pointer">
+      <button type="button" onClick={onClose} aria-label={t.close} className="grid place-items-center w-8 h-8 rounded-[9px] border border-line bg-surface text-ink-meta cursor-pointer">
         <X size={15} strokeWidth={2.2} />
       </button>
     </div>

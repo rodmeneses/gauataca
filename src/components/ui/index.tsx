@@ -121,12 +121,12 @@ export function IconLink({ href, color, title, hoverColor, children, className, 
 }
 
 /* ------------------------------------------------------------- CloseButton */
-export function CloseButton({ onClick, size = 34, className }: { onClick: () => void; size?: 32 | 34; className?: string }) {
+export function CloseButton({ onClick, size = 34, className, label = 'Close' }: { onClick: () => void; size?: 32 | 34; className?: string; label?: string }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label="Close"
+      aria-label={label}
       className={cx('grid place-items-center border border-line bg-surface text-ink-meta hover:text-ink hover:border-line-hover flex-none min-w-[44px] min-h-[44px]', size === 34 ? 'w-11 h-11 rounded-[11px]' : 'w-10 h-10 rounded-[10px]', className)}
     >
       <X size={size === 34 ? 18 : 16} strokeWidth={2.2} />

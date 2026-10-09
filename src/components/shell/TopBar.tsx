@@ -62,7 +62,7 @@ export function TopBar() {
         <button
           type="button"
           onClick={() => setDevice('desktop')}
-          title="Desktop"
+          title={t.desktopPreview}
           className={cx('grid place-items-center w-[30px] h-[26px] rounded-[7px] border-none cursor-pointer', isDesktop ? 'bg-[var(--color-tint-violet)] text-violet' : 'bg-transparent text-ink-muted')}
         >
           <Monitor size={15} strokeWidth={1.9} />
@@ -70,7 +70,7 @@ export function TopBar() {
         <button
           type="button"
           onClick={() => setDevice('mobile')}
-          title="Mobile"
+          title={t.mobilePreview}
           className={cx('grid place-items-center w-[30px] h-[26px] rounded-[7px] border-none cursor-pointer', isMobile ? 'bg-[var(--color-tint-violet)] text-violet' : 'bg-transparent text-ink-muted')}
         >
           <Smartphone size={15} strokeWidth={1.9} />
@@ -80,7 +80,7 @@ export function TopBar() {
       <button
         type="button"
         onClick={toggleHandoff}
-        title="Handoff"
+        title={t.handoff}
         className="hidden lg:grid place-items-center w-9 h-9 rounded-[10px] border border-violet/40 bg-[var(--color-tint-violet)] text-violet cursor-pointer flex-none hover:bg-[color-mix(in_srgb,var(--color-violet)_26%,transparent)]"
       >
         <BookOpen size={16} strokeWidth={1.9} />
