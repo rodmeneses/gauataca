@@ -615,10 +615,15 @@ export function useGuataca(): Guataca {
 
     const viewSubKey = ('sub' + st.view.charAt(0).toUpperCase() + st.view.slice(1)) as keyof Dict;
 
+    /** Name the file(s) that didn't upload so a multi-photo pick says which one failed. */
+    const uploadFailedMsg = (names: string[]) =>
+      names.length === 1 ? t.uploadFailedFile.replace('%s', names[0]) : `${t.uploadFailed}: ${names.join(', ')}`;
+
     /* ---- forum photo upload (compress → bucket → attach); shared by idea
     /*      creation, the idea composer and the reply composer. */
     const uploadToThread = async (threadId: string, files: File[], commentId: number | null = null) => {
       const urls: string[] = [];
+      const failed: string[] = [];
       for (const file of files) {
         try {
           let blob: Blob;
@@ -631,15 +636,14 @@ export function useGuataca(): Guataca {
             blob = file;
           }
           const url = await persistUploadForumPhoto(blob);
-          if (url) urls.push(url);
+          if (url) urls.push(url); else failed.push(file.name);
         } catch (err) {
           console.error('Photo upload failed:', file.name, err);
+          failed.push(file.name);
         }
       }
-      if (urls.length === 0) {
-        toast(t.uploadFailed, 'err');
-        return;
-      }
+      if (failed.length) toast(uploadFailedMsg(failed), 'err');
+      if (urls.length === 0) return;
       const ok = await persistAddThreadMedia(threadId, urls, commentId);
       if (!ok) {
         toast(t.uploadFailed, 'err');
@@ -855,6 +859,7 @@ export function useGuataca(): Guataca {
       },
       addEventPhotos: async (eventId, files) => {
         const urls: string[] = [];
+        const failed: string[] = [];
         for (const file of files) {
           try {
             let blob: Blob;
@@ -867,15 +872,14 @@ export function useGuataca(): Guataca {
               blob = file;
             }
             const url = await persistUploadEventPhoto(blob);
-            if (url) urls.push(url);
+            if (url) urls.push(url); else failed.push(file.name);
           } catch (err) {
             console.error('Photo upload failed:', file.name, err);
+            failed.push(file.name);
           }
         }
-        if (urls.length === 0) {
-          toast(t.uploadFailed, 'err');
-          return;
-        }
+        if (failed.length) toast(uploadFailedMsg(failed), 'err');
+        if (urls.length === 0) return;
         const ok = await persistAddEventPhotos(eventId, urls);
         if (!ok) {
           toast(t.uploadFailed, 'err');
