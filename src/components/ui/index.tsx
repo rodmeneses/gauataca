@@ -33,8 +33,7 @@ export function useDialogChrome(ref: React.RefObject<HTMLElement | null>) {
       if (--scrollLocks === 0) { document.body.style.overflow = ''; document.body.style.paddingRight = ''; }
       prevActive?.focus?.();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [ref]);
 }
 
 const cx = (...a: (string | false | null | undefined)[]) => a.filter(Boolean).join(' ');

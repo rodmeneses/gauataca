@@ -54,30 +54,34 @@ export function Shell() {
   const bs = useGuataca();
   const { user, profile, loading: authLoading } = useAuth();
   const { modal } = bs;
+  const onboardDismissed = bs.state.onboardDismissed;
+  const loading = bs.loading;
+  // Latest view-model for the run-once effects below, so they don't depend on the
+  // (per-render) `bs` object. Declared first so it is refreshed before they run.
+  const bsRef = useRef(bs);
+  useEffect(() => { bsRef.current = bs; });
 
   // Keep <html lang> in sync with the chosen language (screen readers, hyphenation, translation prompts).
   useEffect(() => { document.documentElement.lang = bs.lang; }, [bs.lang]);
 
   // First sign-in: open the instrument/vocal onboarding once, until completed or skipped.
   useEffect(() => {
-    if (user && profile && profile.onboarded === false && !bs.state.onboardDismissed && !modal) {
-      bs.openOnboard();
+    if (user && profile && profile.onboarded === false && !onboardDismissed && !modal) {
+      bsRef.current.openOnboard();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, profile, bs.state.onboardDismissed, modal]);
+  }, [user, profile, onboardDismissed, modal]);
 
   // After an update, show what's new once. First-ever visit just records the
   // version (new members get onboarding, not release notes).
   const changelogChecked = useRef(false);
   useEffect(() => {
-    if (changelogChecked.current || !user || bs.loading || modal) return;
+    if (changelogChecked.current || !user || loading || modal) return;
     changelogChecked.current = true;
     const seen = readSeenVersion();
     if (seen === APP_VERSION) return;
     writeSeenVersion(APP_VERSION);
-    if (entriesSince(seen).length > 0) bs.openChangelog(seen ?? undefined);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, bs.loading, modal]);
+    if (entriesSince(seen).length > 0) bsRef.current.openChangelog(seen ?? undefined);
+  }, [user, loading, modal]);
 
   // Shareable deep link (?event= / ?song= / ?tx= / ?thread=[&comment=]): apply once data is loaded,
   // then strip the params so a refresh doesn't re-open the item. Falls back to a
@@ -85,19 +89,19 @@ export function Shell() {
   // drop the URL, e.g. the Google OAuth redirect in src/lib/auth.tsx.
   const deepLinkApplied = useRef(false);
   useEffect(() => {
-    if (deepLinkApplied.current || bs.loading) return;
+    if (deepLinkApplied.current || loading) return;
     deepLinkApplied.current = true;
     const dl = readDeepLink();
     if (dl) clearDeepLink();
     const target = dl ?? takePendingDeepLink();
     if (!target) return;
     const { kind, id, commentId } = target;
-    if (kind === 'event') bs.openEvent(id);
-    else if (kind === 'song') bs.goToSong(id);
-    else if (kind === 'tx') bs.goToTx(id);
-    else bs.openThread(id, commentId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bs.loading]);
+    const vm = bsRef.current;
+    if (kind === 'event') vm.openEvent(id);
+    else if (kind === 'song') vm.goToSong(id);
+    else if (kind === 'tx') vm.goToTx(id);
+    else vm.openThread(id, commentId);
+  }, [loading]);
 
   if (authLoading) {
     return (
