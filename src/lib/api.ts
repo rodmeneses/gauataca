@@ -9,6 +9,8 @@ import type {
   BandEvent, BandLink, LinkCategory, EventFeedback, EventType, Gear, GearCondition, GenreId, Instrument, LinkKind, Member, Proficiency, ProofKind, ReactionKind, ReactionTally, RsvpStatus, Song, Take, Thread, ThreadComment, ThreadPoll, Transaction, TxCategory, TxKind, VocalFlag,
 } from '../types';
 
+// Untyped PostgREST rows (no generated DB types); the mappers below own the typing.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Row = Record<string, any>;
 
 export interface DataSnapshot {

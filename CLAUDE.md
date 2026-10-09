@@ -15,6 +15,8 @@ repertoire, ledger/gear, brainstorm, members, and a design-system view.
 - `npm run build` — `tsc -b && vite build` (the CI gate)
 - `npm run coverage` — `vitest run --coverage` (also a CI gate; enforces the
   thresholds in `vitest.config.ts`)
+- `npm run lint` — ESLint (CI gate; warnings allowed, errors fail)
+- `npm run size` — gzip JS budget check, run after `npm run build` (CI gate; budget in `scripts/check-bundle-size.mjs`)
 - `npm run dev` — local dev (service worker disabled by design)
 - `npm run assets:fonts` / `npm run assets:icons` — regenerate PWA assets
 
