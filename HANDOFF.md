@@ -1,5 +1,7 @@
 # HANDOFF — GUATACA, from Phase 1 (UI) to Phase 2 (backend)
 
+> **Historical (2026-08-25).** This is the Phase 1 → Phase 2 handoff. Phase 2 (Supabase auth, DB, storage, push) has shipped; for the current architecture and conventions read [CLAUDE.md](./CLAUDE.md). Statements below about "mock only / no backend" no longer apply.
+
 Written 2026-08-25 for the next agent/engineer. Read this first, then the docs it points to. It says what exists,
 what is deliberately fake, what the spec asks for that the UI still lacks, and a concrete plan for Phase 2.
 

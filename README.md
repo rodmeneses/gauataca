@@ -1,14 +1,16 @@
 # GUATACA — GUATACA
 
-Phase 1 prototype of the cooperative band admin dashboard described in [SPEC.MD](./SPEC.MD): a bilingual (ES/EN),
-dark-mode React app over realistic mock data covering the repertoire, calendar + history, transparent ledger + gear
+Cooperative band admin app described in [SPEC.MD](./SPEC.MD): a bilingual (ES/EN) React + Supabase PWA
+(auth, Postgres/RLS, storage, web push; live at https://gauataca.vercel.app). Without Supabase env keys it falls back to
+a demo mode over realistic mock data. See [CLAUDE.md](./CLAUDE.md) for the current architecture and conventions.
+It covers the repertoire, calendar + history, transparent ledger + gear
 inventory, brainstorm threads, member profiles, post-event retrospectives and the semi-automated Instagram share flow.
 
 The UI is a faithful port of the Claude Design prototype `Guataca.dc.html`
 ([design project](https://claude.ai/design/p/d7a06c72-dd08-48b8-a34d-cc51a3ff6930?file=Guataca.dc.html);
 snapshot in [`design/`](./design/README.md)).
 
-## Quick start (play with the mock locally)
+## Quick start (demo mode, no backend)
 
 Prerequisites: **Node.js 20 or newer** and npm. With nvm: `nvm use` (an `.nvmrc` pins 24). Internet is needed only once,
 for `npm install` — the fonts are self-hosted in `public/fonts/`, so the running app makes no third-party requests.
