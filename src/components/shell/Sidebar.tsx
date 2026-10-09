@@ -59,7 +59,7 @@ export function Sidebar() {
         <NavItem active={is('links')} onClick={() => go('links')} icon={<Link2 size={18} strokeWidth={1.9} className="flex-none" />} label={t.links} />
         <div className="eyebrow-xs p-[16px_10px_8px] hidden lg:block">{t.navBand}</div>
         <NavItem active={is('members')} onClick={() => go('members')} icon={<Users size={18} strokeWidth={1.9} className="flex-none" />} label={t.members} />
-        <NavItem active={is('system')} onClick={() => go('system')} icon={<Palette size={18} strokeWidth={1.9} className="flex-none" />} label={t.system} />
+        {import.meta.env.DEV && <NavItem active={is('system')} onClick={() => go('system')} icon={<Palette size={18} strokeWidth={1.9} className="flex-none" />} label={t.system} />}
       </nav>
 
       <div className="mt-auto p-2 lg:p-[14px_14px_18px] border-t border-line-soft flex flex-col gap-3">

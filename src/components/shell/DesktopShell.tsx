@@ -11,7 +11,8 @@ const Ledger = lazyNamed(() => import('../views/Ledger'), 'Ledger');
 const Brainstorm = lazyNamed(() => import('../views/Brainstorm'), 'Brainstorm');
 const Links = lazyNamed(() => import('../views/Links'), 'Links');
 const Members = lazyNamed(() => import('../views/Members'), 'Members');
-const DesignSystem = lazyNamed(() => import('../views/DesignSystem'), 'DesignSystem');
+// Dev-only: the constant condition lets Vite drop the chunk from production builds.
+const DesignSystem = import.meta.env.DEV ? lazyNamed(() => import('../views/DesignSystem'), 'DesignSystem') : null;
 
 /** 252px sticky sidebar + sticky header + padded main (design lines 37–139, 748–751). */
 export function DesktopShell() {
@@ -30,7 +31,7 @@ export function DesktopShell() {
             {view === 'brainstorm' && <Brainstorm />}
             {view === 'links' && <Links />}
             {view === 'members' && <Members />}
-            {view === 'system' && <DesignSystem />}
+            {DesignSystem && view === 'system' && <DesignSystem />}
           </Suspense>
         </main>
       </div>

@@ -162,7 +162,7 @@ export function useGuataca(): Guataca {
       { group: t.navigate, label: t.brainstorm, sub: '', run: () => go('brainstorm') },
       { group: t.navigate, label: t.links, sub: '', run: () => go('links') },
       { group: t.navigate, label: t.members, sub: '', run: () => go('members') },
-      { group: t.navigate, label: t.system, sub: '', run: () => go('system') },
+      ...(import.meta.env.DEV ? [{ group: t.navigate, label: t.system, sub: '', run: () => go('system') }] : []),
       { group: t.actions, label: t.newEvent, sub: '', run: () => set({ palette: false, view: 'calendar', modal: { kind: 'newEvent' }, form: {} }) },
       { group: t.actions, label: t.newSong, sub: '', run: () => set({ palette: false, view: 'repertoire', modal: { kind: 'newSong' }, form: {} }) },
       { group: t.actions, label: t.newTx, sub: '', run: () => set({ palette: false, view: 'ledger', modal: { kind: 'newTx' }, form: {} }) },
