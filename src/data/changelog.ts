@@ -27,6 +27,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       { es: 'La app abre más rápido: las pantallas y ventanas se cargan solo cuando las abres.', en: 'The app opens faster: screens and dialogs now load only when you open them.' },
       { es: 'Mejor accesibilidad con teclado y lector de pantalla: la búsqueda, el tour, las notas y el menú de compartir ahora atrapan el foco y lo devuelven al cerrarse.', en: 'Better keyboard and screen-reader accessibility: search, the tour, the notes panel and the share sheet now keep focus inside and return it when closed.' },
       { es: 'Si tu dispositivo pide reducir el movimiento, la app ya no hace desplazamientos animados al saltar a una canción.', en: 'If your device asks for reduced motion, the app no longer animates the scroll when jumping to a song.' },
+      { es: 'Al borrar un comentario o un enlace aparece "Deshacer" durante unos segundos en vez de pedir confirmación.', en: 'Deleting a comment or a link now shows an "Undo" for a few seconds instead of asking for confirmation.' },
     ],
   },
   {

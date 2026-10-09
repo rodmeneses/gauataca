@@ -257,6 +257,8 @@ export interface Toast {
   id: string;
   msg: string;
   tone: ToastTone;
+  /** Optional button (e.g. Undo); the toast stays up for `ttl` ms so there is time to tap it. */
+  action?: { label: string; run: () => void };
   /** Set briefly before removal so the stack can play an exit animation. */
   leaving?: boolean;
 }

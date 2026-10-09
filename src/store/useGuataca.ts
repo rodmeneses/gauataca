@@ -13,6 +13,7 @@ import { itemUrl } from '../lib/deepLink';
 import { searchAll } from '../lib/search';
 import { useAuth } from '../lib/auth';
 import { useData } from '../lib/data';
+import { UNDO_WINDOW_MS } from '../lib/optimistic';
 import { compressImage } from '../lib/image';
 import { useMediaQuery } from '../lib/useMediaQuery';
 import { bucketEvents, contributionTotals, filterPalette, filterSongs, filterTx, layoutTier, ledgerTotals, mergeInstruments, pinnedFirst, sortTxNewestFirst } from './derive';
@@ -548,8 +549,8 @@ export function useGuataca(): Guataca {
         await persistCommentReaction(commentId, kind);
       },
       deleteComment: async (commentId) => {
-        await persistDeleteComment(commentId);
-        toast(t.commentDeleted);
+        const undo = persistDeleteComment(commentId);
+        toast(t.commentDeleted, 'ok', { action: { label: t.undo, run: undo }, ttl: UNDO_WINDOW_MS });
       },
       sendComment: async (photos) => {
         const txt = st.commentDraft.trim();

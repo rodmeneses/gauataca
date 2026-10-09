@@ -58,6 +58,12 @@ export interface State {
   onboardDismissed: boolean;
 }
 
+export interface ToastOptions {
+  action?: Toast['action'];
+  /** Milliseconds before the toast dismisses itself (default 3600). */
+  ttl?: number;
+}
+
 export type Updater = Partial<State> | ((s: State) => Partial<State>);
 
 export interface StoreApi {
@@ -65,7 +71,7 @@ export interface StoreApi {
   props: AppProps;
   /** setState-like merge (accepts an object or an updater fn). */
   set: (u: Updater) => void;
-  toast: (msg: string, tone?: Toast['tone']) => void;
+  toast: (msg: string, tone?: Toast['tone'], opts?: ToastOptions) => void;
   /** Dismiss a toast early (tap) — plays the exit animation, then removes it. */
   dismissToast: (id: string) => void;
 }
@@ -142,10 +148,10 @@ export function GuatacaProvider({ props, children }: { props: AppProps; children
   }, []);
 
   const toast = useCallback(
-    (msg: string, tone: Toast['tone'] = 'ok') => {
+    (msg: string, tone: Toast['tone'] = 'ok', opts?: ToastOptions) => {
       const id = 'k' + Date.now() + '-' + seqRef.current++;
-      setState((s) => ({ ...s, toasts: [...s.toasts, { id, msg, tone }] }));
-      window.setTimeout(() => dismissToast(id), 3600);
+      setState((s) => ({ ...s, toasts: [...s.toasts, { id, msg, tone, action: opts?.action }] }));
+      window.setTimeout(() => dismissToast(id), opts?.ttl ?? 3600);
     },
     [dismissToast],
   );

@@ -60,14 +60,15 @@ interface DataValue extends DataSnapshot {
   /** Cancel/reinstate an event. */
   setEventState: (id: string, state: 'active' | 'cancelled') => Promise<void>;
   createLink: (input: { title: string; url: string; category: LinkCategory }) => Promise<void>;
-  deleteLink: (id: number) => Promise<void>;
+  /** Hides the link now and deletes it after the undo window; returns an `undo` that cancels it. */
+  deleteLink: (id: number) => () => void;
   createThread: (input: CreateThreadInput) => Promise<string | undefined>;
   /** Add a comment — or, with `parentId`, a one-level reply. Resolves to the new comment id. */
   addComment: (threadId: string, body: string, parentId?: number | null) => Promise<number | undefined>;
   setThreadReaction: (threadId: string, kind: ReactionKind | null) => Promise<void>;
   setCommentReaction: (commentId: number, kind: ReactionKind | null) => Promise<void>;
-  /** Delete a comment (and its replies). */
-  deleteComment: (commentId: number) => Promise<void>;
+  /** Delete a comment (and its replies) after the undo window; returns an `undo` that cancels it. */
+  deleteComment: (commentId: number) => () => void;
   /** Pin/unpin a forum idea. */
   setThreadPinned: (id: string, pinned: boolean) => Promise<void>;
   /** Archive/unarchive a forum idea. */
@@ -115,6 +116,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [mutating, setMutating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState<opt.PendingDeletes>(opt.NO_PENDING_DELETES);
+  const visible = useMemo(() => opt.hideDeleted(snap, pending), [snap, pending]);
 
   const reload = useCallback(async (opts?: { silent?: boolean }) => {
     // A silent reload (after a mutation) keeps the current screen mounted and
@@ -185,8 +188,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setMutating(false);
       }
     };
+    // Hide the item at once, send the delete after the undo window, and let Undo cancel it.
+    // The id stays hidden until the write (and its refetch) finish, so an unrelated
+    // reload in the meantime can't bring the item back.
+    const deferDelete = (kind: keyof opt.PendingDeletes, id: number, fn: () => Promise<unknown>): (() => void) => {
+      const drop = () => setPending((p) => ({ ...p, [kind]: p[kind].filter((x) => x !== id) }));
+      setPending((p) => ({ ...p, [kind]: [...p[kind], id] }));
+      const timer = window.setTimeout(() => { void run(fn).finally(drop); }, opt.UNDO_WINDOW_MS);
+      return () => { window.clearTimeout(timer); drop(); };
+    };
     return {
-      ...snap,
+      ...visible,
       loading,
       mutating,
       error,
@@ -216,12 +228,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setEventPinned: (id, pinned) => run(() => apiSetEventPinned(id, pinned), opt.pinEvent(id, pinned)),
       setEventState: (id, state) => run(() => apiSetEventState(id, state)),
       createLink: (input) => run(() => apiCreateLink(input, uid)),
-      deleteLink: (id) => run(() => apiDeleteLink(id)),
+      deleteLink: (id) => deferDelete('links', id, () => apiDeleteLink(id)),
       createThread: (input) => run(() => apiCreateThread(input, uid)),
       addComment: (threadId, body, parentId = null) => run(() => apiAddComment(threadId, body, uid, parentId)),
       setThreadReaction: (threadId, kind) => run(() => apiSetThreadReaction(threadId, kind, uid), opt.reactToThread(threadId, kind, uid)),
       setCommentReaction: (commentId, kind) => run(() => apiSetCommentReaction(commentId, kind, uid)),
-      deleteComment: (commentId) => run(() => apiDeleteComment(commentId)),
+      deleteComment: (commentId) => deferDelete('comments', commentId, () => apiDeleteComment(commentId)),
       setThreadPinned: (id, pinned) => run(() => apiSetThreadPinned(id, pinned), opt.pinThread(id, pinned)),
       setThreadArchived: (id, archived) => run(() => apiSetThreadArchived(id, archived), opt.archiveThread(id, archived)),
       addThreadMedia: (threadId, urls, commentId = null) => run(() => apiAddThreadMedia(threadId, urls, uid, commentId)),
@@ -242,7 +254,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         return apiUploadProof(file);
       },
     };
-  }, [snap, loading, mutating, error, reload, user?.id]);
+  }, [visible, loading, mutating, error, reload, user?.id]);
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }

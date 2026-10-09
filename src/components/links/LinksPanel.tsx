@@ -3,8 +3,9 @@ import { useState } from 'react';
 import { Copy, ExternalLink, Link2, Trash2 } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { useData } from '@/lib/data';
-import { AddButton, Badge, Button, Card, Field, Input, Select, useConfirm } from '@/components/ui';
+import { AddButton, Badge, Button, Card, Field, Input, Select } from '@/components/ui';
 import type { BandLink, LinkCategory } from '@/types';
+import { UNDO_WINDOW_MS } from '@/lib/optimistic';
 
 const CATEGORIES: LinkCategory[] = ['docs', 'music', 'social', 'logistics', 'other'];
 const CAT_COLOR: Record<LinkCategory, string> = {
@@ -30,7 +31,6 @@ function normalizeUrl(raw: string): string | null {
 export function LinksPanel() {
   const { t, signedIn, isAdmin, me, toast } = useGuataca();
   const { links, createLink, deleteLink } = useData();
-  const { confirm, dialog } = useConfirm();
   const [adding, setAdding] = useState(false);
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
@@ -127,7 +127,7 @@ export function LinksPanel() {
                     type="button"
                     title={t.deleteLink}
                     aria-label={`${t.deleteLink} — ${l.title}`}
-                    onClick={() => confirm({ message: t.confirmDeleteLink, onConfirm: () => deleteLink(l.id) })}
+                    onClick={() => toast(t.linkDeleted, 'ok', { action: { label: t.undo, run: deleteLink(l.id) }, ttl: UNDO_WINDOW_MS })}
                     className="grid place-items-center w-11 h-11 mr-1.5 rounded-xl border border-line bg-raised text-ink-muted cursor-pointer flex-none"
                   >
                     <Trash2 size={15} strokeWidth={2} />
@@ -138,7 +138,6 @@ export function LinksPanel() {
           </ul>
         </section>
       ))}
-      {dialog}
     </div>
   );
 }

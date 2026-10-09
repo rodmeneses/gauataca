@@ -318,6 +318,6 @@ export interface Guataca {
   tourEnd: () => void;
   toggleHandoff: () => void;
   closeHandoff: () => void;
-  toast: (msg: string, tone?: Toast['tone']) => void;
+  toast: (msg: string, tone?: Toast['tone'], opts?: { action?: Toast['action']; ttl?: number }) => void;
   dismissToast: (id: string) => void;
 }

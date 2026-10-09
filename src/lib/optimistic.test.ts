@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { DataSnapshot } from './api';
 import type { BandEvent, Thread } from '../types';
-import { archiveThread, pinEvent, pinThread, reactToThread, retally, rsvp } from './optimistic';
+import { archiveThread, hideDeleted, NO_PENDING_DELETES, pinEvent, pinThread, reactToThread, retally, rsvp } from './optimistic';
 
 const ev = (id: string, extra: Partial<BandEvent> = {}) => ({ id, pinned: false, ...extra }) as BandEvent;
 const th = (id: string, extra: Partial<Thread> = {}) =>
@@ -36,5 +36,29 @@ describe('optimistic patches', () => {
     const out = reactToThread('a', 'like', 'u1')(snap([], [th('a'), th('b')]));
     expect(out.threads[0]).toMatchObject({ myReaction: 'like', reactions: { like: 1, likedBy: ['u1'] } });
     expect(out.threads[1].myReaction).toBeNull();
+  });
+});
+
+describe('hideDeleted', () => {
+  const comment = (id: number, replies: { id: number }[] = []) => ({ id, replies }) as unknown as Thread['comments'][number];
+  const s = {
+    links: [{ id: 1 }, { id: 2 }],
+    threads: [th('a', { comments: [comment(10, [{ id: 11 }, { id: 12 }]), comment(20)] })],
+  } as unknown as DataSnapshot;
+
+  it('returns the same snapshot when nothing is pending', () => {
+    expect(hideDeleted(s, NO_PENDING_DELETES)).toBe(s);
+  });
+  it('hides pending links', () => {
+    expect(hideDeleted(s, { links: [2], comments: [] }).links.map((l) => l.id)).toEqual([1]);
+  });
+  it('hides a pending comment together with its replies', () => {
+    const out = hideDeleted(s, { links: [], comments: [10] });
+    expect(out.threads[0].comments.map((c) => c.id)).toEqual([20]);
+    expect(out.links).toEqual(s.links);
+  });
+  it('hides a pending reply only', () => {
+    const out = hideDeleted(s, { links: [], comments: [11] });
+    expect(out.threads[0].comments[0].replies.map((r) => r.id)).toEqual([12]);
   });
 });
