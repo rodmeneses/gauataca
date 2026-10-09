@@ -6,6 +6,7 @@
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useAuth } from './auth';
+import { logError } from './log';
 import * as opt from './optimistic';
 import { createOfflineQueue } from './offlineQueue';
 import {
@@ -125,7 +126,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     try {
       setSnap(await fetchAll(user?.id ?? null));
     } catch (err) {
-      console.error('Failed to load data:', err);
+      logError('Failed to load data:', err);
       if (opts?.silent) {
         // Don't tear down the screen for a failed background refetch — the
         // write itself likely succeeded; just surface it like any mutation error.
@@ -176,7 +177,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         await reload({ silent: true });
         return result;
       } catch (err) {
-        console.error('Mutation failed:', err);
+        logError('Mutation failed:', err);
         window.dispatchEvent(new Event('guataca:mutation-error'));
         return undefined;
       } finally {

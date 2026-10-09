@@ -3,6 +3,8 @@
  * once the browser reconnects (see `run` in data.tsx). Not persisted: closing the
  * tab drops anything still queued, which the UI says plainly when it queues.
  */
+import { logError } from './log';
+
 export interface OfflineQueue {
   push: (job: () => Promise<unknown>) => number;
   size: () => number;
@@ -24,7 +26,7 @@ export function createOfflineQueue(): OfflineQueue {
         while (jobs.length) {
           const [job, ...rest] = jobs;
           jobs = rest;
-          try { await job(); } catch (err) { failed += 1; console.error('Queued write failed:', err); }
+          try { await job(); } catch (err) { failed += 1; logError('Queued write failed:', err); }
         }
         flushing = null;
         return failed;

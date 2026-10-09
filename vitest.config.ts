@@ -26,6 +26,7 @@ export default defineConfig({
         'src/lib/optimistic.ts',
         'src/lib/offlineQueue.ts',
         'src/lib/image.ts',
+        'src/lib/log.ts',
         'api/notify.ts',
         'api/calendar.ts',
         'src/lib/icsFeed.ts',

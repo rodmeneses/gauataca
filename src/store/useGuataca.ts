@@ -18,6 +18,7 @@ import { searchAll, type SearchHit } from '../lib/search';
 import { useAuth } from '../lib/auth';
 import { useData } from '../lib/data';
 import { compressImage } from '../lib/image';
+import { logError } from '../lib/log';
 import { useMediaQuery } from '../lib/useMediaQuery';
 import {
   L, contributionVm, eventVm, feedbackVm, gearVm, igCaption, memberById, memberVm, songVm, threadVm, txVm,
@@ -633,7 +634,7 @@ export function useGuataca(): Guataca {
           const url = await persistUploadForumPhoto(blob);
           if (url) urls.push(url);
         } catch (err) {
-          console.error('Photo upload failed:', file.name, err);
+          logError('Photo upload failed: ' + file.name, err);
         }
       }
       if (urls.length === 0) {
@@ -869,7 +870,7 @@ export function useGuataca(): Guataca {
             const url = await persistUploadEventPhoto(blob);
             if (url) urls.push(url);
           } catch (err) {
-            console.error('Photo upload failed:', file.name, err);
+            logError('Photo upload failed: ' + file.name, err);
           }
         }
         if (urls.length === 0) {
