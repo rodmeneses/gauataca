@@ -294,7 +294,9 @@ function mapThreads(
     };
   };
 
-  return threads.map((b) => {
+  // Newest first; the store's pinnedFirst sort is stable, so this order holds within pinned/unpinned.
+  const newestFirst = [...threads].sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')));
+  return newestFirst.map((b) => {
     const sorted = (commentsByThread.get(b.id) ?? []).sort((a, c) => a.id - c.id);
     const r = tallyReactions(reactionsByThread.get(b.id) ?? [], userId);
     return {
@@ -450,6 +452,11 @@ export async function updateEvent(
 /** Pin/unpin an event — pinned events sort to the top of the calendar's upcoming/history lists. */
 export async function setEventPinned(id: string, pinned: boolean): Promise<void> {
   await supabase.from('events').update({ pinned }).eq('id', id);
+}
+
+/** Cancel or reinstate an event — cancelled events move to the history list. */
+export async function setEventState(id: string, state: 'active' | 'cancelled'): Promise<void> {
+  await supabase.from('events').update({ state }).eq('id', id);
 }
 
 export async function createSong(
