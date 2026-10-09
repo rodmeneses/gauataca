@@ -177,6 +177,12 @@ const es = {
   queuedWritesSynced: 'Cambios pendientes guardados',
   queuedWritesFailed: 'Algunos cambios pendientes no se pudieron guardar',
   backOnline: 'De vuelta en línea',
+  // error boundary + failed-save reasons
+  errorTitle: 'Algo salió mal', errorBody: 'La app tuvo un error inesperado. Recarga para continuar; tus datos guardados están a salvo.', errorReload: 'Recargar',
+  saveFailed: 'No se pudo guardar el cambio', saveFailedOffline: 'No se pudo guardar: sin conexión', saveFailedDenied: 'No se pudo guardar: no tienes permiso', saveFailedInvalid: 'No se pudo guardar: datos inválidos', saveFailedSession: 'No se pudo guardar: vuelve a iniciar sesión',
+  queuedWritesFailedN: '%d cambios pendientes no se pudieron guardar',
+  uploadFailedFile: 'No se pudo subir %s',
+  undo: 'Deshacer', linkDeleted: 'Enlace eliminado',
   // pin (events + forum ideas) / archive (forum ideas) — added in code, not in the Claude Design file
   pin: 'Fijar', unpin: 'Quitar fijado', pinned: 'Fijado', unpinned: 'Se quitó de fijados',
   archive: 'Archivar', unarchive: 'Desarchivar', archived: 'Archivado', unarchived: 'Se desarchivó',
@@ -358,6 +364,12 @@ const en: typeof es = {
   queuedWritesSynced: 'Pending changes saved',
   queuedWritesFailed: "Some pending changes couldn't be saved",
   backOnline: 'Back online',
+  // error boundary + failed-save reasons
+  errorTitle: 'Something went wrong', errorBody: 'The app hit an unexpected error. Reload to continue; your saved data is safe.', errorReload: 'Reload',
+  saveFailed: "Couldn't save the change", saveFailedOffline: "Couldn't save: you're offline", saveFailedDenied: "Couldn't save: you don't have permission", saveFailedInvalid: "Couldn't save: invalid data", saveFailedSession: "Couldn't save: please sign in again",
+  queuedWritesFailedN: "%d pending changes couldn't be saved",
+  uploadFailedFile: 'Could not upload %s',
+  undo: 'Undo', linkDeleted: 'Link deleted',
   // pin (events + forum ideas) / archive (forum ideas)
   pin: 'Pin', unpin: 'Unpin', pinned: 'Pinned', unpinned: 'Unpinned',
   archive: 'Archive', unarchive: 'Unarchive', archived: 'Archived', unarchived: 'Unarchived',

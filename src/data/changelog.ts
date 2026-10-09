@@ -16,6 +16,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.8.0',
+    date: '2026-10-08',
+    title: { es: 'Más fiable y más rápida', en: 'More reliable and faster' },
+    changes: [
+      { es: 'Si la app tiene un error inesperado, ahora muestra un aviso con botón para recargar en vez de quedarse en blanco.', en: 'If the app hits an unexpected error it now shows a message with a reload button instead of a blank screen.' },
+    ],
+  },
+  {
     version: '0.7.0',
     date: '2026-10-08',
     title: { es: 'Accesibilidad, modo sin conexión y calendario', en: 'Accessibility, offline mode and calendar' },
