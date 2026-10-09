@@ -9,6 +9,7 @@
  * Env vars (Vercel, server-only): SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
  */
 import { createClient } from '@supabase/supabase-js';
+import { allow, clientKey } from './_rateLimit.js';
 import { buildIcsFeed, type IcsEvent } from '../src/lib/icsFeed.js';
 
 const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
@@ -19,7 +20,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type Res = { statusCode: number; setHeader: (k: string, v: string) => void; end: (s: string) => void };
 
-export default async function handler(req: { method?: string; query?: Record<string, string | string[] | undefined> }, res: Res): Promise<void> {
+export default async function handler(req: { method?: string; query?: Record<string, string | string[] | undefined>; headers?: Record<string, string | string[] | undefined> }, res: Res): Promise<void> {
   const fail = (status: number, msg: string) => {
     res.statusCode = status;
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
@@ -29,6 +30,8 @@ export default async function handler(req: { method?: string; query?: Record<str
   if (req.method !== 'GET' && req.method !== 'HEAD') return fail(405, 'method not allowed');
   const raw = req.query?.token;
   const token = Array.isArray(raw) ? raw[0] : raw;
+  // Throttle per client before touching the database so token guessing is cheap to refuse.
+  if (!allow(`calendar:${clientKey(req.headers)}`, 60, 60_000)) return fail(429, 'too many requests');
   if (!token || !UUID.test(token)) return fail(401, 'invalid token');
 
   try {

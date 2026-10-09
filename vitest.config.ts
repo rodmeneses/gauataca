@@ -30,6 +30,7 @@ export default defineConfig({
         'src/lib/errors.ts',
         'api/notify.ts',
         'api/calendar.ts',
+        'api/_rateLimit.ts',
         'src/lib/icsFeed.ts',
         'src/store/vm/*.ts',
         'src/store/derive.ts',

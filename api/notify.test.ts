@@ -53,10 +53,10 @@ async function run(handler: Handler, req: Req) {
   return res;
 }
 
-const post = (body: Record<string, unknown>, headers: Record<string, string> = {}): Req => ({ method: 'POST', body, headers });
+const post = (body: Record<string, unknown>, headers: Record<string, string> = { authorization: 'Bearer t' }): Req => ({ method: 'POST', body, headers });
 
 beforeEach(() => {
-  state.rows = {}; state.subs = []; state.user = null; state.getUserThrows = false; state.selectThrows = false;
+  state.rows = {}; state.subs = []; state.user = { id: 'u0' }; state.getUserThrows = false; state.selectThrows = false;
   state.deleted = []; state.filters = [];
   sendNotification.mockReset().mockResolvedValue({});
 });
@@ -70,6 +70,29 @@ describe('api/notify validation', () => {
     expect((await run(h, post({ kind: 'x', id: '1' }))).statusCode).toBe(400);
     expect((await run(h, post({ kind: 'event' }))).statusCode).toBe(400);
     expect((await run(h, { method: 'POST' })).statusCode).toBe(400);
+  });
+  it('rejects malformed ids', async () => {
+    const h = await load();
+    expect((await run(h, post({ kind: 'event', id: "x' or 1=1" }))).statusCode).toBe(400);
+    expect((await run(h, post({ kind: 'event', id: { $ne: 1 } }))).statusCode).toBe(400);
+    expect((await run(h, post({ kind: 'comment', commentId: -3 }))).statusCode).toBe(400);
+    expect((await run(h, post({ kind: 'comment', commentId: '5' }))).statusCode).toBe(400);
+  });
+  it('requires a signed-in caller', async () => {
+    const h = await load();
+    expect((await run(h, post({ kind: 'thread', id: 't1' }, {}))).statusCode).toBe(401);
+    state.user = null;
+    expect((await run(h, post({ kind: 'thread', id: 't1' }))).statusCode).toBe(401);
+    state.user = { id: 'u0' };
+    state.getUserThrows = true;
+    expect((await run(h, { method: 'POST', body: { kind: 'thread', id: 't1' } })).statusCode).toBe(401);
+    expect((await run(h, post({ kind: 'thread', id: 't1' }))).statusCode).toBe(401);
+  });
+  it('rate-limits a caller after 30 pushes a minute', async () => {
+    state.rows.threads = { title_es: 'Idea', author_id: 'a1' };
+    const h = await load();
+    for (let i = 0; i < 30; i++) expect((await run(h, post({ kind: 'thread', id: 't1' }))).statusCode).toBe(200);
+    expect((await run(h, post({ kind: 'thread', id: 't1' }))).statusCode).toBe(429);
   });
   it('500s when VAPID keys are missing', async () => {
     expect((await run(await load(false), post({ kind: 'event', id: '1' }))).statusCode).toBe(500);
@@ -91,14 +114,12 @@ describe('api/notify fan-out', () => {
     expect(state.filters).toContainEqual(['profiles.notify_events', true]);
   });
 
-  it('copes with a missing venue, an invalid token and a throwing auth lookup', async () => {
+  it('copes with a missing venue and title', async () => {
     state.rows.events = { title_es: '', starts_at: '2026-11-07T20:00:00Z', venue: '' };
     state.subs = [sub];
-    const h = await load();
-    expect((await run(h, post({ kind: 'event', id: 'e1' }, { authorization: 'Bearer t' }))).statusCode).toBe(200);
-    state.getUserThrows = true;
-    expect((await run(h, post({ kind: 'event', id: 'e1' }, { authorization: 'Bearer t' }))).statusCode).toBe(200);
-    expect(state.filters.some(([c]) => c === '!profiles.id')).toBe(false);
+    const res = await run(await load(), post({ kind: 'event', id: 'e1' }));
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(sendNotification.mock.calls[0][1]).title).toBe('GUATACA');
   });
 
   it('404s when the row is missing', async () => {
