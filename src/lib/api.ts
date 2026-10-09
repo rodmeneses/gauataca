@@ -5,6 +5,7 @@
  */
 import { supabase } from './supabase';
 import { notifyCreated } from './notify';
+import { retry } from './retry';
 import type {
   BandEvent, BandLink, LinkCategory, EventFeedback, EventType, Gear, GearCondition, GenreId, Instrument, LinkKind, Member, Proficiency, ProofKind, ReactionKind, ReactionTally, RsvpStatus, Song, Take, Thread, ThreadComment, ThreadPoll, Transaction, TxCategory, TxKind, VocalFlag,
 } from '../types';
@@ -324,40 +325,48 @@ function mapThreads(
 }
 
 /* ------------------------------------------------------------------ fetch */
+/** A read that throws on a Supabase error (instead of silently yielding empty data), retried once on a flaky connection. */
+const read = <T,>(query: () => PromiseLike<{ data: T; error: { message: string } | null }>) =>
+  retry(async () => {
+    const res = await query();
+    if (res.error) throw new Error(res.error.message);
+    return res;
+  }, { tries: 2, timeoutMs: 15000 });
+
 export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
   const [
     profiles, profileInstruments, vocals, songs, songInstruments, songLinks, events, eventSongs, eventMedia, attendance,
     feedback, polls, pollOptions, pollVotes, gear, transactions, threads, threadReactions, threadComments, threadCommentReactions,
     threadMedia, threadRefs, threadPolls, threadPollOptions, threadPollVotes, instruments, takes, links,
   ] = await Promise.all([
-    supabase.from('profiles').select('*'),
-    supabase.from('profile_instruments').select('*'),
-    supabase.from('profile_vocals').select('*'),
-    supabase.from('songs').select('*'),
-    supabase.from('song_instruments').select('*'),
-    supabase.from('song_links').select('*'),
-    supabase.from('events').select('*'),
-    supabase.from('event_songs').select('*'),
-    supabase.from('event_media').select('*'),
-    supabase.from('event_attendance').select('*'),
-    supabase.from('feedback').select('*'),
-    supabase.from('polls').select('*'),
-    supabase.from('poll_options').select('*'),
-    supabase.from('poll_votes').select('*'),
-    supabase.from('gear').select('*'),
-    supabase.from('transactions').select('*'),
-    supabase.from('threads').select('*'),
-    supabase.from('thread_reactions').select('*'),
-    supabase.from('thread_comments').select('*'),
-    supabase.from('thread_comment_reactions').select('*'),
-    supabase.from('thread_media').select('*'),
-    supabase.from('thread_refs').select('*'),
-    supabase.from('thread_polls').select('*'),
-    supabase.from('thread_poll_options').select('*'),
-    supabase.from('thread_poll_votes').select('*'),
-    supabase.from('instruments').select('*'),
-    supabase.from('takes').select('*'),
-    supabase.from('links').select('*').order('created_at', { ascending: false }),
+    read(() => supabase.from('profiles').select('*')),
+    read(() => supabase.from('profile_instruments').select('*')),
+    read(() => supabase.from('profile_vocals').select('*')),
+    read(() => supabase.from('songs').select('*')),
+    read(() => supabase.from('song_instruments').select('*')),
+    read(() => supabase.from('song_links').select('*')),
+    read(() => supabase.from('events').select('*')),
+    read(() => supabase.from('event_songs').select('*')),
+    read(() => supabase.from('event_media').select('*')),
+    read(() => supabase.from('event_attendance').select('*')),
+    read(() => supabase.from('feedback').select('*')),
+    read(() => supabase.from('polls').select('*')),
+    read(() => supabase.from('poll_options').select('*')),
+    read(() => supabase.from('poll_votes').select('*')),
+    read(() => supabase.from('gear').select('*')),
+    read(() => supabase.from('transactions').select('*')),
+    read(() => supabase.from('threads').select('*')),
+    read(() => supabase.from('thread_reactions').select('*')),
+    read(() => supabase.from('thread_comments').select('*')),
+    read(() => supabase.from('thread_comment_reactions').select('*')),
+    read(() => supabase.from('thread_media').select('*')),
+    read(() => supabase.from('thread_refs').select('*')),
+    read(() => supabase.from('thread_polls').select('*')),
+    read(() => supabase.from('thread_poll_options').select('*')),
+    read(() => supabase.from('thread_poll_votes').select('*')),
+    read(() => supabase.from('instruments').select('*')),
+    read(() => supabase.from('takes').select('*')),
+    read(() => supabase.from('links').select('*').order('created_at', { ascending: false })),
   ]);
 
   const members = mapMembers(profiles.data ?? [], profileInstruments.data ?? [], vocals.data ?? []);

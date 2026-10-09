@@ -27,6 +27,7 @@ export default defineConfig({
         'src/lib/offlineQueue.ts',
         'src/lib/image.ts',
         'src/lib/log.ts',
+        'src/lib/retry.ts',
         'api/notify.ts',
         'api/calendar.ts',
         'src/lib/icsFeed.ts',

@@ -7,6 +7,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useAuth } from './auth';
 import { logError } from './log';
+import { withTimeout } from './retry';
 import * as opt from './optimistic';
 import { createOfflineQueue } from './offlineQueue';
 import {
@@ -173,7 +174,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       if (patch) setSnap(patch);
       setMutating(true);
       try {
-        const result = await fn();
+        const result = await withTimeout(fn(), 30000);
         await reload({ silent: true });
         return result;
       } catch (err) {
