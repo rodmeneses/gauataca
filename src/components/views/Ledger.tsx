@@ -4,7 +4,7 @@
  */
 import { useEffect, useState } from 'react';
 import { ArrowLeftRight, ExternalLink, Link, Package, Pencil, Trash2 } from 'lucide-react';
-import { AddButton, Badge, Select, useConfirm } from '@/components/ui';
+import { AddButton, Badge, EmptyState, Select, useConfirm } from '@/components/ui';
 import { useGuataca } from '@/store';
 import type { TxDate, TxFilter } from '@/types';
 
@@ -93,6 +93,7 @@ export function Ledger() {
             <span className="text-right">{t.amount}</span>
             {isAdmin && <span />}
           </div>
+          {tx.length === 0 && <EmptyState icon={ArrowLeftRight} title={t.noTransactions} hint={t.noTransactionsHint} className="border-0 rounded-none" />}
           {tx.map((x) => (
             <div key={x.id} id={`tx-${x.id}`} className={`${TX_GRID} py-[14px] px-[18px] border-b border-line-faint items-center hover:bg-hover-soft ${hlTx === x.id ? 'ring-2 ring-emerald/50' : ''}`}>
               <span className="font-mono font-medium text-[12px] text-ink-muted">{x.dateStr}</span>
@@ -206,6 +207,7 @@ export function Ledger() {
             </AddButton>
           )}
         </div>
+        {gear.length === 0 && <EmptyState icon={Package} title={t.noGear} hint={t.noGearHint} />}
         <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-[14px]">
           {gear.map((g) => (
             <article key={g.id} className="bg-surface border border-line rounded-[14px] p-[17px] flex flex-col gap-[13px]">

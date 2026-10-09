@@ -1,8 +1,8 @@
 /** Mobile "Repertorio" tab: search + genre/sort filters + song cards with streaming links, chart links, takes and a collapsible rehearsal log. */
 import { useEffect } from 'react';
-import { ChevronDown, ChevronRight, Clock, FileText, Gauge, Link, Mic, Pencil, Youtube } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clock, FileText, Gauge, Link, Mic, Music, Pencil, Youtube } from 'lucide-react';
 import { useGuataca } from '../../store';
-import { AddButton, AppleMusicIcon, Pill, Segment, SpotifyIcon } from '../ui';
+import { AddButton, AppleMusicIcon, EmptyState, Pill, Segment, SpotifyIcon } from '../ui';
 import type { LinkKind } from '../../types';
 
 const rowLink = 'flex items-center gap-2 min-h-[44px] py-2 px-3 rounded-lg border border-line bg-raised text-ink-body no-underline font-sans font-medium text-[14px]';
@@ -69,6 +69,7 @@ export function MobileRepertoire() {
         <span className="font-mono font-medium text-[13px] text-ink-muted self-end">{filteredSongs.length} / {statSongs}</span>
       </div>
 
+      {filteredSongs.length === 0 && <EmptyState icon={Music} title={t.noSongs} hint={t.noSongsHint} />}
       {filteredSongs.map((s) => (
         <div key={s.id} id={`song-${s.id}`} className="bg-surface border border-line rounded-2xl py-3.5 px-4 flex flex-col gap-3">
           <div className="flex items-stretch gap-3">

@@ -3,7 +3,7 @@
  * Views compose these plus Tailwind utilities (arbitrary values allowed, e.g. text-[13.5px]).
  */
 import { useEffect, useRef, type ButtonHTMLAttributes, type CSSProperties, type HTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, type LucideIcon } from 'lucide-react';
 import { useMediaQuery } from '../../lib/useMediaQuery';
 
 /** Lock body scroll (ref-counted) + trap focus inside `ref` while a dialog is open. */
@@ -334,3 +334,23 @@ export function Switch({ checked, onChange, label, ...rest }: { checked: boolean
 export { cx };
 export { DatePicker } from './DatePicker';
 export { useConfirm } from './ConfirmDialog';
+
+/* ------------------------------------------------------------ EmptyState */
+/** Friendly placeholder for a list with nothing in it yet. */
+export function EmptyState({ icon: Icon, title, hint, className }: { icon: LucideIcon; title: string; hint?: string; className?: string }) {
+  return (
+    <div className={cx('flex flex-col items-center text-center gap-2 py-10 px-6 rounded-[14px] border border-dashed border-line bg-surface', className)}>
+      <span className="w-11 h-11 rounded-[12px] bg-raised border border-line-soft grid place-items-center text-ink-muted">
+        <Icon size={20} strokeWidth={1.8} aria-hidden />
+      </span>
+      <div className="font-display font-semibold text-[14px] text-ink">{title}</div>
+      {hint && <div className="font-sans text-[13px] leading-[1.5] text-ink-dim max-w-[320px]">{hint}</div>}
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------- Skeleton */
+/** Pulsing placeholder block shown while data loads. Size it with className. */
+export function Skeleton({ className }: { className?: string }) {
+  return <div aria-hidden className={cx('rounded-[10px] bg-raised animate-pulse-soft', className)} />;
+}

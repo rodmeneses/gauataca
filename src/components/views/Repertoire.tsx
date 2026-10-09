@@ -6,8 +6,8 @@
  * log entries link to their event.
  */
 import { useEffect } from 'react';
-import { ChevronDown, ChevronRight, Clock, FileText, Gauge, Link, Mic, Pencil, Search, Youtube } from 'lucide-react';
-import { AddButton, AppleMusicIcon, Pill, Segment, SpotifyIcon } from '@/components/ui';
+import { ChevronDown, ChevronRight, Clock, FileText, Gauge, Link, Mic, Music, Pencil, Search, Youtube } from 'lucide-react';
+import { AddButton, AppleMusicIcon, EmptyState, Pill, Segment, SpotifyIcon } from '@/components/ui';
 import { useGuataca } from '@/store';
 import type { LinkKind } from '@/types';
 
@@ -84,6 +84,7 @@ export function Repertoire() {
 
       {/* ---- song cards */}
       <div className="flex flex-col gap-2">
+        {filteredSongs.length === 0 && <EmptyState icon={Music} title={t.noSongs} hint={t.noSongsHint} />}
         {filteredSongs.map((s) => (
           <div key={s.id} id={`song-${s.id}`} className="bg-surface border border-line rounded-[13px] overflow-hidden">
             {/* header (title toggles the rehearsal log) */}
