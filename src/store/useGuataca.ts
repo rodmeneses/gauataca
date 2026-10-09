@@ -383,6 +383,12 @@ export function useGuataca(): Guataca {
   return useMemo<Guataca>(() => {
     const lang = st.lang;
     const t = T[lang];
+    /** Copy to the clipboard and toast the outcome — "copied" only if it really was. */
+    const copyText = (text: string, okMsg: string) => {
+      const fail = () => toast(t.copyFailed, 'err');
+      if (!navigator.clipboard) return fail();
+      navigator.clipboard.writeText(text).then(() => toast(okMsg), fail);
+    };
     const isAdmin = profile?.role === 'admin' || (!user && st.role === 'admin');
     // Layout tier. `device` is the dev preview override; 'auto' follows the viewport.
     const forced = st.device === 'mobile' ? 'phone' : st.device === 'tablet' ? 'tablet' : st.device === 'desktop' ? 'desktop' : null;
@@ -690,8 +696,7 @@ export function useGuataca(): Guataca {
       goToTx: (id) => set({ view: 'ledger', mobileTab: 'fund', scrollToTx: id, modal: null, palette: false }),
       clearScrollToTx: () => set({ scrollToTx: null }),
       copyLink: (kind, id, commentId) => {
-        if (navigator.clipboard) navigator.clipboard.writeText(itemUrl(kind, id, commentId)).catch(() => {});
-        toast(t.linkCopied);
+        copyText(itemUrl(kind, id, commentId), t.linkCopied);
       },
       setQ: (v) => set({ q: v }),
       setGenre: (g) => set({ genre: g }),
@@ -774,8 +779,7 @@ export function useGuataca(): Guataca {
       copyCaption: () => {
         const c = st.sheet?.caption;
         if (!c) return;
-        if (navigator.clipboard) navigator.clipboard.writeText(c).catch(() => {});
-        toast(t.copied);
+        copyText(c, t.copied);
       },
       shareNow: () => {
         const s = st.sheet;

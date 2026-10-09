@@ -25,7 +25,7 @@ export interface NotifyPayload {
 export async function notifyCreated(payload: NotifyPayload): Promise<void> {
   try {
     const { data } = await supabase.auth.getSession();
-    await fetch('/api/notify', {
+    const res = await fetch('/api/notify', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -33,7 +33,9 @@ export async function notifyCreated(payload: NotifyPayload): Promise<void> {
       },
       body: JSON.stringify(payload),
     });
-  } catch {
-    // Push is best-effort — swallow failures silently.
+    if (!res.ok) console.warn('Push notify failed:', res.status);
+  } catch (err) {
+    // Push is best-effort — never surface to the user, but leave a trace for debugging.
+    console.warn('Push notify failed:', err);
   }
 }
