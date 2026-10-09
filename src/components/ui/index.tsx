@@ -363,3 +363,26 @@ export function EmptyState({ icon: Icon, title, hint, className }: { icon: Lucid
 export function Skeleton({ className }: { className?: string }) {
   return <div aria-hidden className={cx('rounded-[10px] bg-raised animate-pulse-soft', className)} />;
 }
+
+/** Content-area placeholder: a heading, stat tiles and rows. Also the lazy-view Suspense fallback. */
+export function ViewSkeleton() {
+  return (
+    <div role="status" aria-busy="true" aria-label="…" className="flex-1 min-w-0 p-5 md:p-8 flex flex-col gap-4 max-w-[1100px]">
+      <Skeleton className="h-8 w-48" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-24" />)}
+      </div>
+      {[0, 1, 2].map((i) => <Skeleton key={i} className="h-20" />)}
+    </div>
+  );
+}
+
+/** Full-screen placeholder (sidebar + content) shown while auth resolves and data loads. */
+export function AppSkeleton() {
+  return (
+    <div className="min-h-screen bg-base flex">
+      <Skeleton className="hidden md:block w-[232px] flex-none rounded-none" />
+      <ViewSkeleton />
+    </div>
+  );
+}
