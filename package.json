@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.8.0",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "description": "GUATACA — bilingual (ES/EN) cooperative band admin app: events, setlists, repertoire, ledger, forum and members (React + Supabase PWA)",
   "scripts": {
     "dev": "vite",
