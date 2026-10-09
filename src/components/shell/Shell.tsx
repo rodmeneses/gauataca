@@ -15,10 +15,10 @@ import { OfflineBanner } from '../pwa/OfflineBanner';
 import { lazyNamed } from '../../lib/lazyNamed';
 
 const EventModal = lazyNamed(() => import('../modals/EventModal'), 'EventModal');
-const NewEventModal = lazyNamed(() => import('../modals/FormModals'), 'NewEventModal');
-const NewGearModal = lazyNamed(() => import('../modals/FormModals'), 'NewGearModal');
-const NewSongModal = lazyNamed(() => import('../modals/FormModals'), 'NewSongModal');
-const NewTxModal = lazyNamed(() => import('../modals/FormModals'), 'NewTxModal');
+const NewEventModal = lazyNamed(() => import('../modals/NewEventModal'), 'NewEventModal');
+const NewGearModal = lazyNamed(() => import('../modals/NewGearModal'), 'NewGearModal');
+const NewSongModal = lazyNamed(() => import('../modals/NewSongModal'), 'NewSongModal');
+const NewTxModal = lazyNamed(() => import('../modals/NewTxModal'), 'NewTxModal');
 const NewThreadModal = lazyNamed(() => import('../modals/NewThreadModal'), 'NewThreadModal');
 const ThreadModal = lazyNamed(() => import('../modals/ThreadModal'), 'ThreadModal');
 const MemberModal = lazyNamed(() => import('../modals/MemberModal'), 'MemberModal');

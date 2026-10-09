@@ -5,7 +5,7 @@
  */
 import { useGuataca } from '@/store';
 import { Badge, Button, Modal } from '@/components/ui';
-import { FormBody, FormHeader } from '@/components/modals/FormModals';
+import { FormBody, FormHeader } from '@/components/modals/FormFrame';
 import { APP_VERSION, CHANGELOG, entriesSince } from '@/data/changelog';
 import { fmt } from '@/lib/format';
 

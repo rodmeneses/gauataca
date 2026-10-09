@@ -2,60 +2,21 @@
  * Event detail modal (design lines 929–1111): header, 4 stat tiles, setlist,
  * media gallery, retrospective (ratings, well/improve, poll, my ratings) and footer.
  */
-import { useRef, useState } from 'react';
-import { CalendarPlus, ChartColumn, Check, EyeOff, ExternalLink, Film, Instagram, Link, Pencil, Pin, Plus, Star, Trash2, Upload } from 'lucide-react';
-import { RSVP_COLOR, RSVP_ORDER, RSVP_PENDING_COLOR, rsvpLabel, useGuataca } from '@/store';
-import { Avatar, Badge, Button, CloseButton, Input, Modal, useConfirm } from '@/components/ui';
+import { CalendarPlus, Instagram, Link, Pencil, Pin } from 'lucide-react';
+import { useGuataca } from '@/store';
+import { Badge, Button, CloseButton, Modal, useConfirm } from '@/components/ui';
 import { downloadIcs } from '@/lib/ics';
 import { SetlistEditor } from './SetlistEditor';
 import { RecordingsSection } from './RecordingsSection';
-import { PhotoViewer } from './PhotoViewer';
-import type { RatingKey } from '@/types';
-
-const RATING_KEYS: RatingKey[] = ['sound', 'perf', 'log', 'energy'];
-const STAR_VALUES = [1, 2, 3, 4, 5];
-
-const tileLabel = 'font-display font-semibold text-[9.5px] leading-[normal] tracking-[.11em] uppercase text-ink-dim';
-const tile = 'bg-surface border border-line-soft rounded-[11px] p-[13px]';
-const textareaCls =
-  'w-full py-[11px] px-[13px] rounded-[10px] border border-line bg-base text-ink-base font-sans font-normal text-[13px] leading-[normal] outline-none resize-y';
+import { EventRsvpSection } from './EventRsvpSection';
+import { EventMediaSection } from './EventMediaSection';
+import { EventFeedbackSection } from './EventFeedbackSection';
+import { tile, tileLabel } from './eventModalStyles';
 
 export function EventModal() {
-  const { t, ev, fb, state, songs, isAdmin, closeModal, openShare, openSettle, openEditEvent, pickPoll, setRating, toggleAnon, setFbWell, setFbImprove, submitFb, setRsvp, setEventSetlist, addTake, deleteTake, addEventVideo, addEventPhotos, deleteEventMedia, goToSong, copyLink, toggleEventPin, toggleEventCancelled } = useGuataca();
-  const [videoLabel, setVideoLabel] = useState('');
-  const [videoUrl, setVideoUrl] = useState('');
-  const [uploading, setUploading] = useState(false);
-  const [expandedRsvp, setExpandedRsvp] = useState<string | null>(null);
-  const [photoViewer, setPhotoViewer] = useState<number | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const { t, ev, fb, songs, isAdmin, closeModal, openShare, openSettle, openEditEvent, setEventSetlist, addTake, deleteTake, goToSong, copyLink, toggleEventPin, toggleEventCancelled } = useGuataca();
   const { confirm, dialog } = useConfirm();
   if (!ev) return null;
-
-  const addVideo = async () => {
-    const label = videoLabel.trim();
-    const url = videoUrl.trim();
-    if (!label || !url) return;
-    await addEventVideo(ev.id, label, url);
-    setVideoLabel('');
-    setVideoUrl('');
-  };
-
-  const onPickPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? []);
-    e.target.value = '';
-    if (!files.length) return;
-    setUploading(true);
-    await addEventPhotos(ev.id, files);
-    setUploading(false);
-  };
-
-  const ratingLabel: Record<RatingKey, string> = { sound: t.sound, perf: t.perf, log: t.logistics, energy: t.energy };
-  const rsvpGroups = [
-    { key: 'going', label: t.going, color: RSVP_COLOR.going, people: ev.going },
-    { key: 'maybe', label: t.maybe, color: RSVP_COLOR.maybe, people: ev.maybe },
-    { key: 'no', label: t.notGoing, color: RSVP_COLOR.no, people: ev.notGoing },
-    { key: 'pending', label: t.pendingL, color: RSVP_PENDING_COLOR, people: ev.pending },
-  ];
 
   return (
     <>
@@ -129,81 +90,7 @@ export function EventModal() {
         </div>
       )}
 
-      {/* ---- attendance / RSVP (code-first addition, see docs/design.md §5.4) */}
-      {ev.hasAttendance && (
-        <div className="py-5 px-6 border-b border-line-soft">
-          <div className="flex items-baseline gap-[11px] mb-[13px]">
-            <h3 className="m-0 font-display font-semibold text-[13px] leading-[normal] tracking-[.02em] text-ink-body">{t.rsvp}</h3>
-            <span className="font-mono font-medium text-[11.5px] leading-[normal] text-ink-muted whitespace-nowrap">
-              {ev.goingCount} {t.confirmedL} · {ev.pendingCount} {t.pending}
-            </span>
-          </div>
-
-          {ev.canRsvp && (
-            <div className="flex items-center gap-[10px] flex-wrap mb-4">
-              <span className="font-sans font-medium text-[12.5px] leading-[normal] text-ink-meta mr-1">{t.rsvpHint}</span>
-              {RSVP_ORDER.map((s) => {
-                const active = ev.rsvp === s;
-                const color = RSVP_COLOR[s];
-                return (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setRsvp(ev.id, s)}
-                    aria-pressed={active}
-                    className="flex items-center gap-[8px] py-[11px] px-[18px] rounded-[11px] border font-sans font-semibold text-[16px] leading-[normal] cursor-pointer transition-colors"
-                    style={{
-                      borderColor: `color-mix(in srgb, ${color} ${active ? 60 : 34}%, transparent)`,
-                      background: `color-mix(in srgb, ${color} ${active ? 16 : 8}%, transparent)`,
-                      color,
-                    }}
-                  >
-                    {active && <Check size={17} strokeWidth={2.4} />}
-                    {rsvpLabel(s, t)}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {rsvpGroups.map((g) => {
-              const expanded = expandedRsvp === g.key;
-              return (
-                <div
-                  key={g.key}
-                  className={`${tile} ${g.people.length > 0 ? 'cursor-pointer' : ''}`}
-                  onClick={() => g.people.length > 0 && setExpandedRsvp(expanded ? null : g.key)}
-                  role={g.people.length > 0 ? 'button' : undefined}
-                  aria-expanded={g.people.length > 0 ? expanded : undefined}
-                >
-                  <div className={tileLabel} style={{ color: g.color }}>
-                    {g.label} · {g.people.length}
-                  </div>
-                  {expanded ? (
-                    <div className="flex flex-col gap-[4px] mt-[9px]">
-                      {g.people.map((p) => (
-                        <span key={p.id} className="font-sans text-[12.5px] leading-[normal] text-ink-body">
-                          {p.name}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="flex gap-[6px] flex-wrap mt-[9px] min-h-[26px]">
-                      {g.people.length === 0 && <span className="font-mono text-[11.5px] leading-[26px] text-ink-faint">—</span>}
-                      {g.people.map((p) => (
-                        <span key={p.id} title={p.name} aria-label={p.name}>
-                          <Avatar initial={p.initial} size={26} radius={8} tone={g.key === 'pending' ? 'muted' : 'violet'} style={{ background: g.key === 'pending' ? 'var(--color-line)' : `color-mix(in srgb, ${g.color} 15%, transparent)`, color: g.key === 'pending' ? 'var(--color-ink-muted)' : g.color }} />
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      <EventRsvpSection ev={ev} />
 
       {/* ---- setlist (builder for admins, read-only for members) */}
       {(isAdmin || ev.hasSetlist) && (
@@ -230,239 +117,9 @@ export function EventModal() {
         />
       )}
 
-      {/* ---- media (photos + videos) */}
-      {(ev.hasMedia || isAdmin) && (
-        <div className="py-5 px-6 border-b border-line-soft">
-          <h3 className="mt-0 mx-0 mb-[13px] font-display font-semibold text-[13px] leading-[normal] text-ink-body">{t.media}</h3>
+      {(ev.hasMedia || isAdmin) && <EventMediaSection ev={ev} />}
 
-          {/* photos — thumbnail grid (click opens the carousel) */}
-          {ev.photos.length > 0 && (
-            <div className="grid grid-cols-3 md:grid-cols-4 gap-2 mb-[13px]">
-              {ev.photos.map((p, i) => (
-                <div key={p.id} className="relative aspect-square rounded-[10px] overflow-hidden border border-line-soft bg-raised">
-                  <button
-                    type="button"
-                    onClick={() => setPhotoViewer(i)}
-                    aria-label={`${t.photo} ${i + 1}`}
-                    className="block w-full h-full cursor-pointer p-0"
-                  >
-                    <img src={p.url} alt="" loading="lazy" className="w-full h-full object-cover" />
-                  </button>
-                  {isAdmin && (
-                    <button
-                      type="button"
-                      onClick={() => confirm({ message: t.confirmDeleteMedia, onConfirm: () => deleteEventMedia(p.id) })}
-                      aria-label={t.mediaRemoved}
-                      title={t.mediaRemoved}
-                      className="absolute top-[6px] right-[6px] grid place-items-center w-7 h-7 rounded-[8px] border border-line bg-base/85 text-ink-muted hover:text-ink-body cursor-pointer"
-                    >
-                      <Trash2 size={13} strokeWidth={2} />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* videos — link rows */}
-          {ev.videos.length > 0 && (
-            <div className="flex flex-col gap-[7px] mb-[13px]">
-              {ev.videos.map((m) => (
-                <div key={m.id} className="flex items-center gap-3 py-3 px-[14px] rounded-[11px] border border-line bg-surface">
-                  <a
-                    href={m.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-3 flex-1 min-w-0 text-ink-body hover:text-ink-body no-underline font-sans font-medium text-[13px] leading-[normal]"
-                  >
-                    <Film size={16} strokeWidth={1.9} className="flex-none" style={{ color: 'var(--color-emerald-light)' }} />
-                    <span className="flex-1 truncate">{m.label}</span>
-                    <ExternalLink size={14} strokeWidth={2.1} style={{ color: 'var(--color-ink-dim)' }} />
-                  </a>
-                  {isAdmin && (
-                    <button
-                      type="button"
-                      onClick={() => confirm({ message: t.confirmDeleteMedia, onConfirm: () => deleteEventMedia(m.id) })}
-                      aria-label={t.mediaRemoved}
-                      title={t.mediaRemoved}
-                      className="grid place-items-center w-[24px] h-[24px] rounded-[7px] border border-line bg-raised text-ink-muted hover:text-ink-body cursor-pointer flex-none"
-                    >
-                      <Trash2 size={13} strokeWidth={2} />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* admin controls */}
-          {isAdmin && (
-            <div className="flex flex-col gap-[9px]">
-              <div className="flex gap-2 items-center">
-                <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={onPickPhoto} />
-                <Button variant="surface" className="py-[9px] px-[12px] flex-none" onClick={() => fileRef.current?.click()} disabled={uploading}>
-                  <Upload size={14} strokeWidth={2.2} />
-                  {uploading ? t.uploading : t.addPhotos}
-                </Button>
-              </div>
-              <div className="flex gap-2 items-center flex-wrap">
-                <Input
-                  value={videoLabel}
-                  onChange={(e) => setVideoLabel(e.target.value)}
-                  placeholder={t.videoLabel}
-                  className="flex-1 min-w-[120px] text-[13px]"
-                />
-                <Input
-                  value={videoUrl}
-                  onChange={(e) => setVideoUrl(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && addVideo()}
-                  placeholder={t.videoUrl}
-                  className="flex-1 min-w-[180px] text-[13px]"
-                />
-                <Button variant="surface" className="py-[9px] px-[12px] flex-none" onClick={addVideo}>
-                  <Plus size={14} strokeWidth={2.2} />
-                  {t.addVideo}
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ---- feedback / retrospective */}
-      {fb && (
-        <div className="py-5 px-6 border-b border-line-soft bg-[color-mix(in_srgb,var(--color-surface)_75%,transparent)]">
-          <div className="flex items-baseline gap-[11px] mb-4">
-            <h3 className="m-0 font-display font-semibold text-[13px] leading-[normal] text-ink-body">{t.feedback}</h3>
-            <span className="font-mono font-medium text-[11.5px] leading-[normal] text-ink-muted">{fb.responses} {t.responses}</span>
-          </div>
-
-          {/* rating rows */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5">
-            {fb.rows.map((r) => (
-              <div key={r.key} className="bg-raised border border-line-soft rounded-[11px] p-[13px]">
-                <div className="flex justify-between items-baseline mb-[9px]">
-                  <span className="font-sans font-medium text-[12px] leading-[normal] text-ink-meta">{r.label}</span>
-                  <span className="font-mono font-semibold text-[14px] leading-[normal]" style={{ color: r.color }}>{r.val}</span>
-                </div>
-                <div className="h-[5px] rounded-[3px] bg-line-soft overflow-hidden">
-                  <div className="h-[5px] rounded-[3px]" style={{ background: r.color, width: r.pct }} />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* well / improve */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-            <div>
-              <div className="font-display font-semibold text-[10.5px] leading-[normal] tracking-[.11em] uppercase text-emerald mb-[10px]">{t.wentWell}</div>
-              <div className="flex flex-col gap-2">
-                {fb.well.map((w, i) => (
-                  <div key={i} className="bg-raised border border-line-soft border-l-2 border-l-[color-mix(in srgb, var(--color-emerald) 40%, transparent)] rounded-[10px] p-3">
-                    <p className="m-0 text-[12.5px] text-ink-body leading-[1.6]">{w.text}</p>
-                    <div className="font-mono font-medium text-[10.5px] leading-[normal] text-ink-dim mt-2">— {w.by}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div>
-              <div className="font-display font-semibold text-[10.5px] leading-[normal] tracking-[.11em] uppercase text-amber mb-[10px]">{t.improve}</div>
-              <div className="flex flex-col gap-2">
-                {fb.improve.map((w, i) => (
-                  <div key={i} className="bg-raised border border-line-soft border-l-2 border-l-[color-mix(in srgb, var(--color-amber) 40%, transparent)] rounded-[10px] p-3">
-                    <p className="m-0 text-[12.5px] text-ink-body leading-[1.6]">{w.text}</p>
-                    <div className="font-mono font-medium text-[10.5px] leading-[normal] text-ink-dim mt-2">— {w.by}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* poll */}
-          <div className="bg-raised border border-line-soft rounded-[12px] p-4 mb-5">
-            <div className="flex items-center gap-[10px] mb-[13px]">
-              <ChartColumn size={15} strokeWidth={1.9} style={{ color: 'var(--color-violet-light)' }} />
-              <span className="font-sans font-semibold text-[12.5px] leading-[normal] text-ink-base">{fb.pollQ}</span>
-              <span className="ml-auto font-mono font-medium text-[11px] leading-[normal] text-ink-dim">{fb.pollTotal} {t.votes}</span>
-            </div>
-            <div className="flex flex-col gap-2">
-              {fb.pollOpts.map((o) => (
-                <button
-                  key={o.i}
-                  type="button"
-                  onClick={() => pickPoll(o.i)}
-                  className="flex items-center gap-3 w-full py-[11px] px-[13px] rounded-[10px] border text-ink-body cursor-pointer text-left font-sans font-medium text-[13px] leading-[normal]"
-                  style={{ borderColor: o.picked ? 'color-mix(in srgb, var(--color-emerald) 40%, transparent)' : 'var(--color-line)', background: o.picked ? 'color-mix(in srgb, var(--color-emerald) 11%, transparent)' : 'var(--color-raised)' }}
-                >
-                  <span className="flex-1 min-w-0">
-                    <span className="block">{o.label}</span>
-                    <span className="block h-[6px] rounded-[4px] bg-line-soft mt-2 overflow-hidden">
-                      <span className="block h-[6px] rounded-[4px] transition-[width] duration-300" style={{ background: o.picked ? 'var(--color-emerald)' : 'var(--color-ink-faint)', width: o.pct }} />
-                    </span>
-                  </span>
-                  <span className="font-mono font-semibold text-[13px] leading-[normal] text-ink-meta flex-none min-w-[52px] text-right">{o.v} · {o.pct}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* my ratings */}
-          <div className="bg-raised border border-line-soft rounded-[12px] p-4">
-            <div className="font-display font-semibold text-[10.5px] leading-[normal] tracking-[.11em] uppercase text-ink-muted mb-[14px]">{t.ratings}</div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-4">
-              {RATING_KEYS.map((k) => (
-                <div key={k}>
-                  <div className="font-sans font-medium text-[12px] leading-[normal] text-ink-meta mb-2">{ratingLabel[k]}</div>
-                  <div className="flex gap-[6px]">
-                    {STAR_VALUES.map((n) => {
-                      const on = state.myRatings[k] >= n;
-                      return (
-                        <button
-                          key={n}
-                          type="button"
-                          onClick={() => setRating(k, n)}
-                          className="grid place-items-center w-[34px] h-[34px] rounded-[9px] border cursor-pointer"
-                          style={{ borderColor: on ? 'color-mix(in srgb, var(--color-amber) 40%, transparent)' : 'var(--color-line)', background: on ? 'color-mix(in srgb, var(--color-amber) 12%, transparent)' : 'var(--color-raised)', color: on ? 'var(--color-amber)' : 'var(--color-ink-dim)' }}
-                        >
-                          <Star size={15} strokeWidth={1.8} />
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <textarea
-              value={state.fbWell}
-              onChange={(e) => setFbWell(e.target.value)}
-              placeholder={t.wentWell}
-              rows={2}
-              className={`${textareaCls} mb-[9px]`}
-            />
-            <textarea
-              value={state.fbImprove}
-              onChange={(e) => setFbImprove(e.target.value)}
-              placeholder={t.improve}
-              rows={2}
-              className={textareaCls}
-            />
-            <div className="flex items-center gap-[10px] mt-[13px] flex-wrap">
-              <button
-                type="button"
-                onClick={toggleAnon}
-                className="flex items-center gap-[9px] py-2 px-3 rounded-[9px] border font-sans font-medium text-[12.5px] leading-[normal] cursor-pointer"
-                style={{ borderColor: state.anon ? 'color-mix(in srgb, var(--color-violet-light) 40%, transparent)' : 'var(--color-line)', background: state.anon ? 'color-mix(in srgb, var(--color-violet) 12%, transparent)' : 'var(--color-raised)', color: state.anon ? 'var(--color-violet-lighter)' : 'var(--color-ink-meta)' }}
-              >
-                <EyeOff size={14} strokeWidth={1.9} />
-                {t.anon}
-              </button>
-              <Button variant="primary" onClick={submitFb} className="ml-auto py-[10px] px-4">
-                {t.submitFeedback}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {fb && <EventFeedbackSection fb={fb} />}
 
       {/* ---- footer */}
       <div className="py-[18px] px-6 flex flex-wrap gap-[10px] justify-end">
@@ -506,7 +163,6 @@ export function EventModal() {
       </div>
     </Modal>
     {dialog}
-    {photoViewer !== null && <PhotoViewer photos={ev.photos} index={photoViewer} onClose={() => setPhotoViewer(null)} />}
     </>
   );
 }

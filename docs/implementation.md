@@ -32,7 +32,7 @@ src/
     shell/                Shell (layout + overlay switch), DesktopShell (sidebar + header + view switch), Sidebar, TopBar
     views/                Dashboard, CalendarView, Repertoire, Ledger, Brainstorm, Members, DesignSystem
     mobile/               MobileShell + MobileAgenda / MobileRepertoire / MobileFund / MobileProfile
-    modals/               EventModal, FormModals (NewEvent/NewTx/NewSong), ThreadModal, MemberModal, ShareSheet,
+    modals/               EventModal, FormFrame + NewEvent/NewTx/NewSong/NewGear modals, ThreadModal, MemberModal, ShareSheet,
                           CustodyDialog, CommandPalette, HandoffPanel, TourOverlay, Toasts
 ```
 
