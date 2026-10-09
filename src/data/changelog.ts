@@ -24,6 +24,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       { es: 'Si un cambio no se puede guardar, ahora la app te avisa y explica el motivo (sin conexión, sin permiso, sesión vencida…).', en: 'When a change can\'t be saved, the app now tells you and explains why (offline, no permission, session expired…).' },
       { es: 'Si el internet se cae mientras se envían los cambios en cola, ya no se pierden: se reintentan al volver, y si alguno falla se indica cuántos.', en: 'If the connection drops while queued changes are being sent, they are no longer lost: they retry on reconnect, and if any fail you\'re told how many.' },
       { es: 'Si una foto no se sube, el aviso ahora dice cuál falló (y las demás sí se guardan).', en: 'If a photo fails to upload, the message now says which one (the rest still get saved).' },
+      { es: 'La app abre más rápido: las pantallas y ventanas se cargan solo cuando las abres.', en: 'The app opens faster: screens and dialogs now load only when you open them.' },
     ],
   },
   {
