@@ -149,7 +149,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const onOnline = async () => {
       if (offlineQueue.size() === 0) return;
       const failed = await offlineQueue.flush();
-      window.dispatchEvent(new CustomEvent('guataca:queue-flushed', { detail: { failed } }));
+      // Jobs put back because the connection dropped again will replay on the next reconnect.
+      if (offlineQueue.size() === 0 || failed > 0) window.dispatchEvent(new CustomEvent('guataca:queue-flushed', { detail: { failed } }));
       await reload({ silent: true });
     };
     window.addEventListener('online', onOnline);

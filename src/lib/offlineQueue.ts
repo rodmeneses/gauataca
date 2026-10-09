@@ -6,11 +6,15 @@
 export interface OfflineQueue {
   push: (job: () => Promise<unknown>) => number;
   size: () => number;
-  /** Run queued jobs in order; a failing job is skipped, not retried. Returns how many failed. */
+  /**
+   * Run queued jobs in order. A job that fails while the connection is down again is
+   * put back (with everything after it) for the next reconnect; any other failing job
+   * is skipped, not retried. Returns how many were dropped as failed.
+   */
   flush: () => Promise<number>;
 }
 
-export function createOfflineQueue(): OfflineQueue {
+export function createOfflineQueue(isOnline: () => boolean = () => typeof navigator === 'undefined' || navigator.onLine !== false): OfflineQueue {
   let jobs: Array<() => Promise<unknown>> = [];
   let flushing: Promise<number> | null = null;
   return {
@@ -24,7 +28,13 @@ export function createOfflineQueue(): OfflineQueue {
         while (jobs.length) {
           const [job, ...rest] = jobs;
           jobs = rest;
-          try { await job(); } catch (err) { failed += 1; console.error('Queued write failed:', err); }
+          try {
+            await job();
+          } catch (err) {
+            if (!isOnline()) { jobs = [job, ...rest]; break; }
+            failed += 1;
+            console.error('Queued write failed:', err);
+          }
         }
         flushing = null;
         return failed;

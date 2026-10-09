@@ -22,6 +22,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     changes: [
       { es: 'Si la app tiene un error inesperado, ahora muestra un aviso con botón para recargar en vez de quedarse en blanco.', en: 'If the app hits an unexpected error it now shows a message with a reload button instead of a blank screen.' },
       { es: 'Si un cambio no se puede guardar, ahora la app te avisa y explica el motivo (sin conexión, sin permiso, sesión vencida…).', en: 'When a change can\'t be saved, the app now tells you and explains why (offline, no permission, session expired…).' },
+      { es: 'Si el internet se cae mientras se envían los cambios en cola, ya no se pierden: se reintentan al volver, y si alguno falla se indica cuántos.', en: 'If the connection drops while queued changes are being sent, they are no longer lost: they retry on reconnect, and if any fail you\'re told how many.' },
     ],
   },
   {

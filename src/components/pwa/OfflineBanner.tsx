@@ -26,7 +26,7 @@ export function OfflineBanner() {
     };
     const onFlushed = (e: Event) => {
       const failed = (e as CustomEvent<{ failed: number }>).detail?.failed ?? 0;
-      toast(failed ? t.queuedWritesFailed : t.queuedWritesSynced, failed ? 'err' : 'ok');
+      toast(failed ? t.queuedWritesFailedN.replace('%d', String(failed)) : t.queuedWritesSynced, failed ? 'err' : 'ok');
     };
 
     window.addEventListener('online', goOnline);
