@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Badge, Button, Modal, Pill } from './index';
 import { useConfirm } from './ConfirmDialog';
+import { Thumb } from './Thumb';
 import { T } from '../../i18n';
 
 vi.mock('@/store', () => ({ useGuataca: () => ({ t: T.en }) }));
@@ -119,5 +120,23 @@ describe('useConfirm', () => {
     fireEvent.click(screen.getByRole('button', { name: T.en.delete }));
     await vi.waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(onConfirm).toHaveBeenCalledOnce();
+  });
+});
+
+describe('Thumb', () => {
+  const full = 'https://x.supabase.co/storage/v1/object/public/event-photos/a.jpg';
+  it('loads the thumbnail and falls back to the full image on error', () => {
+    const { container } = render(<Thumb url={full} />);
+    const img = container.querySelector('img')!;
+    expect(img.getAttribute('src')).toBe(full.replace('.jpg', '_t.jpg'));
+    expect(img.getAttribute('loading')).toBe('lazy');
+    fireEvent.error(img);
+    expect(container.querySelector('img')!.getAttribute('src')).toBe(full);
+  });
+  it('uses external links as-is', () => {
+    const { container } = render(<Thumb url="https://example.com/p.jpg" />);
+    const img = container.querySelector('img')!;
+    fireEvent.error(img);
+    expect(img.getAttribute('src')).toBe('https://example.com/p.jpg');
   });
 });

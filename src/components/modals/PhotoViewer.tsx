@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { cx } from '@/components/ui';
+import { Thumb } from '@/components/ui/Thumb';
 
 export function PhotoViewer({ photos, index, onClose }: {
   photos: { id: number; url: string }[];
@@ -135,7 +136,7 @@ export function PhotoViewer({ photos, index, onClose }: {
                 n === i ? 'border-white/80' : 'border-white/20 opacity-60 hover:opacity-100',
               )}
             >
-              <img src={p.url} alt="" loading="lazy" className="w-full h-full object-cover" />
+              <Thumb url={p.url} />
             </button>
           ))}
         </div>

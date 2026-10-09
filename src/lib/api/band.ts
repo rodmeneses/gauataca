@@ -2,6 +2,7 @@
 import { supabase } from '../supabase';
 import { notifyCreated } from '../notify';
 import { newId } from './shared';
+import { removePhotos, uploadPhoto } from './photos';
 import type {
   EventType, GearCondition, GenreId, LinkKind, Proficiency, ProofKind, RsvpStatus, TxCategory, TxKind, VocalFlag,
 } from '../../types';
@@ -257,6 +258,8 @@ export async function addEventPhotos(eventId: string, urls: string[], userId: st
       submitted_by: userId || null,
     })),
   );
+  // The files are already uploaded; don't leave them orphaned in storage if the rows didn't land.
+  if (error) await removePhotos('event-photos', urls);
   return !error;
 }
 
@@ -264,23 +267,12 @@ export async function addEventPhotos(eventId: string, urls: string[], userId: st
 export async function deleteEventMedia(id: number): Promise<void> {
   const { data: row } = await supabase.from('event_media').select('url').eq('id', id).single();
   await supabase.from('event_media').delete().eq('id', id).throwOnError();
-  if (row?.url) {
-    const marker = '/storage/v1/object/public/event-photos/';
-    const idx = row.url.indexOf(marker);
-    if (idx >= 0) {
-      const path = row.url.slice(idx + marker.length);
-      await supabase.storage.from('event-photos').remove([path]);
-    }
-  }
+  if (row?.url) await removePhotos('event-photos', [row.url]);
 }
 
 /** Upload an event photo to the public `event-photos` bucket; returns its public URL. */
-export async function uploadEventPhoto(blob: Blob): Promise<string> {
-  const path = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.jpg`;
-  const { error } = await supabase.storage.from('event-photos').upload(path, blob, { cacheControl: '3600', upsert: false });
-  if (error) throw error;
-  const { data } = supabase.storage.from('event-photos').getPublicUrl(path);
-  return data.publicUrl;
+export async function uploadEventPhoto(blob: Blob, thumb?: Blob | null): Promise<string> {
+  return uploadPhoto('event-photos', blob, thumb);
 }
 
 /** Register a gear purchase: insert the gear row and the matching expense transaction. */

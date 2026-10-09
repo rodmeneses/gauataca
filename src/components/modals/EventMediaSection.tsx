@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 import { ExternalLink, Film, Plus, Trash2, Upload } from 'lucide-react';
 import { useGuataca, type EventVm } from '@/store';
 import { Button, Input, useConfirm } from '@/components/ui';
+import { Thumb } from '@/components/ui/Thumb';
 import { PhotoViewer } from './PhotoViewer';
 
 export function EventMediaSection({ ev }: { ev: EventVm }) {
@@ -50,7 +51,7 @@ export function EventMediaSection({ ev }: { ev: EventVm }) {
                   aria-label={`${t.photo} ${i + 1}`}
                   className="block w-full h-full cursor-pointer p-0"
                 >
-                  <img src={p.url} alt="" loading="lazy" className="w-full h-full object-cover" />
+                  <Thumb url={p.url} />
                 </button>
                 {isAdmin && (
                   <button

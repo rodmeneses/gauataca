@@ -53,7 +53,7 @@ interface DataValue extends DataSnapshot {
   addEventPhotos: (eventId: string, urls: string[]) => Promise<boolean | undefined>;
   deleteEventMedia: (id: number) => Promise<void>;
   /** Upload an event photo (already compressed); resolves to its public URL. */
-  uploadEventPhoto: (blob: Blob) => Promise<string | undefined>;
+  uploadEventPhoto: (blob: Blob, thumb?: Blob | null) => Promise<string | undefined>;
   setRsvp: (eventId: string, status: RsvpStatus | null) => Promise<void>;
   /** Pin/unpin an event. */
   setEventPinned: (id: string, pinned: boolean) => Promise<void>;
@@ -77,7 +77,7 @@ interface DataValue extends DataSnapshot {
   deleteThreadMedia: (id: number) => Promise<void>;
   addThreadRefs: (threadId: string, refs: { kind: 'song' | 'event'; id: string }[], commentId?: number | null) => Promise<boolean | undefined>;
   /** Upload a forum photo (already compressed); resolves to its public URL. */
-  uploadForumPhoto: (blob: Blob) => Promise<string | undefined>;
+  uploadForumPhoto: (blob: Blob, thumb?: Blob | null) => Promise<string | undefined>;
   submitFeedback: (eventId: string, input: FeedbackInput) => Promise<void>;
   pickPoll: (eventId: string, optionIndex: number) => Promise<void>;
   transferCustody: (gearId: string, toMemberId: string) => Promise<void>;
@@ -221,8 +221,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
       addEventMedia: (eventId, kind, label, url) => run(() => apiAddEventMedia(eventId, { kind, labelEs: label, labelEn: label, url }, uid)),
       addEventPhotos: (eventId, urls) => run(() => apiAddEventPhotos(eventId, urls, uid)),
       deleteEventMedia: (id) => run(() => apiDeleteEventMedia(id)),
-      uploadEventPhoto: async (blob) => {
-        return apiUploadEventPhoto(blob);
+      uploadEventPhoto: async (blob, thumb) => {
+        return apiUploadEventPhoto(blob, thumb);
       },
       setRsvp: (eventId, status) => run(() => apiSetRsvp(eventId, status, uid), opt.rsvp(eventId, status, uid)),
       setEventPinned: (id, pinned) => run(() => apiSetEventPinned(id, pinned), opt.pinEvent(id, pinned)),
@@ -239,8 +239,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
       addThreadMedia: (threadId, urls, commentId = null) => run(() => apiAddThreadMedia(threadId, urls, uid, commentId)),
       deleteThreadMedia: (id) => run(() => apiDeleteThreadMedia(id)),
       addThreadRefs: (threadId, refs, commentId = null) => run(() => apiAddThreadRefs(threadId, refs, uid, commentId)),
-      uploadForumPhoto: async (blob) => {
-        return apiUploadForumPhoto(blob);
+      uploadForumPhoto: async (blob, thumb) => {
+        return apiUploadForumPhoto(blob, thumb);
       },
       submitFeedback: (eventId, input) => run(() => apiSubmitFeedback(eventId, input, uid)),
       pickPoll: (eventId, optionIndex) => run(() => apiPickPoll(eventId, optionIndex, uid)),

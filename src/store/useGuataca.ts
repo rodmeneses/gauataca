@@ -14,7 +14,7 @@ import { searchAll } from '../lib/search';
 import { useAuth } from '../lib/auth';
 import { useData } from '../lib/data';
 import { UNDO_WINDOW_MS } from '../lib/optimistic';
-import { compressImage } from '../lib/image';
+import { preparePhoto } from '../lib/image';
 import { useMediaQuery } from '../lib/useMediaQuery';
 import { filterPalette, layoutTier } from './derive';
 import { feedbackVm, igCaption, memberById, memberVm, threadVm, txVm } from './vm';
@@ -204,16 +204,8 @@ export function useGuataca(): Guataca {
       const failed: string[] = [];
       for (const file of files) {
         try {
-          let blob: Blob;
-          try {
-            blob = await compressImage(file);
-          } catch (err) {
-            // Compression can fail (unsupported format, oversized image, etc.).
-            // Upload the original rather than silently dropping the photo.
-            console.warn('Photo compression failed, uploading original:', file.name, err);
-            blob = file;
-          }
-          const url = await persistUploadForumPhoto(blob);
+          const { full, thumb } = await preparePhoto(file);
+          const url = await persistUploadForumPhoto(full, thumb);
           if (url) urls.push(url); else failed.push(file.name);
         } catch (err) {
           console.error('Photo upload failed:', file.name, err);
@@ -440,16 +432,8 @@ export function useGuataca(): Guataca {
         const failed: string[] = [];
         for (const file of files) {
           try {
-            let blob: Blob;
-            try {
-              blob = await compressImage(file);
-            } catch (err) {
-              // Compression can fail (unsupported format, oversized image, etc.).
-              // Upload the original rather than silently dropping the photo.
-              console.warn('Photo compression failed, uploading original:', file.name, err);
-              blob = file;
-            }
-            const url = await persistUploadEventPhoto(blob);
+            const { full, thumb } = await preparePhoto(file);
+            const url = await persistUploadEventPhoto(full, thumb);
             if (url) urls.push(url); else failed.push(file.name);
           } catch (err) {
             console.error('Photo upload failed:', file.name, err);

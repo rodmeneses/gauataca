@@ -1,5 +1,6 @@
 /** Write side for the forum: ideas, links, comments, polls, reactions and photos. */
 import { supabase } from '../supabase';
+import { removePhotos, uploadPhoto } from './photos';
 import { notifyCreated } from '../notify';
 import { newId } from './shared';
 import type {
@@ -126,9 +127,7 @@ export async function deleteComment(id: number): Promise<void> {
   const { data: media } = await supabase.from('thread_media').select('url').in('comment_id', (ids ?? []).map((r) => r.id));
   const { error } = await supabase.from('thread_comments').delete().eq('id', id);
   if (error) throw error;
-  const marker = '/storage/v1/object/public/forum-photos/';
-  const paths = (media ?? []).map((m) => m.url).filter((u): u is string => !!u && u.includes(marker)).map((u) => u.slice(u.indexOf(marker) + marker.length));
-  if (paths.length) await supabase.storage.from('forum-photos').remove(paths);
+  await removePhotos('forum-photos', (media ?? []).map((m) => m.url).filter((u): u is string => !!u));
 }
 
 /** Set the signed-in member's like/dislike on a comment; `null` removes it. */
@@ -150,6 +149,8 @@ export async function addThreadMedia(threadId: string, urls: string[], userId: s
   const { error } = await supabase.from('thread_media').insert(
     urls.map((url) => ({ thread_id: threadId, comment_id: commentId, url, author_id: userId })),
   );
+  // The files are already uploaded; don't leave them orphaned in storage if the rows didn't land.
+  if (error) await removePhotos('forum-photos', urls);
   return !error;
 }
 
@@ -157,14 +158,7 @@ export async function addThreadMedia(threadId: string, urls: string[], userId: s
 export async function deleteThreadMedia(id: number): Promise<void> {
   const { data: row } = await supabase.from('thread_media').select('url').eq('id', id).single();
   await supabase.from('thread_media').delete().eq('id', id).throwOnError();
-  if (row?.url) {
-    const marker = '/storage/v1/object/public/forum-photos/';
-    const idx = row.url.indexOf(marker);
-    if (idx >= 0) {
-      const path = row.url.slice(idx + marker.length);
-      await supabase.storage.from('forum-photos').remove([path]);
-    }
-  }
+  if (row?.url) await removePhotos('forum-photos', [row.url]);
 }
 
 /** Attach song/event references to an idea or one of its comments, skipping dups; true on success. */
@@ -190,10 +184,6 @@ export async function addThreadRefs(
 }
 
 /** Upload a forum photo to the public `forum-photos` bucket; returns its public URL. */
-export async function uploadForumPhoto(blob: Blob): Promise<string> {
-  const path = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.jpg`;
-  const { error } = await supabase.storage.from('forum-photos').upload(path, blob, { cacheControl: '3600', upsert: false });
-  if (error) throw error;
-  const { data } = supabase.storage.from('forum-photos').getPublicUrl(path);
-  return data.publicUrl;
+export async function uploadForumPhoto(blob: Blob, thumb?: Blob | null): Promise<string> {
+  return uploadPhoto('forum-photos', blob, thumb);
 }
