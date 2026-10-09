@@ -3,10 +3,10 @@
  * view-models and every action — the typed equivalent of the design's renderVals().
  */
 import { useMemo } from 'react';
-import { T, type Dict } from '../i18n';
-import { COLOR_TOKENS, GENRES, GENRE_IDS, HANDOFF_NOTES, TOUR_STEPS, TYPE_SCALE } from '../data';
+import type { Dict } from '../i18n';
+import { COLOR_TOKENS, HANDOFF_NOTES, TOUR_STEPS, TYPE_SCALE } from '../data';
 import { money, money0 } from '../lib/format';
-import type { BandEvent, Member, Profile, RsvpStatus, Song, Transaction, View } from '../types';
+import type { RsvpStatus, View } from '../types';
 import { useStore } from './store';
 import { writeLangPref, writeThemePref } from '../lib/prefs';
 import { itemUrl } from '../lib/deepLink';
@@ -14,38 +14,24 @@ import { searchAll } from '../lib/search';
 import { useAuth } from '../lib/auth';
 import { useData } from '../lib/data';
 import { UNDO_WINDOW_MS } from '../lib/optimistic';
-import { compressImage } from '../lib/image';
+import { preparePhoto } from '../lib/image';
 import { useMediaQuery } from '../lib/useMediaQuery';
-import { bucketEvents, contributionTotals, filterPalette, filterSongs, filterTx, layoutTier, ledgerTotals, mergeInstruments, pinnedFirst, sortTxNewestFirst } from './derive';
-import { L, contributionVm, eventVm, feedbackVm, gearVm, igCaption, memberById, memberVm, songVm, threadVm, txVm, type Ctx } from './vm';
+import { filterPalette, layoutTier } from './derive';
+import { feedbackVm, igCaption, memberById, memberVm, threadVm, txVm } from './vm';
+import { useDerived } from './useDerived';
 
-import type { Guataca, FormVm, GenreChip, PaletteItem, SearchResult, TourVm } from './guataca.types';
+import type { Guataca, FormVm, PaletteItem, SearchResult, TourVm } from './guataca.types';
 export type * from './guataca.types';
-
-function profileToMember(p: Profile): Member {
-  return {
-    id: p.id,
-    name: p.name,
-    short: p.name.split(/\s+/)[0],
-    initial: p.name.split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase(),
-    role: p.role,
-    title: { es: '', en: '' },
-    email: p.email,
-    joined: (p.joined_at ?? '').slice(0, 10),
-    instruments: [],
-    vocals: [],
-  };
-}
 
 /** True while a poll vote is saving, so rapid taps don't stack votes or toasts. */
 let votingThreadPoll = false;
 
 export function useGuataca(): Guataca {
   const { state: st, props, set, toast, dismissToast } = useStore();
-  const { user, profile, signOut, refreshProfile } = useAuth();
+  const { user, signOut, refreshProfile } = useAuth();
   const {
-    songs: dbSongs, events: dbEvents, transactions: dbTx, gear: dbGear, threads: dbThreads, members: dbMembers, links: dbLinks,
-    instruments: dbInstruments, takes: dbTakes, myPollPicks, loading, mutating, error,
+    songs: dbSongs, gear: dbGear, threads: dbThreads, members: dbMembers, links: dbLinks,
+    myPollPicks, loading, mutating, error,
     createEvent, updateEvent, createSong, updateSong, setSongLinks: persistSongLinks, createTransaction, updateTransaction: persistUpdateTransaction, deleteTransaction: persistDeleteTransaction, createGear: persistGear, createInstrument: persistInstrument,
     onboard: persistOnboard, updateMemberInstruments: persistMemberInstruments, setSongInstruments: persistSongInstruments,
     addTake: persistTake, deleteTake: persistDeleteTake,
@@ -65,66 +51,22 @@ export function useGuataca(): Guataca {
   // tablets, and "Request Desktop Site" all report > 768px but are still touch-first.
   const isMobileViewport = isPhoneViewport || (isCoarsePointer && isTabletViewport);
 
+  const derived = useDerived();
+
   return useMemo<Guataca>(() => {
-    const lang = st.lang;
-    const t = T[lang];
+    const { t, lang, Lx, ctx, isAdmin, staleDays, me, instruments, allSongs, allEvents, allTx, income, expense, balance, upcomingRaw, nextRaw, songs, staleSongs, filteredSongs, genreChips, evm, upcoming, history, events, nextEvent, dashUpcoming, calList, tx, recentTx, contributions, gear, threads, forumList, members } = derived;
     /** Copy to the clipboard and toast the outcome — "copied" only if it really was. */
     const copyText = (text: string, okMsg: string) => {
       const fail = () => toast(t.copyFailed, 'err');
       if (!navigator.clipboard) return fail();
       navigator.clipboard.writeText(text).then(() => toast(okMsg), fail);
     };
-    const isAdmin = profile?.role === 'admin' || (!user && st.role === 'admin');
     // Layout tier. `device` is the dev preview override; 'auto' follows the viewport.
     const layout = layoutTier(st.device, isMobileViewport, isTabletViewport);
     const isPhone = layout === 'phone';
     const isTablet = layout === 'tablet';
     const isMobile = isPhone; // back-compat alias
     const isDesktop = layout === 'desktop';
-    const staleDays = props.staleDays || 30;
-    const me = user && profile ? profileToMember(profile) : memberById(dbMembers, isAdmin ? 'm1' : 'm2');
-    const instruments = mergeInstruments(dbInstruments, st.customInstruments);
-    const ctx: Ctx = { lang, t, staleDays, meId: me.id, isAdmin, members: dbMembers, events: dbEvents, songs: dbSongs, gear: dbGear, instruments, takes: dbTakes };
-    const Lx = (v: { es: string; en: string } | string | null | undefined) => L(lang, v);
-
-    /* ---- raw collections (from the data layer) */
-    const allSongs: Song[] = dbSongs;
-    const allEvents: BandEvent[] = dbEvents;
-    const allTx: Transaction[] = sortTxNewestFirst(dbTx);
-
-    const { income, expense, balance } = ledgerTotals(allTx);
-
-    const { upcoming: upcomingRaw, history: historyRaw, next: nextRaw } = bucketEvents(allEvents);
-
-    const songs = allSongs.map((s) => songVm(s, allEvents, st.openSong, ctx));
-    const staleSongs = songs.filter((s) => s.isStale).sort((a, b) => (a.lastDate < b.lastDate ? -1 : 1));
-    const filteredSongs = filterSongs(songs, { genre: st.genre, staleOnly: st.staleOnly, query: st.q, sort: st.songSort });
-    const genreChips: GenreChip[] = [
-      { id: 'all', label: t.allGenres, color: 'var(--color-violet-light)', active: st.genre === 'all' },
-      ...GENRE_IDS.map((k): GenreChip => ({ id: k, label: Lx(GENRES[k].label), color: GENRES[k].color, active: st.genre === k })),
-    ];
-
-    const evm = (e: BandEvent) => eventVm(e, allSongs, ctx);
-    // Pinned events float to the top of each list, keeping date order within each group.
-    const upcoming = pinnedFirst(upcomingRaw.map(evm));
-    const history = pinnedFirst(historyRaw.map(evm));
-    const events = [...upcoming, ...history];
-    const nextEvent = nextRaw ? evm(nextRaw) : null;
-    const dashUpcoming = upcomingRaw.filter((e) => e.state !== 'cancelled').slice(0, 3).map(evm);
-
-    const txFiltered = filterTx(allTx, st.txFilter, st.txDate);
-    const tx = txFiltered.map((x) => txVm(x, ctx));
-    const recentTx = allTx.slice(0, 4).map((x) => txVm(x, ctx));
-
-    // Voluntary contributions per member (DTV income is the org's, not a member's).
-    const contributions = contributionTotals(allTx, dbMembers)
-      .map((c) => contributionVm(c.member, c.total, c.month))
-      .sort((a, b) => a.name.localeCompare(b.name));
-
-    const gear = dbGear.map((g) => gearVm(g, g.holder, ctx));
-    const threads = dbThreads.map((b) => threadVm(b, ctx));
-    const forumList = pinnedFirst(threads.filter((b) => (st.forumTab === 'archived' ? b.archived : !b.archived)));
-    const members = dbMembers.map((m) => memberVm(m, ctx));
 
     /* ---- modal selections */
     const modal = st.modal;
@@ -162,7 +104,7 @@ export function useGuataca(): Guataca {
       { group: t.navigate, label: t.brainstorm, sub: '', run: () => go('brainstorm') },
       { group: t.navigate, label: t.links, sub: '', run: () => go('links') },
       { group: t.navigate, label: t.members, sub: '', run: () => go('members') },
-      { group: t.navigate, label: t.system, sub: '', run: () => go('system') },
+      ...(import.meta.env.DEV ? [{ group: t.navigate, label: t.system, sub: '', run: () => go('system') }] : []),
       { group: t.actions, label: t.newEvent, sub: '', run: () => set({ palette: false, view: 'calendar', modal: { kind: 'newEvent' }, form: {} }) },
       { group: t.actions, label: t.newSong, sub: '', run: () => set({ palette: false, view: 'repertoire', modal: { kind: 'newSong' }, form: {} }) },
       { group: t.actions, label: t.newTx, sub: '', run: () => set({ palette: false, view: 'ledger', modal: { kind: 'newTx' }, form: {} }) },
@@ -262,16 +204,8 @@ export function useGuataca(): Guataca {
       const failed: string[] = [];
       for (const file of files) {
         try {
-          let blob: Blob;
-          try {
-            blob = await compressImage(file);
-          } catch (err) {
-            // Compression can fail (unsupported format, oversized image, etc.).
-            // Upload the original rather than silently dropping the photo.
-            console.warn('Photo compression failed, uploading original:', file.name, err);
-            blob = file;
-          }
-          const url = await persistUploadForumPhoto(blob);
+          const { full, thumb } = await preparePhoto(file);
+          const url = await persistUploadForumPhoto(full, thumb);
           if (url) urls.push(url); else failed.push(file.name);
         } catch (err) {
           console.error('Photo upload failed:', file.name, err);
@@ -296,7 +230,7 @@ export function useGuataca(): Guataca {
       isDesktop, isMobile, layout, isPhone, isTablet, isCoarsePointer, isMobileViewport, staleDays, loading, mutating, error,
 
       songs, filteredSongs, staleSongs, genreChips,
-      events, upcoming, history, calList: st.calTab === 'upcoming' ? upcoming : history, nextEvent, dashUpcoming,
+      events, upcoming, history, calList, nextEvent, dashUpcoming,
       tx, recentTx, txFilter: st.txFilter, txDate: st.txDate,
       contributions,
       gear, gearValue: money0(dbGear.reduce((a, b) => a + b.cost, 0)),
@@ -498,16 +432,8 @@ export function useGuataca(): Guataca {
         const failed: string[] = [];
         for (const file of files) {
           try {
-            let blob: Blob;
-            try {
-              blob = await compressImage(file);
-            } catch (err) {
-              // Compression can fail (unsupported format, oversized image, etc.).
-              // Upload the original rather than silently dropping the photo.
-              console.warn('Photo compression failed, uploading original:', file.name, err);
-              blob = file;
-            }
-            const url = await persistUploadEventPhoto(blob);
+            const { full, thumb } = await preparePhoto(file);
+            const url = await persistUploadEventPhoto(full, thumb);
             if (url) urls.push(url); else failed.push(file.name);
           } catch (err) {
             console.error('Photo upload failed:', file.name, err);
@@ -721,5 +647,5 @@ export function useGuataca(): Guataca {
       toast,
       dismissToast,
     };
-  }, [st, props, set, toast, dismissToast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbLinks, dbInstruments, dbTakes, myPollPicks, loading, mutating, error, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, updateEvent, createSong, updateSong, persistSongLinks, createTransaction, persistUpdateTransaction, persistDeleteTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistAddEventMedia, persistAddEventPhotos, persistDeleteEventMedia, persistUploadEventPhoto, persistRsvp, persistCreateThread, persistComment, persistThreadReaction, persistCommentReaction, persistDeleteComment, persistAddThreadMedia, persistDeleteThreadMedia, persistThreadRefs, persistUploadForumPhoto, persistCreateThreadPoll, persistAddThreadPollOption, persistVoteThreadPoll, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload, persistEventPinned, persistEventState, persistThreadArchived, persistThreadPinned]);
+  }, [derived, st, props, set, toast, dismissToast, user, signOut, refreshProfile, dbSongs, dbGear, dbThreads, dbMembers, dbLinks, myPollPicks, loading, mutating, error, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, updateEvent, createSong, updateSong, persistSongLinks, createTransaction, persistUpdateTransaction, persistDeleteTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistAddEventMedia, persistAddEventPhotos, persistDeleteEventMedia, persistUploadEventPhoto, persistRsvp, persistCreateThread, persistComment, persistThreadReaction, persistCommentReaction, persistDeleteComment, persistAddThreadMedia, persistDeleteThreadMedia, persistThreadRefs, persistUploadForumPhoto, persistCreateThreadPoll, persistAddThreadPollOption, persistVoteThreadPoll, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload, persistEventPinned, persistEventState, persistThreadArchived, persistThreadPinned]);
 }

@@ -7,7 +7,8 @@ import type { AppProps, Lang, Role, View } from './types';
 import { Shell } from './components/shell/Shell';
 import { readLangPref } from './lib/prefs';
 
-const VIEWS: View[] = ['dashboard', 'calendar', 'repertoire', 'ledger', 'brainstorm', 'members', 'system'];
+// The design-system view is a dev tool: it is neither routable nor in the bundle in production.
+const VIEWS: View[] = ['dashboard', 'calendar', 'repertoire', 'ledger', 'brainstorm', 'links', 'members', ...(import.meta.env.DEV ? (['system'] as View[]) : [])];
 
 /**
  * URL query overrides (deep links), e.g.

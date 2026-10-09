@@ -15,6 +15,7 @@
  */
 import webpush from 'web-push';
 import { createClient } from '@supabase/supabase-js';
+import { allow } from './_rateLimit.js';
 
 const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -24,6 +25,16 @@ const publicKey = process.env.VAPID_PUBLIC_KEY || '';
 const privateKey = process.env.VAPID_PRIVATE_KEY || '';
 const subject = process.env.VAPID_SUBJECT || 'mailto:admin@gauataca.vercel.app';
 if (publicKey && privateKey) webpush.setVapidDetails(subject, publicKey, privateKey);
+
+const SAFE_ID = /^[\w-]{1,64}$/;
+const isCommentId = (v: unknown): v is number => typeof v === 'number' && Number.isSafeInteger(v) && v > 0;
+const RATE_LIMIT = { max: 30, windowMs: 60_000 };
+
+/** `threads!inner(...)` is a single object at runtime, but the untyped client infers an array. */
+function threadTitle(t: { title_es: string } | { title_es: string }[] | null | undefined): string {
+  const row = Array.isArray(t) ? t[0] : t;
+  return row?.title_es || 'GUATACA';
+}
 
 function dateLabel(startsAt: string): string {
   return new Date(startsAt).toLocaleDateString('es-VE', { day: 'numeric', month: 'short' });
@@ -47,20 +58,25 @@ export default async function handler(req: { method?: string; body?: Record<stri
   const kind = body.kind;
   if (kind !== 'event' && kind !== 'thread' && kind !== 'comment' && kind !== 'reaction') return send(400, 'unknown kind');
   if (!body.id && body.commentId === undefined) return send(400, 'missing id');
+  // Never interpolate arbitrary input into queries or URLs: ids are short slugs/uuids, comment ids positive ints.
+  if (body.id !== undefined && !(typeof body.id === 'string' ? SAFE_ID.test(body.id) : isCommentId(body.id))) return send(400, 'invalid id');
+  if (body.commentId !== undefined && !isCommentId(body.commentId)) return send(400, 'invalid commentId');
   if (!publicKey || !privateKey) return send(500, 'VAPID keys not configured');
 
   // Event pushes go to everyone except the acting member; thread/comment
   // pushes exclude by row author_id instead (resolved from the DB below).
-  const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
-  let actor: string | null = null;
-  if (token && (kind === 'event' || kind === 'reaction')) {
-    try {
-      const { data, error } = await admin.auth.getUser(token);
-      actor = error ? null : (data.user?.id ?? null);
-    } catch {
-      actor = null;
-    }
+  // Every push needs a signed-in caller — otherwise anyone could spam the band's devices.
+  const token = req.headers?.authorization?.replace(/^Bearer\s+/i, '');
+  if (!token) return send(401, 'sign in required');
+  let actor: string | null;
+  try {
+    const { data, error } = await admin.auth.getUser(token);
+    actor = error ? null : (data.user?.id ?? null);
+  } catch {
+    actor = null;
   }
+  if (!actor) return send(401, 'sign in required');
+  if (!allow(`notify:${actor}`, RATE_LIMIT.max, RATE_LIMIT.windowMs)) return send(429, 'too many requests');
 
   // Build the notification payload from the DB (never trust the request text).
   let title: string;
@@ -92,7 +108,7 @@ export default async function handler(req: { method?: string; body?: Record<stri
           .eq('id', commentId)
           .single();
         if (!data) return send(404, 'comment not found');
-        title = data.threads?.title_es || 'GUATACA';
+        title = threadTitle(data.threads);
         bodyText = 'Le gustó tu comentario';
         targetUrl = `/?view=brainstorm&thread=${encodeURIComponent(data.thread_id)}`;
         notifyId = data.author_id;
@@ -113,7 +129,7 @@ export default async function handler(req: { method?: string; body?: Record<stri
         .eq('id', commentId)
         .single();
       if (!data) return send(404, 'comment not found');
-      title = data.threads?.title_es || 'GUATACA';
+      title = threadTitle(data.threads);
       bodyText = (data.body_es || '').slice(0, 120) || 'Nuevo comentario';
       targetUrl = `/?view=brainstorm&thread=${encodeURIComponent(data.thread_id)}`;
       exclude = data.author_id;

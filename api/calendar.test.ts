@@ -24,16 +24,18 @@ vi.mock('@supabase/supabase-js', () => ({
 }));
 
 import handler from './calendar';
+import { resetRateLimits } from './_rateLimit';
 
 const TOKEN = '123e4567-e89b-12d3-a456-426614174000';
 
-async function get(query?: Record<string, string | string[] | undefined>, method = 'GET') {
+async function get(query?: Record<string, string | string[] | undefined>, method = 'GET', headers?: Record<string, string>) {
   const res = { statusCode: 0, body: '', headers: {} as Record<string, string>, setHeader(k: string, v: string) { this.headers[k] = v; }, end(s: string) { this.body = s; } };
-  await handler({ method, query }, res);
+  await handler({ method, query, headers }, res);
   return res;
 }
 
 beforeEach(() => {
+  resetRateLimits();
   state.owner = { profile_id: 'p1' };
   state.rows = [];
   state.eventsError = false;
@@ -41,6 +43,11 @@ beforeEach(() => {
 });
 
 describe('api/calendar', () => {
+  it('throttles a client after 60 requests a minute (per forwarded address)', async () => {
+    for (let i = 0; i < 60; i++) expect((await get({ token: TOKEN }, 'GET', { 'x-forwarded-for': '1.2.3.4, 10.0.0.1' })).statusCode).toBe(200);
+    expect((await get({ token: TOKEN }, 'GET', { 'x-forwarded-for': '1.2.3.4' })).statusCode).toBe(429);
+    expect((await get({ token: TOKEN }, 'GET', { 'x-forwarded-for': '5.6.7.8' })).statusCode).toBe(200);
+  });
   it('rejects other methods', async () => {
     expect((await get({ token: TOKEN }, 'POST')).statusCode).toBe(405);
   });

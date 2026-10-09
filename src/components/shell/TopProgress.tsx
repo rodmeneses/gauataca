@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { useGuataca } from '../../store';
 
 export function TopProgress() {
-  const { mutating } = useGuataca();
+  const { mutating, t } = useGuataca();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export function TopProgress() {
       className="fixed inset-x-0 top-0 z-[120] h-[2px] overflow-hidden pointer-events-none"
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
       role="progressbar"
-      aria-label="Saving"
+      aria-label={t.saving}
     >
       <div className="h-full w-full origin-left bg-emerald animate-progress" />
     </div>

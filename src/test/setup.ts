@@ -16,3 +16,20 @@ if (typeof window !== 'undefined' && !window.matchMedia) {
     dispatchEvent: () => false,
   });
 }
+
+// Newer Node versions ship a global `localStorage` that shadows jsdom's and is
+// unusable without --localstorage-file; fall back to an in-memory Storage.
+if (typeof window !== 'undefined' && typeof window.localStorage?.clear !== 'function') {
+  class MemoryStorage {
+    private store = new Map<string, string>();
+    get length() { return this.store.size; }
+    clear() { this.store.clear(); }
+    getItem(k: string) { return this.store.get(k) ?? null; }
+    key(i: number) { return [...this.store.keys()][i] ?? null; }
+    removeItem(k: string) { this.store.delete(k); }
+    setItem(k: string, v: string) { this.store.set(k, String(v)); }
+  }
+  const memory = new MemoryStorage();
+  Object.defineProperty(window, 'localStorage', { value: memory, configurable: true });
+  Object.defineProperty(globalThis, 'localStorage', { value: memory, configurable: true });
+}

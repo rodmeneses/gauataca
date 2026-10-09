@@ -8,13 +8,14 @@ import { useGuataca } from '@/store';
 
 export function Toasts() {
   const { t, toasts, dismissToast } = useGuataca();
-  if (toasts.length === 0) return null;
 
+  // The live region stays mounted (empty) so screen readers register it before the first message arrives.
   return (
     <div role="status" aria-live="polite" className="fixed z-[100] flex flex-col gap-[9px] left-3 right-3 items-stretch bottom-[calc(env(safe-area-inset-bottom)+84px)] sm:left-auto sm:right-[26px] sm:bottom-[26px] sm:items-end">
       {toasts.map((k) => (
         <div
           key={k.id}
+          role={k.tone === 'err' ? 'alert' : undefined}
           className={`flex items-center gap-[11px] sm:max-w-[400px] w-full sm:w-auto p-[13px_17px] rounded-[12px] border backdrop-blur-[10px] font-sans font-semibold text-[13px] leading-[normal] shadow-pop ${k.leaving ? 'animate-toast-out' : 'animate-rise'}`}
           style={{ borderColor: k.border, background: k.bg, color: k.color }}
         >

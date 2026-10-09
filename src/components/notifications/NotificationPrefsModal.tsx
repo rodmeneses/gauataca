@@ -1,7 +1,7 @@
 /** Desktop settings: Web Push opt-in and calendar feed, opened from the sidebar footer bell. */
 import { useGuataca } from '@/store';
 import { Modal } from '@/components/ui';
-import { FormBody, FormHeader } from '@/components/modals/FormModals';
+import { FormBody, FormHeader } from '@/components/modals/FormFrame';
 import { NotificationPrefs } from './NotificationPrefs';
 import { CalendarFeed } from './CalendarFeed';
 

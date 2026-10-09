@@ -46,3 +46,51 @@ async function loadBitmap(file: File): Promise<ImageBitmap | HTMLImageElement> {
     URL.revokeObjectURL(url);
   }
 }
+
+/** Longest side of the grid thumbnail uploaded next to every photo. */
+export const THUMB_DIM = 480;
+
+export interface PreparedPhoto {
+  full: Blob;
+  /** Small grid thumbnail; null when it couldn't be made (the full image is used instead). */
+  thumb: Blob | null;
+}
+
+/**
+ * Compress a picked file for upload. If the full-size encode fails the original goes up
+ * as-is rather than dropping the photo; the thumbnail is best-effort.
+ */
+export async function preparePhoto(file: File): Promise<PreparedPhoto> {
+  let full: Blob;
+  try {
+    full = await compressImage(file);
+  } catch (err) {
+    // Compression can fail (unsupported format, oversized image, etc.).
+    console.warn('Photo compression failed, uploading original:', file.name, err);
+    return { full: file, thumb: null };
+  }
+  const thumb = await compressImage(file, THUMB_DIM, 0.72).catch(() => null);
+  return { full, thumb };
+}
+
+const PHOTO_URL = /\/storage\/v1\/object\/public\/([\w-]+)\/(.+\.jpg)$/;
+const THUMB_SUFFIX = '_t.jpg';
+
+/** Storage path of an uploaded photo's thumbnail, derived from the full image's path. */
+export const thumbPath = (path: string): string => path.replace(/\.jpg$/, THUMB_SUFFIX);
+
+/** Bucket + path of an uploaded photo URL in one of our public buckets, else null. */
+export function storageRef(url: string): { bucket: string; path: string } | null {
+  const m = PHOTO_URL.exec(url);
+  return m ? { bucket: m[1], path: m[2] } : null;
+}
+
+/**
+ * Grid-size URL for an uploaded photo (falls back to `url` for external links). Photos
+ * uploaded before thumbnails existed have none, so `<Thumb>` falls back on load error.
+ */
+export function thumbUrl(url: string): string {
+  const ref = storageRef(url);
+  if (!ref || ref.path.endsWith(THUMB_SUFFIX)) return url;
+  return url.replace(/\.jpg$/, THUMB_SUFFIX);
+}

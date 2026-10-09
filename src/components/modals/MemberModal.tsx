@@ -51,7 +51,7 @@ export function MemberModal() {
             <Pencil size={14} strokeWidth={2} />
           </button>
         )}
-        <CloseButton onClick={closeModal} size={32} />
+        <CloseButton onClick={closeModal} size={32} label={t.close} />
       </div>
 
       {editing ? (

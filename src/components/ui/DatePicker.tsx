@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { fmt } from '../../lib/format';
+import { T } from '../../i18n';
 import type { Lang } from '../../types';
 
 const DOW: Record<Lang, string[]> = {
@@ -53,8 +54,19 @@ export function DatePicker({ value, onChange, lang, placeholder }: {
       if (btnRef.current?.contains(t) || popRef.current?.contains(t)) return;
       setOpen(false);
     };
+    const onKey = (e: KeyboardEvent) => {
+      // Close just the popup — the global Escape handler would otherwise also close the modal underneath.
+      if (e.key !== 'Escape') return;
+      e.stopPropagation();
+      setOpen(false);
+      btnRef.current?.focus();
+    };
     document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
+    window.addEventListener('keydown', onKey, true);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      window.removeEventListener('keydown', onKey, true);
+    };
   }, [open]);
 
   const toggle = () => {
@@ -94,6 +106,8 @@ export function DatePicker({ value, onChange, lang, placeholder }: {
         ref={btnRef}
         type="button"
         onClick={toggle}
+        aria-haspopup="dialog"
+        aria-expanded={open}
         className="input input-mono flex items-center gap-2 text-left cursor-pointer"
       >
         <Calendar size={15} strokeWidth={1.9} className="text-ink-muted flex-none" />
@@ -105,17 +119,19 @@ export function DatePicker({ value, onChange, lang, placeholder }: {
         createPortal(
           <div
             ref={popRef}
+            role="dialog"
+            aria-label={`${MONTHS[lang][view.m]} ${view.y}`}
             className="fixed z-[90] w-[280px] rounded-[14px] border border-line-strong bg-raised p-3 shadow-pop animate-rise"
             style={{ top: pos.top, left: pos.left }}
           >
             <div className="flex items-center justify-between mb-2">
-              <button type="button" onClick={prev} aria-label="Previous month" className="grid place-items-center w-7 h-7 rounded-[8px] border border-line bg-surface text-ink-meta hover:text-ink cursor-pointer">
+              <button type="button" onClick={prev} aria-label={T[lang].prevMonth} className="grid place-items-center w-7 h-7 rounded-[8px] border border-line bg-surface text-ink-meta hover:text-ink cursor-pointer">
                 <ChevronLeft size={15} strokeWidth={2.2} />
               </button>
               <span className="font-display font-semibold text-[13px] text-ink-bright capitalize">
                 {MONTHS[lang][view.m]} {view.y}
               </span>
-              <button type="button" onClick={next} aria-label="Next month" className="grid place-items-center w-7 h-7 rounded-[8px] border border-line bg-surface text-ink-meta hover:text-ink cursor-pointer">
+              <button type="button" onClick={next} aria-label={T[lang].nextMonth} className="grid place-items-center w-7 h-7 rounded-[8px] border border-line bg-surface text-ink-meta hover:text-ink cursor-pointer">
                 <ChevronRight size={15} strokeWidth={2.2} />
               </button>
             </div>

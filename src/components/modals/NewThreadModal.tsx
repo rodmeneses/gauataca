@@ -7,7 +7,7 @@ import { useMemo, useRef, useState } from 'react';
 import { BarChart3, ImagePlus, Plus, X } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { Field, Input, Modal } from '@/components/ui';
-import { FormBody, FormFooter, FormHeader } from './FormModals';
+import { FormBody, FormFooter, FormHeader } from './FormFrame';
 import { Composer } from './Composer';
 import { RefPicker, type PickedRef } from './RefPicker';
 

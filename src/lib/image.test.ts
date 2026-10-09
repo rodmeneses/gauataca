@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { compressImage } from './image';
+import { compressImage, preparePhoto, storageRef, thumbPath, thumbUrl, THUMB_DIM } from './image';
 
 const file = new File(['x'], 'p.jpg', { type: 'image/jpeg' });
 
@@ -88,5 +88,49 @@ describe('compressImage', () => {
       await expect(compressImage(file)).rejects.toThrow('image load failed');
       expect(URL.revokeObjectURL).toHaveBeenCalled();
     });
+  });
+});
+
+describe('preparePhoto', () => {
+  it('returns a full image and a smaller thumbnail', async () => {
+    vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({ width: 3200, height: 1600 }));
+    const { canvas } = stubCanvas();
+    const out = await preparePhoto(file);
+    expect(out.full).toBeInstanceOf(Blob);
+    expect(out.thumb).toBeInstanceOf(Blob);
+    expect([canvas.width, canvas.height]).toEqual([THUMB_DIM, THUMB_DIM / 2]);
+  });
+
+  it('uploads the original, without a thumbnail, when compression fails', async () => {
+    vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({ width: 10, height: 10 }));
+    stubCanvas({ blob: null });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(await preparePhoto(file)).toEqual({ full: file, thumb: null });
+  });
+
+  it('keeps the full image when only the thumbnail fails', async () => {
+    vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValueOnce({ width: 10, height: 10 }).mockRejectedValueOnce(new Error('x')));
+    vi.stubGlobal('Image', class { set src(_: string) { throw new Error('no image'); } });
+    stubCanvas();
+    const out = await preparePhoto(file);
+    expect(out.full).toBeInstanceOf(Blob);
+    expect(out.thumb).toBeNull();
+  });
+});
+
+describe('photo URLs', () => {
+  const full = 'https://x.supabase.co/storage/v1/object/public/event-photos/abc-123.jpg';
+  it('derives the thumbnail path and URL', () => {
+    expect(thumbPath('abc.jpg')).toBe('abc_t.jpg');
+    expect(thumbUrl(full)).toBe('https://x.supabase.co/storage/v1/object/public/event-photos/abc-123_t.jpg');
+  });
+  it('leaves external links and existing thumbnails alone', () => {
+    expect(thumbUrl('https://example.com/pic.jpg')).toBe('https://example.com/pic.jpg');
+    const t = full.replace('.jpg', '_t.jpg');
+    expect(thumbUrl(t)).toBe(t);
+  });
+  it('parses bucket and path from a storage URL', () => {
+    expect(storageRef(full)).toEqual({ bucket: 'event-photos', path: 'abc-123.jpg' });
+    expect(storageRef('https://example.com/a.jpg')).toBeNull();
   });
 });

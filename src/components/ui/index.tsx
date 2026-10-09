@@ -121,12 +121,12 @@ export function IconLink({ href, color, title, hoverColor, children, className, 
 }
 
 /* ------------------------------------------------------------- CloseButton */
-export function CloseButton({ onClick, size = 34, className }: { onClick: () => void; size?: 32 | 34; className?: string }) {
+export function CloseButton({ onClick, size = 34, className, label = 'Close' }: { onClick: () => void; size?: 32 | 34; className?: string; label?: string }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label="Close"
+      aria-label={label}
       className={cx('grid place-items-center border border-line bg-surface text-ink-meta hover:text-ink hover:border-line-hover flex-none min-w-[44px] min-h-[44px]', size === 34 ? 'w-11 h-11 rounded-[11px]' : 'w-10 h-10 rounded-[10px]', className)}
     >
       <X size={size === 34 ? 18 : 16} strokeWidth={2.2} />
@@ -271,7 +271,7 @@ export function BrandMark({ size = 38, radius = 11, icon = 20 }: { size?: number
 /** Pill group container (ES/EN, Upcoming/History, device switch). */
 export function Segment({ children, className, style, ...rest }: { children: ReactNode; className?: string; style?: CSSProperties } & Pick<HTMLAttributes<HTMLDivElement>, 'aria-label' | 'role'>) {
   return (
-    <div className={cx('flex bg-raised border border-line rounded-[10px] p-[3px] gap-[2px]', className)} style={style} {...rest}>
+    <div role="group" className={cx('flex bg-raised border border-line rounded-[10px] p-[3px] gap-[2px]', className)} style={style} {...rest}>
       {children}
     </div>
   );
@@ -285,6 +285,7 @@ export function Pill({ active, color = 'var(--color-violet-light)', activeText, 
   return (
     <button
       type="button"
+      aria-pressed={active}
       className={cx(
         'rounded-[7px] border-none font-mono font-semibold tracking-[.03em] whitespace-nowrap cursor-pointer transition-colors',
         size === 'md' ? 'min-h-[44px] px-3.5 text-[13px]' : 'py-[5px] px-[11px] text-[11.5px]',
