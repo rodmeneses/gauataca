@@ -24,6 +24,7 @@ export default defineConfig({
         'src/lib/search.ts',
         'src/lib/notify.ts',
         'src/lib/optimistic.ts',
+        'src/lib/offlineQueue.ts',
         'src/lib/image.ts',
         'api/notify.ts',
         'src/store/vm.ts',

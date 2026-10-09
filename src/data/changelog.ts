@@ -20,6 +20,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-09-25',
     title: { es: 'Foro, notificaciones y búsqueda', en: 'Forum, notifications and search' },
     changes: [
+      { es: 'Sin conexión, tus cambios se guardan en cola y se envían solos al volver el internet (mantén la app abierta).', en: 'Offline, your changes are queued and sent automatically when you\'re back online (keep the app open).' },
       { es: 'Los avisos (toasts) y los diálogos ahora se anuncian correctamente con lector de pantalla.', en: 'Toasts and dialogs are now announced properly by screen readers.' },
       { es: 'Las fotos y vistas previas ahora tienen descripción para lectores de pantalla.', en: 'Photos and previews now have descriptions for screen readers.' },
       { es: 'Fijar, archivar, responder asistencia y reaccionar a ideas ahora se ven al instante, sin esperar la recarga de datos.', en: 'Pinning, archiving, RSVPs and reacting to ideas now show up instantly instead of waiting for the data reload.' },

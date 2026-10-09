@@ -1,7 +1,8 @@
 /**
  * Thin top bar shown while the browser is offline, plus a toast when a write is
  * attempted with no connection (dispatched from lib/data.tsx `run`). Reads stay
- * available from the service-worker cache; writes are blocked until reconnect.
+ * available from the service-worker cache; writes are queued in memory and
+ * replayed on reconnect (lib/offlineQueue.ts).
  */
 import { useEffect, useState } from 'react';
 import { WifiOff } from 'lucide-react';
@@ -17,15 +18,21 @@ export function OfflineBanner() {
       toast(t.backOnline);
     };
     const goOffline = () => setOnline(false);
-    const onBlockedWrite = () => toast(t.offlineWriteBlocked, 'err');
+    const onQueuedWrite = () => toast(t.offlineWriteQueued, 'violet');
+    const onFlushed = (e: Event) => {
+      const failed = (e as CustomEvent<{ failed: number }>).detail?.failed ?? 0;
+      toast(failed ? t.queuedWritesFailed : t.queuedWritesSynced, failed ? 'err' : 'ok');
+    };
 
     window.addEventListener('online', goOnline);
     window.addEventListener('offline', goOffline);
-    window.addEventListener('guataca:offline-write', onBlockedWrite);
+    window.addEventListener('guataca:offline-write', onQueuedWrite);
+    window.addEventListener('guataca:queue-flushed', onFlushed);
     return () => {
       window.removeEventListener('online', goOnline);
       window.removeEventListener('offline', goOffline);
-      window.removeEventListener('guataca:offline-write', onBlockedWrite);
+      window.removeEventListener('guataca:offline-write', onQueuedWrite);
+      window.removeEventListener('guataca:queue-flushed', onFlushed);
     };
   }, [t, toast]);
 

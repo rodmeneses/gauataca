@@ -160,7 +160,9 @@ const es = {
   updateNow: 'Actualizar',
   updateDismiss: 'Ahora no',
   offline: 'Sin conexión — mostrando datos guardados',
-  offlineWriteBlocked: 'Sin conexión: no se pudo guardar. Intenta de nuevo cuando vuelvas a estar en línea.',
+  offlineWriteQueued: 'Sin conexión: se guardará al volver a estar en línea (mantén la app abierta).',
+  queuedWritesSynced: 'Cambios pendientes guardados',
+  queuedWritesFailed: 'Algunos cambios pendientes no se pudieron guardar',
   backOnline: 'De vuelta en línea',
   // pin (events + forum ideas) / archive (forum ideas) — added in code, not in the Claude Design file
   pin: 'Fijar', unpin: 'Quitar fijado', pinned: 'Fijado', unpinned: 'Se quitó de fijados',
@@ -326,7 +328,9 @@ const en: typeof es = {
   updateNow: 'Update',
   updateDismiss: 'Not now',
   offline: "Offline — showing saved data",
-  offlineWriteBlocked: "You're offline: couldn't save. Try again once you're back online.",
+  offlineWriteQueued: "You're offline: this will save when you're back online (keep the app open).",
+  queuedWritesSynced: 'Pending changes saved',
+  queuedWritesFailed: "Some pending changes couldn't be saved",
   backOnline: 'Back online',
   // pin (events + forum ideas) / archive (forum ideas)
   pin: 'Pin', unpin: 'Unpin', pinned: 'Pinned', unpinned: 'Unpinned',

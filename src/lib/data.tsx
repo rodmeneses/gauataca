@@ -7,6 +7,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useAuth } from './auth';
 import * as opt from './optimistic';
+import { createOfflineQueue } from './offlineQueue';
 import {
   addComment as apiAddComment, addEventMedia as apiAddEventMedia, addEventPhotos as apiAddEventPhotos, addTake as apiAddTake, createEvent as apiCreateEvent, createGear as apiCreateGear, createInstrument as apiCreateInstrument, createLink as apiCreateLink, deleteLink as apiDeleteLink,
   createSong as apiCreateSong, createThread as apiCreateThread, addThreadPollOption as apiAddThreadPollOption, createThreadPoll as apiCreateThreadPoll, createTransaction as apiCreateTransaction, deleteComment as apiDeleteComment, deleteEventMedia as apiDeleteEventMedia, deleteTake as apiDeleteTake, deleteThreadMedia as apiDeleteThreadMedia, deleteTransaction as apiDeleteTransaction, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
@@ -103,6 +104,8 @@ const EMPTY: DataSnapshot = {
   myPollPicks: {},
 };
 
+const offlineQueue = createOfflineQueue();
+
 export function DataProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [snap, setSnap] = useState<DataSnapshot>(EMPTY);
@@ -138,14 +141,29 @@ export function DataProvider({ children }: { children: ReactNode }) {
     void reload();
   }, [reload]);
 
+  // Replay writes that were queued while offline, then refresh from the server.
+  useEffect(() => {
+    const onOnline = async () => {
+      if (offlineQueue.size() === 0) return;
+      const failed = await offlineQueue.flush();
+      window.dispatchEvent(new CustomEvent('guataca:queue-flushed', { detail: { failed } }));
+      await reload({ silent: true });
+    };
+    window.addEventListener('online', onOnline);
+    return () => window.removeEventListener('online', onOnline);
+  }, [reload]);
+
   const value = useMemo<DataValue>(() => {
     const uid = user?.id ?? '';
     // `patch` paints the expected result immediately; the silent refetch below
     // replaces it with server truth (and so undoes it if the write failed).
     const run = async <T,>(fn: () => Promise<T>, patch?: opt.Patch): Promise<T | undefined> => {
-      // Don't let a write hang on a dead connection — bail early and let the UI
-      // surface it (see OfflineBanner). The service worker never caches writes.
+      // Don't let a write hang on a dead connection — queue it (and show the
+      // expected result) to replay on reconnect; OfflineBanner tells the user.
+      // The service worker never caches writes.
       if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        if (patch) setSnap(patch);
+        offlineQueue.push(fn);
         window.dispatchEvent(new Event('guataca:offline-write'));
         return undefined;
       }
