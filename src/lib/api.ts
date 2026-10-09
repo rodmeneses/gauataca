@@ -269,7 +269,7 @@ function mapThreads(
     const options = opts.map((o) => {
       const rows = votesByOpt.get(o.id) ?? [];
       if (userId && rows.some((v) => v.profile_id === userId)) myOptionIds.push(o.id);
-      return { id: o.id, label: { es: o.label_es, en: o.label_en }, votes: rows.length };
+      return { id: o.id, label: { es: o.label_es, en: o.label_en }, votes: rows.length, voterIds: rows.map((v) => v.profile_id) };
     });
     return { question: { es: poll.question_es, en: poll.question_en }, options, multiple: !!poll.multiple, myOptionIds };
   };

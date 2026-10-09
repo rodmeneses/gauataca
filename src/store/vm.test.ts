@@ -396,7 +396,7 @@ describe('threadVm', () => {
       media: [], refs: [], pinned: false, archived: false,
       poll: {
         question: { es: '', en: 'Where?' },
-        options: [{ id: 1, label: { es: '', en: 'Downtown' }, votes: 1 }],
+        options: [{ id: 1, label: { es: '', en: 'Downtown' }, votes: 1, voterIds: ['m1'] }],
         multiple: false,
         myOptionIds: [],
       },
@@ -421,7 +421,7 @@ describe('threadVm', () => {
     expect(vm.likedBy).toEqual(['Ana', 'Beto']);
     expect(vm.dislikedBy).toEqual([]);
     expect(vm.myReaction).toBe('like');
-    expect(vm.poll).toEqual({ question: 'Where?', multiple: false, total: '1', options: [{ id: 1, label: 'Downtown', v: '1', pct: '100%', picked: false }] });
+    expect(vm.poll).toEqual({ question: 'Where?', multiple: false, total: '1', options: [{ id: 1, label: 'Downtown', v: '1', pct: '100%', picked: false, voters: ['Ana'] }] });
     expect(vm.commentCount).toBe('2'); // 1 top-level + 1 reply
     expect(vm.comments).toHaveLength(1);
     expect(vm.comments[0].author).toBe('Beto');
@@ -456,8 +456,8 @@ describe('threadPollVm', () => {
     const poll = {
       question: { es: '', en: 'Next gig venue?' },
       options: [
-        { id: 1, label: { es: '', en: 'Downtown' }, votes: 3 },
-        { id: 2, label: { es: '', en: 'Uptown' }, votes: 1 },
+        { id: 1, label: { es: '', en: 'Downtown' }, votes: 3, voterIds: ['m1'] },
+        { id: 2, label: { es: '', en: 'Uptown' }, votes: 1, voterIds: ['m1'] },
       ],
       multiple: false,
       myOptionIds: [2],
@@ -466,8 +466,8 @@ describe('threadPollVm', () => {
     expect(vm.question).toBe('Next gig venue?');
     expect(vm.total).toBe('4');
     expect(vm.options).toEqual([
-      { id: 1, label: 'Downtown', v: '3', pct: '75%', picked: false },
-      { id: 2, label: 'Uptown', v: '1', pct: '25%', picked: true },
+      { id: 1, label: 'Downtown', v: '3', pct: '75%', picked: false, voters: ['Ana'] },
+      { id: 2, label: 'Uptown', v: '1', pct: '25%', picked: true, voters: ['Ana'] },
     ]);
   });
 
@@ -475,9 +475,9 @@ describe('threadPollVm', () => {
     const poll = {
       question: { es: '', en: 'Which days?' },
       options: [
-        { id: 1, label: { es: '', en: 'Fri' }, votes: 2 },
-        { id: 2, label: { es: '', en: 'Sat' }, votes: 2 },
-        { id: 3, label: { es: '', en: 'Sun' }, votes: 0 },
+        { id: 1, label: { es: '', en: 'Fri' }, votes: 2, voterIds: ['m1'] },
+        { id: 2, label: { es: '', en: 'Sat' }, votes: 2, voterIds: ['m1'] },
+        { id: 3, label: { es: '', en: 'Sun' }, votes: 0, voterIds: [] },
       ],
       multiple: true,
       myOptionIds: [1, 2],
@@ -490,13 +490,13 @@ describe('threadPollVm', () => {
   it('falls back to a 0% denominator when there are no votes yet', () => {
     const poll = {
       question: { es: '', en: 'Next gig venue?' },
-      options: [{ id: 1, label: { es: '', en: 'Downtown' }, votes: 0 }],
+      options: [{ id: 1, label: { es: '', en: 'Downtown' }, votes: 0, voterIds: [] }],
       multiple: false,
       myOptionIds: [],
     };
     const vm = threadPollVm(poll, baseCtx());
     expect(vm.total).toBe('0');
-    expect(vm.options).toEqual([{ id: 1, label: 'Downtown', v: '0', pct: '0%', picked: false }]);
+    expect(vm.options).toEqual([{ id: 1, label: 'Downtown', v: '0', pct: '0%', picked: false, voters: [] }]);
   });
 });
 

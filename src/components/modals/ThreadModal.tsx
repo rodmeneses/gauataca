@@ -313,6 +313,9 @@ export function ThreadModal() {
                     <span className="block h-[6px] rounded-[4px] bg-line-soft mt-2 overflow-hidden">
                       <span className="block h-[6px] rounded-[4px] transition-[width] duration-300" style={{ background: o.picked ? 'var(--color-emerald)' : 'var(--color-ink-faint)', width: o.pct }} />
                     </span>
+                    {o.voters.length > 0 && (
+                      <span className="block mt-[6px] font-sans font-normal text-[11.5px] leading-[1.4] text-ink-dim">{o.voters.join(', ')}</span>
+                    )}
                   </span>
                   <span className="font-mono font-semibold text-[13px] leading-[normal] text-ink-meta flex-none min-w-[52px] text-right">{o.v} · {o.pct}</span>
                 </button>

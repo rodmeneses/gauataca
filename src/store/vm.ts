@@ -615,6 +615,8 @@ export interface ThreadPollOptionVm {
   /** "%" share. */
   pct: string;
   picked: boolean;
+  /** Short names of the members who voted for it. */
+  voters: string[];
 }
 
 export interface ThreadPollVm {
@@ -640,6 +642,7 @@ export function threadPollVm(p: ThreadPoll, ctx: Ctx): ThreadPollVm {
       v: String(o.votes),
       pct: Math.round((o.votes / denom) * 100) + '%',
       picked: p.myOptionIds.includes(o.id),
+      voters: reactorNames(o.voterIds, ctx),
     })),
   };
 }
