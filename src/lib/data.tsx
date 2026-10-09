@@ -4,7 +4,7 @@
  * stays put and swaps in place — no full-screen spinner). `mutating` is true
  * while a write + its refetch are in flight.
  */
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useRef, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useAuth } from './auth';
 import { logError } from './log';
 import { withTimeout } from './retry';
@@ -12,10 +12,10 @@ import * as opt from './optimistic';
 import { createOfflineQueue } from './offlineQueue';
 import {
   addComment as apiAddComment, addEventMedia as apiAddEventMedia, addEventPhotos as apiAddEventPhotos, addTake as apiAddTake, createEvent as apiCreateEvent, createGear as apiCreateGear, createInstrument as apiCreateInstrument, createLink as apiCreateLink, deleteLink as apiDeleteLink,
-  createSong as apiCreateSong, createThread as apiCreateThread, addThreadPollOption as apiAddThreadPollOption, createThreadPoll as apiCreateThreadPoll, createTransaction as apiCreateTransaction, deleteComment as apiDeleteComment, deleteEventMedia as apiDeleteEventMedia, deleteTake as apiDeleteTake, deleteThreadMedia as apiDeleteThreadMedia, deleteTransaction as apiDeleteTransaction, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
+  createSong as apiCreateSong, createThread as apiCreateThread, addThreadPollOption as apiAddThreadPollOption, createThreadPoll as apiCreateThreadPoll, createTransaction as apiCreateTransaction, deleteComment as apiDeleteComment, deleteEventMedia as apiDeleteEventMedia, deleteTake as apiDeleteTake, deleteThreadMedia as apiDeleteThreadMedia, deleteTransaction as apiDeleteTransaction, buildSnapshot, fetchRaw, SCOPES, TABLES, onboard as apiOnboard, pickPoll as apiPickPoll,
   setEventPinned as apiSetEventPinned, setEventState as apiSetEventState, setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, setSongInstruments as apiSetSongInstruments, setSongLinks as apiSetSongLinks,
   addThreadMedia as apiAddThreadMedia, addThreadRefs as apiAddThreadRefs, settleEvent as apiSettleEvent, setCommentReaction as apiSetCommentReaction, setThreadArchived as apiSetThreadArchived, setThreadPinned as apiSetThreadPinned, setThreadReaction as apiSetThreadReaction, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateEvent as apiUpdateEvent, updateMemberInstruments as apiUpdateMemberInstruments, updateSong as apiUpdateSong, updateTransaction as apiUpdateTransaction, voteThreadPoll as apiVoteThreadPoll,
-  uploadEventPhoto as apiUploadEventPhoto, uploadForumPhoto as apiUploadForumPhoto, uploadProof as apiUploadProof, type DataSnapshot,
+  uploadEventPhoto as apiUploadEventPhoto, uploadForumPhoto as apiUploadForumPhoto, uploadProof as apiUploadProof, type DataSnapshot, type RawTables, type TableName,
 } from './api';
 import type { EventType, LinkCategory, GearCondition, GenreId, LinkKind, Proficiency, ProofKind, ReactionKind, RsvpStatus, TxCategory, TxKind, VocalFlag } from '../types';
 
@@ -33,7 +33,8 @@ interface DataValue extends DataSnapshot {
   error: string | null;
   /** True while a mutation and its follow-up refetch are in flight. */
   mutating: boolean;
-  reload: (opts?: { silent?: boolean }) => Promise<void>;
+  /** `tables` limits a silent reload to those tables (merged into the cached rows); omit for a full refetch. */
+  reload: (opts?: { silent?: boolean; tables?: readonly TableName[] }) => Promise<void>;
   createEvent: (input: CreateEventInput) => Promise<string | undefined>;
   updateEvent: (id: string, input: CreateEventInput) => Promise<void>;
   createSong: (input: CreateSongInput) => Promise<string | undefined>;
@@ -117,7 +118,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [mutating, setMutating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const reload = useCallback(async (opts?: { silent?: boolean }) => {
+  const rawRef = useRef<RawTables | null>(null);
+
+  const reload = useCallback(async (opts?: { silent?: boolean; tables?: readonly TableName[] }) => {
     // A silent reload (after a mutation) keeps the current screen mounted and
     // swaps the data in place — no full-screen spinner, no flicker.
     if (!opts?.silent) {
@@ -125,7 +128,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setError(null);
     }
     try {
-      setSnap(await fetchAll(user?.id ?? null));
+      // A scoped reload refetches only the tables the write touched and rebuilds
+      // the snapshot from the cached rows; anything else is a full refetch.
+      const cache = rawRef.current;
+      const fetched = await fetchRaw(opts?.tables && cache ? opts.tables : TABLES);
+      rawRef.current = { ...cache, ...fetched } as RawTables;
+      setSnap(buildSnapshot(rawRef.current, user?.id ?? null));
     } catch (err) {
       logError('Failed to load data:', err);
       if (opts?.silent) {
@@ -133,6 +141,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         // write itself likely succeeded; just surface it like any mutation error.
         window.dispatchEvent(new Event('guataca:mutation-error'));
       } else {
+        rawRef.current = null;
         setSnap(EMPTY);
         setError(err instanceof Error ? err.message : String(err));
       }
@@ -161,7 +170,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const uid = user?.id ?? '';
     // `patch` paints the expected result immediately; the silent refetch below
     // replaces it with server truth (and so undoes it if the write failed).
-    const run = async <T,>(fn: () => Promise<T>, patch?: opt.Patch): Promise<T | undefined> => {
+    const run = async <T,>(fn: () => Promise<T>, patch?: opt.Patch, tables?: readonly TableName[]): Promise<T | undefined> => {
       // Don't let a write hang on a dead connection — queue it (and show the
       // expected result) to replay on reconnect; OfflineBanner tells the user.
       // The service worker never caches writes.
@@ -175,7 +184,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setMutating(true);
       try {
         const result = await withTimeout(fn(), 30000);
-        await reload({ silent: true });
+        await reload({ silent: true, tables });
         return result;
       } catch (err) {
         logError('Mutation failed:', err);
@@ -185,59 +194,66 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setMutating(false);
       }
     };
+    const scoped = (tables: readonly TableName[]) => <T,>(fn: () => Promise<T>, patch?: opt.Patch) => run(fn, patch, tables);
+    const ev = scoped(SCOPES.events);
+    const ledger = scoped(SCOPES.ledger);
+    const songs = scoped(SCOPES.songs);
+    const forum = scoped(SCOPES.forum);
+    const members = scoped(SCOPES.members);
+    const settle = scoped([...SCOPES.events, ...SCOPES.ledger]);
     return {
       ...snap,
       loading,
       mutating,
       error,
       reload,
-      createEvent: (input) => run(() => apiCreateEvent(input, uid)),
-      updateEvent: (id, input) => run(() => apiUpdateEvent(id, input, uid)),
-      createSong: (input) => run(() => apiCreateSong(input, uid)),
-      updateSong: (id, input) => run(() => apiUpdateSong(id, input, uid)),
-      setSongLinks: (songId, links) => run(() => apiSetSongLinks(songId, links)),
-      createTransaction: (input) => run(() => apiCreateTransaction(input, uid)),
-      updateTransaction: (id, input) => run(() => apiUpdateTransaction(id, input, uid)),
-      deleteTransaction: (id) => run(() => apiDeleteTransaction(id)),
-      createGear: (input) => run(() => apiCreateGear(input, uid)),
-      createInstrument: (name) => run(() => apiCreateInstrument(name)),
-      onboard: (instruments, vocals) => run(() => apiOnboard(uid, instruments, vocals)),
-      updateMemberInstruments: (profileId, instruments, vocals) => run(() => apiUpdateMemberInstruments(profileId, instruments, vocals)),
-      setSongInstruments: (songId, instrumentIds) => run(() => apiSetSongInstruments(songId, instrumentIds)),
-      addTake: (eventId, songId, url) => run(() => apiAddTake(eventId, songId, url)),
-      deleteTake: (id) => run(() => apiDeleteTake(id)),
-      addEventMedia: (eventId, kind, label, url) => run(() => apiAddEventMedia(eventId, { kind, labelEs: label, labelEn: label, url }, uid)),
-      addEventPhotos: (eventId, urls) => run(() => apiAddEventPhotos(eventId, urls, uid)),
-      deleteEventMedia: (id) => run(() => apiDeleteEventMedia(id)),
+      createEvent: (input) => ev(() => apiCreateEvent(input, uid)),
+      updateEvent: (id, input) => ev(() => apiUpdateEvent(id, input, uid)),
+      createSong: (input) => songs(() => apiCreateSong(input, uid)),
+      updateSong: (id, input) => songs(() => apiUpdateSong(id, input, uid)),
+      setSongLinks: (songId, links) => songs(() => apiSetSongLinks(songId, links)),
+      createTransaction: (input) => ledger(() => apiCreateTransaction(input, uid)),
+      updateTransaction: (id, input) => ledger(() => apiUpdateTransaction(id, input, uid)),
+      deleteTransaction: (id) => ledger(() => apiDeleteTransaction(id)),
+      createGear: (input) => ledger(() => apiCreateGear(input, uid)),
+      createInstrument: (name) => run(() => apiCreateInstrument(name), undefined, ['instruments']),
+      onboard: (instruments, vocals) => members(() => apiOnboard(uid, instruments, vocals)),
+      updateMemberInstruments: (profileId, instruments, vocals) => members(() => apiUpdateMemberInstruments(profileId, instruments, vocals)),
+      setSongInstruments: (songId, instrumentIds) => songs(() => apiSetSongInstruments(songId, instrumentIds)),
+      addTake: (eventId, songId, url) => run(() => apiAddTake(eventId, songId, url), undefined, ['takes']),
+      deleteTake: (id) => run(() => apiDeleteTake(id), undefined, ['takes']),
+      addEventMedia: (eventId, kind, label, url) => ev(() => apiAddEventMedia(eventId, { kind, labelEs: label, labelEn: label, url }, uid)),
+      addEventPhotos: (eventId, urls) => ev(() => apiAddEventPhotos(eventId, urls, uid)),
+      deleteEventMedia: (id) => ev(() => apiDeleteEventMedia(id)),
       uploadEventPhoto: async (blob) => {
         return apiUploadEventPhoto(blob);
       },
-      setRsvp: (eventId, status) => run(() => apiSetRsvp(eventId, status, uid), opt.rsvp(eventId, status, uid)),
-      setEventPinned: (id, pinned) => run(() => apiSetEventPinned(id, pinned), opt.pinEvent(id, pinned)),
-      setEventState: (id, state) => run(() => apiSetEventState(id, state)),
-      createLink: (input) => run(() => apiCreateLink(input, uid)),
-      deleteLink: (id) => run(() => apiDeleteLink(id)),
-      createThread: (input) => run(() => apiCreateThread(input, uid)),
-      addComment: (threadId, body, parentId = null) => run(() => apiAddComment(threadId, body, uid, parentId)),
-      setThreadReaction: (threadId, kind) => run(() => apiSetThreadReaction(threadId, kind, uid), opt.reactToThread(threadId, kind, uid)),
-      setCommentReaction: (commentId, kind) => run(() => apiSetCommentReaction(commentId, kind, uid)),
-      deleteComment: (commentId) => run(() => apiDeleteComment(commentId)),
-      setThreadPinned: (id, pinned) => run(() => apiSetThreadPinned(id, pinned), opt.pinThread(id, pinned)),
-      setThreadArchived: (id, archived) => run(() => apiSetThreadArchived(id, archived), opt.archiveThread(id, archived)),
-      addThreadMedia: (threadId, urls, commentId = null) => run(() => apiAddThreadMedia(threadId, urls, uid, commentId)),
-      deleteThreadMedia: (id) => run(() => apiDeleteThreadMedia(id)),
-      addThreadRefs: (threadId, refs, commentId = null) => run(() => apiAddThreadRefs(threadId, refs, uid, commentId)),
+      setRsvp: (eventId, status) => ev(() => apiSetRsvp(eventId, status, uid), opt.rsvp(eventId, status, uid)),
+      setEventPinned: (id, pinned) => ev(() => apiSetEventPinned(id, pinned), opt.pinEvent(id, pinned)),
+      setEventState: (id, state) => ev(() => apiSetEventState(id, state)),
+      createLink: (input) => run(() => apiCreateLink(input, uid), undefined, ['links']),
+      deleteLink: (id) => run(() => apiDeleteLink(id), undefined, ['links']),
+      createThread: (input) => forum(() => apiCreateThread(input, uid)),
+      addComment: (threadId, body, parentId = null) => forum(() => apiAddComment(threadId, body, uid, parentId)),
+      setThreadReaction: (threadId, kind) => forum(() => apiSetThreadReaction(threadId, kind, uid), opt.reactToThread(threadId, kind, uid)),
+      setCommentReaction: (commentId, kind) => forum(() => apiSetCommentReaction(commentId, kind, uid)),
+      deleteComment: (commentId) => forum(() => apiDeleteComment(commentId)),
+      setThreadPinned: (id, pinned) => forum(() => apiSetThreadPinned(id, pinned), opt.pinThread(id, pinned)),
+      setThreadArchived: (id, archived) => forum(() => apiSetThreadArchived(id, archived), opt.archiveThread(id, archived)),
+      addThreadMedia: (threadId, urls, commentId = null) => forum(() => apiAddThreadMedia(threadId, urls, uid, commentId)),
+      deleteThreadMedia: (id) => forum(() => apiDeleteThreadMedia(id)),
+      addThreadRefs: (threadId, refs, commentId = null) => forum(() => apiAddThreadRefs(threadId, refs, uid, commentId)),
       uploadForumPhoto: async (blob) => {
         return apiUploadForumPhoto(blob);
       },
-      submitFeedback: (eventId, input) => run(() => apiSubmitFeedback(eventId, input, uid)),
-      pickPoll: (eventId, optionIndex) => run(() => apiPickPoll(eventId, optionIndex, uid)),
-      transferCustody: (gearId, toMemberId) => run(() => apiTransferCustody(gearId, toMemberId, uid)),
-      setEventSetlist: (eventId, songIds) => run(() => apiSetEventSetlist(eventId, songIds, uid)),
-      settleEvent: (eventId, input) => run(() => apiSettleEvent(eventId, input, uid)),
-      createThreadPoll: (threadId, question, options, multiple) => run(() => apiCreateThreadPoll(threadId, question, options, multiple, uid)),
-      addThreadPollOption: (threadId, label) => run(() => apiAddThreadPollOption(threadId, label)),
-      voteThreadPoll: (optionId) => run(() => apiVoteThreadPoll(optionId, uid)),
+      submitFeedback: (eventId, input) => ev(() => apiSubmitFeedback(eventId, input, uid)),
+      pickPoll: (eventId, optionIndex) => ev(() => apiPickPoll(eventId, optionIndex, uid)),
+      transferCustody: (gearId, toMemberId) => ledger(() => apiTransferCustody(gearId, toMemberId, uid)),
+      setEventSetlist: (eventId, songIds) => ev(() => apiSetEventSetlist(eventId, songIds, uid)),
+      settleEvent: (eventId, input) => settle(() => apiSettleEvent(eventId, input, uid)),
+      createThreadPoll: (threadId, question, options, multiple) => forum(() => apiCreateThreadPoll(threadId, question, options, multiple, uid)),
+      addThreadPollOption: (threadId, label) => forum(() => apiAddThreadPollOption(threadId, label)),
+      voteThreadPoll: (optionId) => forum(() => apiVoteThreadPoll(optionId, uid)),
       uploadProof: async (file) => {
         return apiUploadProof(file);
       },

@@ -307,74 +307,72 @@ const read = <T,>(query: () => PromiseLike<{ data: T; error: { message: string }
     return res;
   }, { tries: 2, timeoutMs: 15000 });
 
-export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
-  const [
-    profiles, profileInstruments, vocals, songs, songInstruments, songLinks, events, eventSongs, eventMedia, attendance,
-    feedback, polls, pollOptions, pollVotes, gear, transactions, threads, threadReactions, threadComments, threadCommentReactions,
-    threadMedia, threadRefs, threadPolls, threadPollOptions, threadPollVotes, instruments, takes, links,
-  ] = await Promise.all([
-    read(() => supabase.from('profiles').select('*')),
-    read(() => supabase.from('profile_instruments').select('*')),
-    read(() => supabase.from('profile_vocals').select('*')),
-    read(() => supabase.from('songs').select('*')),
-    read(() => supabase.from('song_instruments').select('*')),
-    read(() => supabase.from('song_links').select('*')),
-    read(() => supabase.from('events').select('*')),
-    read(() => supabase.from('event_songs').select('*')),
-    read(() => supabase.from('event_media').select('*')),
-    read(() => supabase.from('event_attendance').select('*')),
-    read(() => supabase.from('feedback').select('*')),
-    read(() => supabase.from('polls').select('*')),
-    read(() => supabase.from('poll_options').select('*')),
-    read(() => supabase.from('poll_votes').select('*')),
-    read(() => supabase.from('gear').select('*')),
-    read(() => supabase.from('transactions').select('*')),
-    read(() => supabase.from('threads').select('*')),
-    read(() => supabase.from('thread_reactions').select('*')),
-    read(() => supabase.from('thread_comments').select('*')),
-    read(() => supabase.from('thread_comment_reactions').select('*')),
-    read(() => supabase.from('thread_media').select('*')),
-    read(() => supabase.from('thread_refs').select('*')),
-    read(() => supabase.from('thread_polls').select('*')),
-    read(() => supabase.from('thread_poll_options').select('*')),
-    read(() => supabase.from('thread_poll_votes').select('*')),
-    read(() => supabase.from('instruments').select('*')),
-    read(() => supabase.from('takes').select('*')),
-    read(() => supabase.from('links').select('*').order('created_at', { ascending: false })),
-  ]);
+export const TABLES = [
+  'profiles', 'profile_instruments', 'profile_vocals', 'songs', 'song_instruments', 'song_links', 'events', 'event_songs', 'event_media', 'event_attendance',
+  'feedback', 'polls', 'poll_options', 'poll_votes', 'gear', 'transactions', 'threads', 'thread_reactions', 'thread_comments', 'thread_comment_reactions',
+  'thread_media', 'thread_refs', 'thread_polls', 'thread_poll_options', 'thread_poll_votes', 'instruments', 'takes', 'links',
+] as const;
+export type TableName = (typeof TABLES)[number];
+/** Raw PostgREST rows per table — cached so a write can refetch only what it touched. */
+export type RawTables = Record<TableName, Row[]>;
 
-  const members = mapMembers(profiles.data ?? [], profileInstruments.data ?? [], vocals.data ?? []);
-  const tx = mapTransactions(transactions.data ?? []);
+/** Table groups a mutation refetches (everything its mapper reads that the write can change). */
+export const SCOPES = {
+  events: ['events', 'event_songs', 'event_media', 'event_attendance', 'feedback', 'polls', 'poll_options', 'poll_votes'],
+  ledger: ['transactions', 'gear'],
+  songs: ['songs', 'song_instruments', 'song_links'],
+  forum: ['threads', 'thread_reactions', 'thread_comments', 'thread_comment_reactions', 'thread_media', 'thread_refs', 'thread_polls', 'thread_poll_options', 'thread_poll_votes'],
+  members: ['profiles', 'profile_instruments', 'profile_vocals'],
+} as const satisfies Record<string, readonly TableName[]>;
+
+/** Fetch the given tables (all by default). */
+export async function fetchRaw(tables: readonly TableName[] = TABLES): Promise<Partial<RawTables>> {
+  const rows = await Promise.all(tables.map(async (t) => {
+    const res = await read(() => (t === 'links'
+      ? supabase.from(t).select('*').order('created_at', { ascending: false })
+      : supabase.from(t).select('*')));
+    return [t, (res.data ?? []) as Row[]] as const;
+  }));
+  return Object.fromEntries(rows) as Partial<RawTables>;
+}
+
+export function buildSnapshot(raw: RawTables, userId: string | null): DataSnapshot {
+  const members = mapMembers(raw.profiles, raw.profile_instruments, raw.profile_vocals);
+  const tx = mapTransactions(raw.transactions);
 
   const myPollPicks: Record<string, number> = {};
   if (userId) {
-    for (const v of (pollVotes.data ?? []).filter((v) => v.profile_id === userId)) {
-      const opt = (pollOptions.data ?? []).find((o) => o.id === v.option_id);
+    for (const v of raw.poll_votes.filter((v) => v.profile_id === userId)) {
+      const opt = raw.poll_options.find((o) => o.id === v.option_id);
       if (!opt) continue;
-      const poll = (polls.data ?? []).find((p) => p.id === opt.poll_id);
+      const poll = raw.polls.find((p) => p.id === opt.poll_id);
       if (!poll) continue;
-      const opts = (pollOptions.data ?? []).filter((o) => o.poll_id === poll.id).sort((a, b) => a.id - b.id);
+      const opts = raw.poll_options.filter((o) => o.poll_id === poll.id).sort((a, b) => a.id - b.id);
       const idx = opts.findIndex((o) => o.id === opt.id);
       if (idx >= 0) myPollPicks[poll.event_id] = idx;
     }
   }
 
   return {
-    songs: mapSongs(songs.data ?? [], songInstruments.data ?? [], songLinks.data ?? []),
+    songs: mapSongs(raw.songs, raw.song_instruments, raw.song_links),
     events: mapEvents(
-      events.data ?? [], eventSongs.data ?? [], eventMedia.data ?? [], attendance.data ?? [],
-      feedback.data ?? [], polls.data ?? [], pollOptions.data ?? [], pollVotes.data ?? [], members,
+      raw.events, raw.event_songs, raw.event_media, raw.event_attendance,
+      raw.feedback, raw.polls, raw.poll_options, raw.poll_votes, members,
     ),
     transactions: tx,
-    gear: mapGear(gear.data ?? [], transactions.data ?? []),
+    gear: mapGear(raw.gear, raw.transactions),
     threads: mapThreads(
-      threads.data ?? [], threadReactions.data ?? [], threadCommentReactions.data ?? [], threadComments.data ?? [],
-      threadMedia.data ?? [], threadRefs.data ?? [], threadPolls.data ?? [], threadPollOptions.data ?? [], threadPollVotes.data ?? [], userId,
+      raw.threads, raw.thread_reactions, raw.thread_comment_reactions, raw.thread_comments,
+      raw.thread_media, raw.thread_refs, raw.thread_polls, raw.thread_poll_options, raw.thread_poll_votes, userId,
     ),
-    links: (links.data ?? []).map((l): BandLink => ({ id: l.id, title: l.title, url: l.url, category: l.category as LinkCategory, createdBy: l.created_by })),
+    links: raw.links.map((l): BandLink => ({ id: l.id, title: l.title, url: l.url, category: l.category as LinkCategory, createdBy: l.created_by })),
     members,
-    instruments: mapInstruments(instruments.data ?? []),
-    takes: mapTakes(takes.data ?? []),
+    instruments: mapInstruments(raw.instruments),
+    takes: mapTakes(raw.takes),
     myPollPicks,
   };
+}
+
+export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
+  return buildSnapshot((await fetchRaw()) as RawTables, userId);
 }
