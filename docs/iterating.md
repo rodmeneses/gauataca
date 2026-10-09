@@ -2,7 +2,7 @@
 
 How to add or change a feature without re-porting the whole prototype. **RSVP / attendance** is the worked example
 below; it was in fact implemented **code-first** in PR #1 (`docs/design.md` §5.4), so the prompts here stay as
-templates — swap in the next feature (e.g. the setlist builder or "new idea" from `HANDOFF.md` §3).
+templates — swap in the next feature (e.g. the setlist builder or "new idea" from `docs/history/phase1-handoff.md` §3).
 
 ## 1. Pick the path
 
@@ -81,7 +81,7 @@ Implement ONLY the delta:
 3. Do not touch components whose design region did not change. Keep px/colors exact.
 4. Typecheck + build, then verify in the browser against the served design (python3 -m http.server 5177
    --directory design) for every touched screen in ES and EN, admin and member, desktop and mobile.
-5. Update docs/design.md (the affected view/overlay rows and the data model), HANDOFF.md §3 (remove the closed gap),
+5. Update docs/design.md (the affected view/overlay rows and the data model), docs/history/phase1-handoff.md §3 (remove the closed gap),
    and add any deliberate deviation to docs/implementation.md §5.
 ```
 
