@@ -68,7 +68,7 @@ export default async function handler(req: { method?: string; body?: Record<stri
   // Every push needs a signed-in caller — otherwise anyone could spam the band's devices.
   const token = req.headers?.authorization?.replace(/^Bearer\s+/i, '');
   if (!token) return send(401, 'sign in required');
-  let actor: string | null = null;
+  let actor: string | null;
   try {
     const { data, error } = await admin.auth.getUser(token);
     actor = error ? null : (data.user?.id ?? null);
