@@ -5,8 +5,8 @@
 import { useMemo } from 'react';
 import { T, type Dict } from '../i18n';
 import { COLOR_TOKENS, GENRES, GENRE_IDS, HANDOFF_NOTES, TOUR_STEPS, TYPE_SCALE } from '../data';
-import { d, days, money, money0, sameMonth } from '../lib/format';
-import type { BandEvent, Instrument, Member, Profile, RsvpStatus, Song, Transaction, View } from '../types';
+import { money, money0 } from '../lib/format';
+import type { BandEvent, Member, Profile, RsvpStatus, Song, Transaction, View } from '../types';
 import { useStore } from './store';
 import { writeLangPref, writeThemePref } from '../lib/prefs';
 import { itemUrl } from '../lib/deepLink';
@@ -15,6 +15,7 @@ import { useAuth } from '../lib/auth';
 import { useData } from '../lib/data';
 import { compressImage } from '../lib/image';
 import { useMediaQuery } from '../lib/useMediaQuery';
+import { bucketEvents, contributionTotals, filterPalette, filterSongs, filterTx, layoutTier, ledgerTotals, mergeInstruments, pinnedFirst, sortTxNewestFirst } from './derive';
 import { L, contributionVm, eventVm, feedbackVm, gearVm, igCaption, memberById, memberVm, songVm, threadVm, txVm, type Ctx } from './vm';
 
 import type { Guataca, FormVm, GenreChip, PaletteItem, SearchResult, TourVm } from './guataca.types';
@@ -74,90 +75,49 @@ export function useGuataca(): Guataca {
     };
     const isAdmin = profile?.role === 'admin' || (!user && st.role === 'admin');
     // Layout tier. `device` is the dev preview override; 'auto' follows the viewport.
-    const forced = st.device === 'mobile' ? 'phone' : st.device === 'tablet' ? 'tablet' : st.device === 'desktop' ? 'desktop' : null;
-    const viewportLayout: 'phone' | 'tablet' | 'desktop' = isMobileViewport ? 'phone' : isTabletViewport ? 'tablet' : 'desktop';
-    const layout = forced ?? viewportLayout;
+    const layout = layoutTier(st.device, isMobileViewport, isTabletViewport);
     const isPhone = layout === 'phone';
     const isTablet = layout === 'tablet';
     const isMobile = isPhone; // back-compat alias
     const isDesktop = layout === 'desktop';
     const staleDays = props.staleDays || 30;
     const me = user && profile ? profileToMember(profile) : memberById(dbMembers, isAdmin ? 'm1' : 'm2');
-    const instruments: Instrument[] = (() => {
-      const seen = new Set(dbInstruments.map((i) => i.id));
-      return [...dbInstruments, ...st.customInstruments.filter((c) => !seen.has(c.id)).map((c) => ({ ...c, isBasic: false }))];
-    })();
+    const instruments = mergeInstruments(dbInstruments, st.customInstruments);
     const ctx: Ctx = { lang, t, staleDays, meId: me.id, isAdmin, members: dbMembers, events: dbEvents, songs: dbSongs, gear: dbGear, instruments, takes: dbTakes };
     const Lx = (v: { es: string; en: string } | string | null | undefined) => L(lang, v);
 
     /* ---- raw collections (from the data layer) */
     const allSongs: Song[] = dbSongs;
     const allEvents: BandEvent[] = dbEvents;
-    const allTx: Transaction[] = [...dbTx].sort((a, b) => (a.date < b.date ? 1 : -1));
+    const allTx: Transaction[] = sortTxNewestFirst(dbTx);
 
-    const income = allTx.filter((x) => x.kind === 'in').reduce((a, b) => a + b.amt, 0);
-    const expense = allTx.filter((x) => x.kind === 'out').reduce((a, b) => a + b.amt, 0);
-    const balance = income - expense;
+    const { income, expense, balance } = ledgerTotals(allTx);
 
-    const upcomingRaw = allEvents.filter((e) => days(e.date) >= 0 && e.state !== 'cancelled').sort((a, b) => d(a.date).getTime() - d(b.date).getTime());
-    const historyRaw = allEvents.filter((e) => days(e.date) < 0 || e.state === 'cancelled').sort((a, b) => d(b.date).getTime() - d(a.date).getTime());
-    const nextRaw = upcomingRaw.find((e) => e.state === 'active') ?? null;
+    const { upcoming: upcomingRaw, history: historyRaw, next: nextRaw } = bucketEvents(allEvents);
 
     const songs = allSongs.map((s) => songVm(s, allEvents, st.openSong, ctx));
     const staleSongs = songs.filter((s) => s.isStale).sort((a, b) => (a.lastDate < b.lastDate ? -1 : 1));
-    const q = st.q.trim().toLowerCase();
-    const filteredSongs = songs
-      .filter(
-        (s) =>
-          (st.genre === 'all' || s.genre === st.genre) &&
-          (!st.staleOnly || s.isStale) &&
-          (!q || s.title.toLowerCase().includes(q) || s.genreLabel.toLowerCase().includes(q) || s.key.toLowerCase() === q),
-      )
-      .sort((a, b) => {
-        if (st.songSort === 'name') return a.title.localeCompare(b.title);
-        if (st.songSort === 'takes') return a.takeCount - b.takeCount || a.title.localeCompare(b.title);
-        return b.takeCount - a.takeCount || a.title.localeCompare(b.title); // 'recorded' (most takes first)
-      });
+    const filteredSongs = filterSongs(songs, { genre: st.genre, staleOnly: st.staleOnly, query: st.q, sort: st.songSort });
     const genreChips: GenreChip[] = [
       { id: 'all', label: t.allGenres, color: 'var(--color-violet-light)', active: st.genre === 'all' },
       ...GENRE_IDS.map((k): GenreChip => ({ id: k, label: Lx(GENRES[k].label), color: GENRES[k].color, active: st.genre === k })),
     ];
 
     const evm = (e: BandEvent) => eventVm(e, allSongs, ctx);
-    // Pinned events float to the top of each list; Array#sort is stable, so the
-    // existing date order is preserved within the pinned and unpinned groups.
-    const pinnedFirst = <V extends { pinned: boolean }>(arr: V[]): V[] => [...arr].sort((a, b) => Number(b.pinned) - Number(a.pinned));
+    // Pinned events float to the top of each list, keeping date order within each group.
     const upcoming = pinnedFirst(upcomingRaw.map(evm));
     const history = pinnedFirst(historyRaw.map(evm));
     const events = [...upcoming, ...history];
     const nextEvent = nextRaw ? evm(nextRaw) : null;
     const dashUpcoming = upcomingRaw.filter((e) => e.state !== 'cancelled').slice(0, 3).map(evm);
 
-    const txFiltered = allTx.filter((x) => {
-      if (st.txFilter !== 'all' && x.kind !== st.txFilter) return false;
-      if (st.txDate !== 'all' && days(x.date) < -Number(st.txDate)) return false;
-      return true;
-    });
+    const txFiltered = filterTx(allTx, st.txFilter, st.txDate);
     const tx = txFiltered.map((x) => txVm(x, ctx));
     const recentTx = allTx.slice(0, 4).map((x) => txVm(x, ctx));
 
-    // Any income with a contributor counts toward the member's contributions
-    // (donations, contributions, etc.), not just category 'contribution'.
-    // DTV income is the org's, never a member's — excluded from the section.
-    const contribTx = allTx.filter((x) => x.kind === 'in' && x.contributor && x.category !== 'DTV');
-    const contribByMember = new Map<string, { total: number; month: number }>();
-    for (const x of contribTx) {
-      const key = x.contributor!;
-      const cur = contribByMember.get(key) ?? { total: 0, month: 0 };
-      cur.total += x.amt * 100;
-      if (sameMonth(x.date)) cur.month += x.amt * 100;
-      contribByMember.set(key, cur);
-    }
-    const contributions = dbMembers
-      .map((m) => {
-        const c = contribByMember.get(m.id) ?? { total: 0, month: 0 };
-        return contributionVm(m, c.total, c.month);
-      })
+    // Voluntary contributions per member (DTV income is the org's, not a member's).
+    const contributions = contributionTotals(allTx, dbMembers)
+      .map((c) => contributionVm(c.member, c.total, c.month))
       .sort((a, b) => a.name.localeCompare(b.name));
 
     const gear = dbGear.map((g) => gearVm(g, g.holder, ctx));
@@ -217,13 +177,7 @@ export function useGuataca(): Guataca {
         run: () => set({ palette: false, view: 'repertoire', openSong: s.id, q: '', genre: 'all', staleOnly: false }),
       })),
     ];
-    const pq = st.pq.trim().toLowerCase();
-    const paletteResults: PaletteItem[] = (pq
-      ? paletteBase.filter((i) => i.label.toLowerCase().includes(pq) || i.group.toLowerCase().includes(pq) || i.sub.toLowerCase().includes(pq))
-      : paletteBase
-    )
-      .slice(0, 9)
-      .map((i, n) => ({ ...i, idx: String(n + 1) }));
+    const paletteResults: PaletteItem[] = filterPalette(paletteBase, st.pq);
 
     /* ---- global search (mobile): events, songs, fund movements, ideas, polls, links */
     const searchResults: SearchResult[] = st.search
