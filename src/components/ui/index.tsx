@@ -271,7 +271,7 @@ export function BrandMark({ size = 38, radius = 11, icon = 20 }: { size?: number
 /** Pill group container (ES/EN, Upcoming/History, device switch). */
 export function Segment({ children, className, style, ...rest }: { children: ReactNode; className?: string; style?: CSSProperties } & Pick<HTMLAttributes<HTMLDivElement>, 'aria-label' | 'role'>) {
   return (
-    <div className={cx('flex bg-raised border border-line rounded-[10px] p-[3px] gap-[2px]', className)} style={style} {...rest}>
+    <div role="group" className={cx('flex bg-raised border border-line rounded-[10px] p-[3px] gap-[2px]', className)} style={style} {...rest}>
       {children}
     </div>
   );
@@ -285,6 +285,7 @@ export function Pill({ active, color = 'var(--color-violet-light)', activeText, 
   return (
     <button
       type="button"
+      aria-pressed={active}
       className={cx(
         'rounded-[7px] border-none font-mono font-semibold tracking-[.03em] whitespace-nowrap cursor-pointer transition-colors',
         size === 'md' ? 'min-h-[44px] px-3.5 text-[13px]' : 'py-[5px] px-[11px] text-[11.5px]',

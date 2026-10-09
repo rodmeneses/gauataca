@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Badge, Button, Modal, Pill } from './index';
+import { Badge, Button, CloseButton, Modal, Pill, Segment } from './index';
 import { useConfirm } from './ConfirmDialog';
 import { Thumb } from './Thumb';
 import { T } from '../../i18n';
@@ -138,5 +138,46 @@ describe('Thumb', () => {
     const img = container.querySelector('img')!;
     fireEvent.error(img);
     expect(img.getAttribute('src')).toBe('https://example.com/p.jpg');
+  });
+});
+
+describe('toggle semantics and dialog chrome', () => {
+  it('Pill exposes its on/off state and Segment groups its pills', () => {
+    render(<Segment aria-label="Lang"><Pill active>ES</Pill><Pill active={false}>EN</Pill></Segment>);
+    expect(screen.getByRole('group', { name: 'Lang' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'ES' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('button', { name: 'EN' }).getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('CloseButton takes a localized label', () => {
+    render(<CloseButton onClick={() => {}} label="Cerrar" />);
+    expect(screen.getByRole('button', { name: 'Cerrar' })).toBeTruthy();
+  });
+
+  it('Modal is a labelled modal dialog that keeps Tab inside and restores focus on close', () => {
+    const opener = document.createElement('button');
+    document.body.appendChild(opener);
+    opener.focus();
+    const { unmount } = render(
+      <Modal onClose={() => {}} maxWidth={400}>
+        <h2>Title</h2>
+        <button>first</button>
+        <button>last</button>
+      </Modal>,
+    );
+    const dialog = screen.getByRole('dialog');
+    expect(dialog.getAttribute('aria-modal')).toBe('true');
+    expect(dialog.getAttribute('aria-labelledby')).toBe(screen.getByText('Title').id);
+    const first = screen.getByText('first');
+    const last = screen.getByText('last');
+    expect(document.activeElement).toBe(first);
+    last.focus();
+    fireEvent.keyDown(last, { key: 'Tab' });
+    expect(document.activeElement).toBe(first);
+    fireEvent.keyDown(first, { key: 'Tab', shiftKey: true });
+    expect(document.activeElement).toBe(last);
+    unmount();
+    expect(document.activeElement).toBe(opener);
+    opener.remove();
   });
 });

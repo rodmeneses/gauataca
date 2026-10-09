@@ -54,8 +54,19 @@ export function DatePicker({ value, onChange, lang, placeholder }: {
       if (btnRef.current?.contains(t) || popRef.current?.contains(t)) return;
       setOpen(false);
     };
+    const onKey = (e: KeyboardEvent) => {
+      // Close just the popup — the global Escape handler would otherwise also close the modal underneath.
+      if (e.key !== 'Escape') return;
+      e.stopPropagation();
+      setOpen(false);
+      btnRef.current?.focus();
+    };
     document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
+    window.addEventListener('keydown', onKey, true);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      window.removeEventListener('keydown', onKey, true);
+    };
   }, [open]);
 
   const toggle = () => {
@@ -95,6 +106,8 @@ export function DatePicker({ value, onChange, lang, placeholder }: {
         ref={btnRef}
         type="button"
         onClick={toggle}
+        aria-haspopup="dialog"
+        aria-expanded={open}
         className="input input-mono flex items-center gap-2 text-left cursor-pointer"
       >
         <Calendar size={15} strokeWidth={1.9} className="text-ink-muted flex-none" />
@@ -106,6 +119,8 @@ export function DatePicker({ value, onChange, lang, placeholder }: {
         createPortal(
           <div
             ref={popRef}
+            role="dialog"
+            aria-label={`${MONTHS[lang][view.m]} ${view.y}`}
             className="fixed z-[90] w-[280px] rounded-[14px] border border-line-strong bg-raised p-3 shadow-pop animate-rise"
             style={{ top: pos.top, left: pos.left }}
           >

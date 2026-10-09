@@ -2,7 +2,7 @@
  * ⌘K command palette (design lines 1429–1458): search input, up to nine
  * results with group chip + numeric kbd, and an empty state.
  */
-import { useRef } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Search } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { useDialogChrome } from '@/components/ui';
@@ -11,6 +11,22 @@ export function CommandPalette() {
   const { t, state, setPq, closePalette, paletteResults } = useGuataca();
   const dialogRef = useRef<HTMLDivElement>(null);
   useDialogChrome(dialogRef);
+  const listId = useId();
+  const count = paletteResults.length;
+  // Active option for arrow-key navigation; clamped so a shrinking result list never leaves it dangling.
+  const [rawActive, setActive] = useState(0);
+  const active = Math.min(rawActive, Math.max(count - 1, 0));
+  const optionId = (i: number) => `${listId}-opt-${i}`;
+  useEffect(() => {
+    document.getElementById(`${listId}-opt-${active}`)?.scrollIntoView?.({ block: 'nearest' });
+  }, [listId, active]);
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (count === 0) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); setActive((active + 1) % count); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setActive((active - 1 + count) % count); }
+    else if (e.key === 'Enter') { e.preventDefault(); paletteResults[active].run(); }
+  };
 
   return (
     <div
@@ -30,8 +46,16 @@ export function CommandPalette() {
           <Search size={18} strokeWidth={2} color="var(--color-ink-dim)" className="flex-none" />
           <input
             value={state.pq}
-            onChange={(e) => setPq(e.target.value)}
+            onChange={(e) => { setPq(e.target.value); setActive(0); }}
+            onKeyDown={onKeyDown}
             placeholder={t.searchPlaceholder}
+            role="combobox"
+            aria-expanded={count > 0}
+            aria-controls={listId}
+            aria-activedescendant={count > 0 ? optionId(active) : undefined}
+            aria-autocomplete="list"
+            aria-label={t.searchPlaceholder}
+            autoComplete="off"
             autoFocus
             className="flex-1 border-none bg-transparent text-ink font-sans font-normal text-[15.5px] leading-[normal] outline-none"
           />
@@ -39,13 +63,18 @@ export function CommandPalette() {
             esc
           </kbd>
         </div>
-        <div className="max-h-[400px] overflow-y-auto p-2">
-          {paletteResults.map((r) => (
+        <div id={listId} role="listbox" aria-label={t.searchPlaceholder} className="max-h-[400px] overflow-y-auto p-2">
+          {paletteResults.map((r, i) => (
             <button
               key={r.idx}
+              id={optionId(i)}
               type="button"
+              role="option"
+              aria-selected={i === active}
+              tabIndex={-1}
               onClick={r.run}
-              className="flex items-center gap-[13px] w-full p-[11px_12px] rounded-[10px] border-none bg-transparent text-ink-body cursor-pointer text-left hover:bg-line-soft"
+              onMouseMove={() => setActive(i)}
+              className={`flex items-center gap-[13px] w-full p-[11px_12px] rounded-[10px] border-none text-ink-body cursor-pointer text-left hover:bg-line-soft ${i === active ? 'bg-line-soft' : 'bg-transparent'}`}
             >
               <span className="font-display font-semibold text-[9.5px] leading-[normal] tracking-[.09em] uppercase text-violet-deep bg-[var(--color-tint-violet)] p-[3px_7px] rounded-[5px] flex-none min-w-[74px] text-center">
                 {r.group}
