@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { Suspense, useEffect, useRef, type ReactNode } from 'react';
 import { useGuataca } from '../../store';
 import { useAuth } from '../../lib/auth';
 import { clearDeepLink, readDeepLink, takePendingDeepLink } from '../../lib/deepLink';
@@ -8,26 +8,31 @@ import { Skeleton } from '../ui';
 import { LoginPage } from '../auth/LoginPage';
 import { DesktopShell } from './DesktopShell';
 import { MobileShell } from '../mobile/MobileShell';
-import { EventModal } from '../modals/EventModal';
-import { NewEventModal, NewGearModal, NewSongModal, NewTxModal } from '../modals/FormModals';
-import { NewThreadModal } from '../modals/NewThreadModal';
-import { ThreadModal } from '../modals/ThreadModal';
-import { MemberModal } from '../modals/MemberModal';
-import { OnboardModal } from '../modals/OnboardModal';
-import { SignInModal } from '../modals/SignInModal';
-import { ChangelogModal } from '../changelog/ChangelogModal';
-import { NotificationPrefsModal } from '../notifications/NotificationPrefsModal';
-import { ShareSheet } from '../modals/ShareSheet';
-import { CustodyDialog } from '../modals/CustodyDialog';
-import { SettleDialog } from '../modals/SettleDialog';
-import { CommandPalette } from '../modals/CommandPalette';
-import { SearchOverlay } from '../modals/SearchOverlay';
-import { HandoffPanel } from '../modals/HandoffPanel';
-import { TourOverlay } from '../modals/TourOverlay';
 import { Toasts } from '../modals/Toasts';
 import { TopProgress } from './TopProgress';
 import { UpdatePrompt } from '../pwa/UpdatePrompt';
 import { OfflineBanner } from '../pwa/OfflineBanner';
+import { lazyNamed } from '../../lib/lazyNamed';
+
+const EventModal = lazyNamed(() => import('../modals/EventModal'), 'EventModal');
+const NewEventModal = lazyNamed(() => import('../modals/FormModals'), 'NewEventModal');
+const NewGearModal = lazyNamed(() => import('../modals/FormModals'), 'NewGearModal');
+const NewSongModal = lazyNamed(() => import('../modals/FormModals'), 'NewSongModal');
+const NewTxModal = lazyNamed(() => import('../modals/FormModals'), 'NewTxModal');
+const NewThreadModal = lazyNamed(() => import('../modals/NewThreadModal'), 'NewThreadModal');
+const ThreadModal = lazyNamed(() => import('../modals/ThreadModal'), 'ThreadModal');
+const MemberModal = lazyNamed(() => import('../modals/MemberModal'), 'MemberModal');
+const OnboardModal = lazyNamed(() => import('../modals/OnboardModal'), 'OnboardModal');
+const SignInModal = lazyNamed(() => import('../modals/SignInModal'), 'SignInModal');
+const ChangelogModal = lazyNamed(() => import('../changelog/ChangelogModal'), 'ChangelogModal');
+const NotificationPrefsModal = lazyNamed(() => import('../notifications/NotificationPrefsModal'), 'NotificationPrefsModal');
+const ShareSheet = lazyNamed(() => import('../modals/ShareSheet'), 'ShareSheet');
+const CustodyDialog = lazyNamed(() => import('../modals/CustodyDialog'), 'CustodyDialog');
+const SettleDialog = lazyNamed(() => import('../modals/SettleDialog'), 'SettleDialog');
+const CommandPalette = lazyNamed(() => import('../modals/CommandPalette'), 'CommandPalette');
+const SearchOverlay = lazyNamed(() => import('../modals/SearchOverlay'), 'SearchOverlay');
+const HandoffPanel = lazyNamed(() => import('../modals/HandoffPanel'), 'HandoffPanel');
+const TourOverlay = lazyNamed(() => import('../modals/TourOverlay'), 'TourOverlay');
 
 /** Locks page scroll while the fixed-position phone shell is mounted. */
 function PhoneFrame({ children }: { children: ReactNode }) {
@@ -49,30 +54,34 @@ export function Shell() {
   const bs = useGuataca();
   const { user, profile, loading: authLoading } = useAuth();
   const { modal } = bs;
+  const onboardDismissed = bs.state.onboardDismissed;
+  const loading = bs.loading;
+  // Latest view-model for the run-once effects below, so they don't depend on the
+  // (per-render) `bs` object. Declared first so it is refreshed before they run.
+  const bsRef = useRef(bs);
+  useEffect(() => { bsRef.current = bs; });
 
   // Keep <html lang> in sync with the chosen language (screen readers, hyphenation, translation prompts).
   useEffect(() => { document.documentElement.lang = bs.lang; }, [bs.lang]);
 
   // First sign-in: open the instrument/vocal onboarding once, until completed or skipped.
   useEffect(() => {
-    if (user && profile && profile.onboarded === false && !bs.state.onboardDismissed && !modal) {
-      bs.openOnboard();
+    if (user && profile && profile.onboarded === false && !onboardDismissed && !modal) {
+      bsRef.current.openOnboard();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, profile, bs.state.onboardDismissed, modal]);
+  }, [user, profile, onboardDismissed, modal]);
 
   // After an update, show what's new once. First-ever visit just records the
   // version (new members get onboarding, not release notes).
   const changelogChecked = useRef(false);
   useEffect(() => {
-    if (changelogChecked.current || !user || bs.loading || modal) return;
+    if (changelogChecked.current || !user || loading || modal) return;
     changelogChecked.current = true;
     const seen = readSeenVersion();
     if (seen === APP_VERSION) return;
     writeSeenVersion(APP_VERSION);
-    if (entriesSince(seen).length > 0) bs.openChangelog(seen ?? undefined);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, bs.loading, modal]);
+    if (entriesSince(seen).length > 0) bsRef.current.openChangelog(seen ?? undefined);
+  }, [user, loading, modal]);
 
   // Shareable deep link (?event= / ?song= / ?tx= / ?thread=[&comment=]): apply once data is loaded,
   // then strip the params so a refresh doesn't re-open the item. Falls back to a
@@ -80,19 +89,19 @@ export function Shell() {
   // drop the URL, e.g. the Google OAuth redirect in src/lib/auth.tsx.
   const deepLinkApplied = useRef(false);
   useEffect(() => {
-    if (deepLinkApplied.current || bs.loading) return;
+    if (deepLinkApplied.current || loading) return;
     deepLinkApplied.current = true;
     const dl = readDeepLink();
     if (dl) clearDeepLink();
     const target = dl ?? takePendingDeepLink();
     if (!target) return;
     const { kind, id, commentId } = target;
-    if (kind === 'event') bs.openEvent(id);
-    else if (kind === 'song') bs.goToSong(id);
-    else if (kind === 'tx') bs.goToTx(id);
-    else bs.openThread(id, commentId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bs.loading]);
+    const vm = bsRef.current;
+    if (kind === 'event') vm.openEvent(id);
+    else if (kind === 'song') vm.goToSong(id);
+    else if (kind === 'tx') vm.goToTx(id);
+    else vm.openThread(id, commentId);
+  }, [loading]);
 
   if (authLoading) {
     return (
@@ -148,6 +157,7 @@ export function Shell() {
         </>
       )}
 
+      <Suspense fallback={null}>
       {modal?.kind === 'event' && bs.ev && <EventModal />}
       {modal?.kind === 'newEvent' && <NewEventModal />}
       {modal?.kind === 'newTx' && <NewTxModal />}
@@ -168,6 +178,7 @@ export function Shell() {
       {bs.state.search && <SearchOverlay />}
       {bs.state.handoff && <HandoffPanel />}
       {bs.tour.on && <TourOverlay />}
+      </Suspense>
       {bs.toasts.length > 0 && <Toasts />}
       <TopProgress />
       <OfflineBanner />

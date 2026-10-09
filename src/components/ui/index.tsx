@@ -8,7 +8,7 @@ import { useMediaQuery } from '../../lib/useMediaQuery';
 
 /** Lock body scroll (ref-counted) + trap focus inside `ref` while a dialog is open. */
 let scrollLocks = 0;
-function useDialogChrome(ref: React.RefObject<HTMLElement | null>) {
+export function useDialogChrome(ref: React.RefObject<HTMLElement | null>) {
   useEffect(() => {
     const prevActive = document.activeElement as HTMLElement | null;
     if (scrollLocks++ === 0) {
@@ -33,8 +33,7 @@ function useDialogChrome(ref: React.RefObject<HTMLElement | null>) {
       if (--scrollLocks === 0) { document.body.style.overflow = ''; document.body.style.paddingRight = ''; }
       prevActive?.focus?.();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [ref]);
 }
 
 const cx = (...a: (string | false | null | undefined)[]) => a.filter(Boolean).join(' ');

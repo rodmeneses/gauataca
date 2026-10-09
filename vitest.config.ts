@@ -10,6 +10,7 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
+    setupFiles: ['src/test/setup.ts'],
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'api/**/*.test.ts'],
     coverage: {
       provider: 'v8',
@@ -26,10 +27,12 @@ export default defineConfig({
         'src/lib/optimistic.ts',
         'src/lib/offlineQueue.ts',
         'src/lib/image.ts',
+        'src/lib/errors.ts',
         'api/notify.ts',
         'api/calendar.ts',
         'src/lib/icsFeed.ts',
         'src/store/vm.ts',
+        'src/store/derive.ts',
         'src/data/changelog.ts',
         'src/i18n.ts',
       ],

@@ -3,10 +3,11 @@
  * movements, brainstorm ideas, polls and links. Each hit shows its type; tapping it jumps to
  * the resource (see `searchResults` in useGuataca).
  */
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { BarChart3, Calendar, Lightbulb, Link2, Music, Receipt, Search, X } from 'lucide-react';
 import { useGuataca } from '../../store';
 import type { SearchKind } from '../../lib/search';
+import { useDialogChrome } from '../ui';
 
 const KIND_STYLE: Record<SearchKind, { icon: ReactNode; color: string; bg: string }> = {
   event: { icon: <Calendar size={18} strokeWidth={1.9} />, color: 'var(--color-violet-light)', bg: 'var(--color-tint-violet)' },
@@ -34,12 +35,16 @@ function useVisibleHeight(): number | null {
 export function SearchOverlay() {
   const { t, state, setSq, closeSearch, searchResults } = useGuataca();
   const height = useVisibleHeight();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogChrome(dialogRef);
   const q = state.sq;
   const kindLabel: Record<SearchKind, string> = { event: t.refEvents, song: t.refSongs, fund: t.fund, idea: t.brainstorm, poll: t.poll, link: t.links };
   const px = 'pl-[max(16px,env(safe-area-inset-left))] pr-[max(16px,env(safe-area-inset-right))]';
 
   return (
     <div
+      ref={dialogRef}
+      tabIndex={-1}
       role="dialog"
       aria-modal="true"
       aria-label={t.search}

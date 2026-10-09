@@ -16,6 +16,21 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.8.0',
+    date: '2026-10-08',
+    title: { es: 'Más fiable y más rápida', en: 'More reliable and faster' },
+    changes: [
+      { es: 'Si la app tiene un error inesperado, ahora muestra un aviso con botón para recargar en vez de quedarse en blanco.', en: 'If the app hits an unexpected error it now shows a message with a reload button instead of a blank screen.' },
+      { es: 'Si un cambio no se puede guardar, ahora la app te avisa y explica el motivo (sin conexión, sin permiso, sesión vencida…).', en: 'When a change can\'t be saved, the app now tells you and explains why (offline, no permission, session expired…).' },
+      { es: 'Si el internet se cae mientras se envían los cambios en cola, ya no se pierden: se reintentan al volver, y si alguno falla se indica cuántos.', en: 'If the connection drops while queued changes are being sent, they are no longer lost: they retry on reconnect, and if any fail you\'re told how many.' },
+      { es: 'Si una foto no se sube, el aviso ahora dice cuál falló (y las demás sí se guardan).', en: 'If a photo fails to upload, the message now says which one (the rest still get saved).' },
+      { es: 'La app abre más rápido: las pantallas y ventanas se cargan solo cuando las abres.', en: 'The app opens faster: screens and dialogs now load only when you open them.' },
+      { es: 'Mejor accesibilidad con teclado y lector de pantalla: la búsqueda, el tour, las notas y el menú de compartir ahora atrapan el foco y lo devuelven al cerrarse.', en: 'Better keyboard and screen-reader accessibility: search, the tour, the notes panel and the share sheet now keep focus inside and return it when closed.' },
+      { es: 'Si tu dispositivo pide reducir el movimiento, la app ya no hace desplazamientos animados al saltar a una canción.', en: 'If your device asks for reduced motion, the app no longer animates the scroll when jumping to a song.' },
+      { es: 'Al borrar un comentario o un enlace aparece "Deshacer" durante unos segundos en vez de pedir confirmación.', en: 'Deleting a comment or a link now shows an "Undo" for a few seconds instead of asking for confirmation.' },
+    ],
+  },
+  {
     version: '0.7.0',
     date: '2026-10-08',
     title: { es: 'Accesibilidad, modo sin conexión y calendario', en: 'Accessibility, offline mode and calendar' },

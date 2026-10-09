@@ -67,6 +67,15 @@ export function prefersDark(): boolean {
   }
 }
 
+/** `true` when the OS asks for reduced motion (JS-driven motion such as smooth scrolling must honour it too). */
+export function prefersReducedMotion(): boolean {
+  try {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch {
+    return false;
+  }
+}
+
 /** Resolve a preference to the concrete theme to paint right now. */
 export function resolveTheme(pref: ThemePref): 'light' | 'dark' {
   if (pref === 'system') return prefersDark() ? 'dark' : 'light';

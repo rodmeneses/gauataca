@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   THEME_KEY, LANG_KEY, SEEN_VERSION_KEY, readThemePref, writeThemePref, readLangPref,
-  writeLangPref, readSeenVersion, writeSeenVersion, prefersDark, resolveTheme, applyTheme,
+  writeLangPref, readSeenVersion, writeSeenVersion, prefersDark, prefersReducedMotion, resolveTheme, applyTheme,
 } from './prefs';
 
 beforeEach(() => {
@@ -126,5 +126,25 @@ describe('applyTheme', () => {
 
   it('is a no-op on the meta tag when none exists', () => {
     expect(() => applyTheme('dark')).not.toThrow();
+  });
+});
+
+describe('prefersReducedMotion', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('reflects matchMedia', () => {
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: true }));
+    expect(prefersReducedMotion()).toBe(true);
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: false }));
+    expect(prefersReducedMotion()).toBe(false);
+  });
+
+  it('defaults to false when matchMedia throws', () => {
+    vi.stubGlobal('matchMedia', () => {
+      throw new Error('unsupported');
+    });
+    expect(prefersReducedMotion()).toBe(false);
   });
 });

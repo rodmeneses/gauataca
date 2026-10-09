@@ -41,4 +41,28 @@ describe('offline queue', () => {
     await q.flush();
     expect(job).toHaveBeenCalledTimes(2);
   });
+
+  it('puts a job back when the connection drops again mid-flush', async () => {
+    let online = true;
+    const q = createOfflineQueue(() => online);
+    const second = vi.fn(async () => {});
+    let attempts = 0;
+    q.push(async () => { if (++attempts === 1) online = false; throw new TypeError('Failed to fetch'); });
+    q.push(second);
+    expect(await q.flush()).toBe(0);
+    expect(q.size()).toBe(2);
+    expect(second).not.toHaveBeenCalled();
+    online = true;
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(await q.flush()).toBe(1);
+    expect(second).toHaveBeenCalledOnce();
+    expect(q.size()).toBe(0);
+  });
+
+  it('defaults to the navigator online state', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const q = createOfflineQueue();
+    q.push(async () => { throw new Error('x'); });
+    expect(await q.flush()).toBe(1);
+  });
 });

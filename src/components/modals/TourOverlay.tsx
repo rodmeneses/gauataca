@@ -2,16 +2,21 @@
  * Onboarding tour overlay (design lines 1492–1514): full-screen scrim with a
  * centered violet card stepping through TOUR_STEPS. Skip / Next / Got it.
  */
+import { useId, useRef } from 'react';
 import { Sparkle } from 'lucide-react';
 import { useGuataca } from '@/store';
+import { useDialogChrome } from '@/components/ui';
 
 export function TourOverlay() {
   const { t, tour, tourNext, tourEnd } = useGuataca();
+  const cardRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  useDialogChrome(cardRef);
   if (!tour.on) return null;
 
   return (
     <div className="fixed inset-0 z-[99] bg-[color-mix(in_srgb,var(--color-base)_90%,transparent)] backdrop-blur-[10px] flex items-center justify-center p-[32px] animate-fade [animation-duration:.22s]">
-      <div className="w-full max-w-[470px] bg-[linear-gradient(160deg,var(--color-hover),var(--color-raised))] border border-violet/40 rounded-[20px] p-[28px] animate-rise [animation-duration:.3s]">
+      <div ref={cardRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId} className="w-full max-w-[470px] bg-[linear-gradient(160deg,var(--color-hover),var(--color-raised))] border border-violet/40 rounded-[20px] p-[28px] animate-rise [animation-duration:.3s]">
         <div className="flex items-center gap-[12px] mb-[18px]">
           <span className="w-[36px] h-[36px] rounded-[11px] bg-[linear-gradient(145deg,var(--color-violet),var(--color-violet-deeper))] grid place-items-center flex-none">
             <Sparkle size={18} strokeWidth={2} color="var(--color-on-accent)" />
@@ -20,7 +25,7 @@ export function TourOverlay() {
             {tour.num} / {tour.total}
           </span>
         </div>
-        <h2 className="m-0 font-display font-semibold text-[21px] leading-[1.3] text-ink-bright tracking-[-.01em]">{tour.title}</h2>
+        <h2 id={titleId} className="m-0 font-display font-semibold text-[21px] leading-[1.3] text-ink-bright tracking-[-.01em]">{tour.title}</h2>
         <p className="mt-[12px] mb-0 font-sans text-[14px] leading-[1.7] text-ink-meta">{tour.body}</p>
         <div className="flex gap-[10px] mt-[24px]">
           <button

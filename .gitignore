@@ -6,3 +6,7 @@ coverage
 .DS_Store
 flyway_setup.sh
 .envrc
+.vercel
+.env
+.env.*
+!.env.example

@@ -1,8 +1,7 @@
 # GUATACA — GUATACA
 
 Cooperative band admin app described in [SPEC.MD](./SPEC.MD): a bilingual (ES/EN) React + Supabase PWA
-(auth, Postgres/RLS, storage, web push; live at https://gauataca.vercel.app). Without Supabase env keys it falls back to
-a demo mode over realistic mock data. See [CLAUDE.md](./CLAUDE.md) for the current architecture and conventions.
+(auth, Postgres/RLS, storage, web push; live at https://gauataca.vercel.app). See [CLAUDE.md](./CLAUDE.md) for the current architecture and conventions.
 It covers the repertoire, calendar + history, transparent ledger + gear
 inventory, brainstorm threads, member profiles, post-event retrospectives and the semi-automated Instagram share flow.
 
@@ -10,75 +9,69 @@ The UI is a faithful port of the Claude Design prototype `Guataca.dc.html`
 ([design project](https://claude.ai/design/p/d7a06c72-dd08-48b8-a34d-cc51a3ff6930?file=Guataca.dc.html);
 snapshot in [`design/`](./design/README.md)).
 
-## Quick start (demo mode, no backend)
+## Quick start
 
-Prerequisites: **Node.js 20 or newer** and npm. With nvm: `nvm use` (an `.nvmrc` pins 24). Internet is needed only once,
-for `npm install` — the fonts are self-hosted in `public/fonts/`, so the running app makes no third-party requests.
+Prerequisites: **Node.js 24** (`nvm use` reads `.nvmrc`) and npm. Internet is needed only for `npm install` — the fonts are
+self-hosted in `public/fonts/`, so the running app makes no third-party requests.
 
 ```sh
 git clone https://github.com/rodmeneses/gauataca.git
 cd gauataca
 npm install
+cp .env.example .env.local   # fill in VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
 npm run dev
 ```
 
-Open **http://localhost:5173/** — the welcome tour explains the controls; **http://localhost:5173/?tour=0** skips it.
-Everything is in memory: what you create, vote or rate stays until you reload, then the mock data resets.
+Open **http://localhost:5173/**. The app needs a Supabase project (schema from `db/migrations/`, see below); without the env
+keys the data fetch fails and the app shows empty data and an error banner — it never shows fake data.
 
-Things to try:
-
-1. **Panel** — stat cards (incl. confirmed / pending for the next event), next events, songs not rehearsed, latest ledger movements.
-2. **Calendario → Ver detalles** on an upcoming event → **Asistencia**: answer *Voy / Quizás / No voy* — the roster,
-   "Confirmados", the card chip and the dashboard counts update (tap your answer again to withdraw it).
-3. **Calendario → Historial → "Cierre del Festival de Verano" → Ver detalles** — setlist, gallery links and the
-   *Retrospectiva*: vote in the poll, rate with stars, write feedback, toggle anonymous, submit (toasts + response count).
-4. **Preparar para Instagram** on any gig (card, modal, or mobile) — caption preview, *Copiar leyenda* (clipboard),
-   *Abrir el flyer*, *Compartir* (`navigator.share`; a toast on desktop).
-5. **Repertorio** — search, genre chips, *⚠ Solo sin ensayar*, click a row to expand resources + rehearsal log; **+ Nueva canción**.
-6. **Fondo y equipos** — ledger with proof links, **Registrar movimiento**, gear cards → **Transferir custodia**.
-7. **Ideas** — upvote, open a thread, comment, **Convertir en evento** (pre-fills the event form).
-8. **Top bar** — **ES/EN**, **Admin ↔ Músico** (write controls disappear for members; RSVP is answered as Caro), **desktop ↔ phone** preview
-   (Agenda / Repertorio / Fondo / Perfil tabs), **⌘K** command palette, the **book icon** opens the Phase 2 handoff notes.
-9. **Sistema de diseño** — live tokens, type scale, component samples, handoff notes.
-
-Other commands:
+Commands:
 
 ```sh
-npm run build      # strict typecheck + production build → dist/
-npm run preview    # serve the production build on http://localhost:4173
+npm run dev            # local dev (the service worker is disabled by design)
+npm run build          # strict typecheck + production build → dist/ (CI gate)
+npm run lint           # ESLint (CI gate)
+npm test               # unit + component tests (vitest)
+npm run coverage       # tests + the 95% coverage threshold (CI gate)
+npm run size           # gzip JS budget check, run after build (CI gate)
 npm run assets:fonts   # re-vendor the self-hosted Google Fonts into public/fonts/
 npm run assets:icons   # regenerate the PWA icon set into public/
 ```
 
+> Node 25+ ships an experimental `localStorage` global that breaks jsdom; if tests fail with
+> "Cannot read properties of undefined (reading 'clear')", run them with `NODE_OPTIONS=--no-experimental-webstorage`
+> (or just use Node 24 as pinned).
+
 ### PWA
 
 The app is an installable PWA (`vite-plugin-pwa`): a web manifest, self-hosted fonts and a service worker that precaches
-the app shell so it opens offline. Supabase reads fall back to the last cached response when offline (a thin top bar shows
-the offline state); writes are blocked with a toast until the connection is back. A new deploy is fetched in the background
-and applied only when the user accepts the *"Nueva versión disponible"* prompt — the running session is never swapped
-mid-action. Offline-first data (a local write queue) is intentionally **not** implemented yet.
+the app shell so it opens offline. Reads fall back to the last cached response when offline (a thin top bar shows the offline
+state); writes made offline are queued in memory and replayed when the connection returns (keep the app open — closing the tab
+drops the queue). A new deploy is fetched in the background and applied only when the user accepts the *"Nueva versión
+disponible"* prompt — the running session is never swapped mid-action.
 
-Troubleshooting: `node: command not found` → install Node 20+ (or `nvm install 24 && nvm use`). Port 5173 busy → `npm run dev -- --port 5174`.
+Troubleshooting: `node: command not found` → install Node 24 (`nvm install 24 && nvm use`). Port 5173 busy → `npm run dev -- --port 5174`.
 To compare with the original design side by side: `python3 -m http.server 5177 --directory design` → http://localhost:5177/Guataca.dc.html.
 
 ## Documentation
 
 | Doc | What it covers |
 | --- | --- |
-| [HANDOFF.md](./HANDOFF.md) | **Start here if you are continuing the work:** what exists, what is mocked, gaps vs. the spec (RSVP, setlist builder, editing…), and the Phase 2 (Supabase) plan |
-| [docs/design.md](./docs/design.md) | The UI itself: design language (tokens, type, spacing), information architecture, every view and overlay, the Instagram and retrospective flows, roles, bilingual behaviour, mobile preview, data model, prototype knobs |
-| [docs/implementation.md](./docs/implementation.md) | How the port is built: stack, folder layout, design→code conventions, how it was produced and verified, known deviations, and the path to Phase 2 |
-| [docs/iterating.md](./docs/iterating.md) | How to add features incrementally with Claude Design + Claude Code (delta workflow and ready-to-paste prompts; RSVP as the worked example) |
-| [design/README.md](./design/README.md) | The committed design source (`Guataca.dc.html` + runtime), how to view and diff it |
+| [CLAUDE.md](./CLAUDE.md) | **Start here:** current architecture, conventions, CI gates and gotchas |
 | [SPEC.MD](./SPEC.MD) | Product specification |
-| [prompt-ui-design.md](./prompt-ui-design.md) | The prompt that produced the design prototype |
+| [docs/design.md](./docs/design.md) | The UI itself: design language (tokens, type, spacing), information architecture, every view and overlay, roles, bilingual behaviour, data model |
+| [docs/implementation.md](./docs/implementation.md) | How the port from the design prototype was built: folder layout, design→code conventions, known deviations |
+| [docs/iterating.md](./docs/iterating.md) | How to add features incrementally with Claude Design + Claude Code |
+| [design/README.md](./design/README.md) | The committed design source (`Guataca.dc.html` + runtime), how to view and diff it |
+| [docs/history/](./docs/history/) | Historical snapshots: the Phase 1 → Phase 2 handoff, an early session summary and the original design prompt |
 
 ## Stack
 
 - Vite + React 18 + TypeScript (strict)
 - Tailwind CSS v4 — design tokens live in [`src/styles.css`](./src/styles.css) (`@theme`) and map 1:1 to Tailwind's slate / emerald / violet / amber scale
 - `lucide-react` icons
-- No backend: everything is in-memory (Phase 2 target is Supabase — see the *Handoff notes* inside the app, `Sistema de diseño` view or ⌘K → "Notas de entrega")
+- Supabase (Postgres + Auth + RLS + Storage) via `@supabase/supabase-js`; Vercel serverless functions in [`api/`](./api/) for push notifications and the calendar feed
+- Deployed on Vercel from `main`
 
 ## Database migrations (Flyway)
 
@@ -87,8 +80,6 @@ Schema changes are versioned SQL files under [`db/migrations/`](./db/migrations/
 
 - `V<n>__description.sql` — versioned migration, applied once in order. `V1__baseline.sql` is the
   single consolidated schema (the whole final schema in one file).
-- [`db/demo_data.sql`](./db/demo_data.sql) — optional demo dataset (NOT a migration); run it manually
-  only when you want fake sample data.
 - [`db/wipe.sql`](./db/wipe.sql) — drops everything for a fresh start (NOT a migration).
 
 **Setup (once):**
@@ -129,29 +120,23 @@ Example: `http://localhost:5173/?lang=en&role=member&view=ledger&tour=0`
 ## Layout
 
 ```
+api/                    Vercel serverless functions (push notify, ICS calendar feed)
+db/migrations/          Flyway-style SQL migrations (V__ versioned, R__ repeatable)
 design/                 committed Claude Design source (Guataca.dc.html + support.js)
-docs/                   design reference, implementation notes, iteration workflow
+docs/                   design reference, implementation notes, iteration workflow, history/
 src/
-  App.tsx                 reads the knobs, mounts the store
-  types.ts                domain types (mirror the suggested Phase 2 tables)
+  App.tsx                 reads the URL knobs, mounts the providers (auth → push → data → store)
+  types.ts                domain types
   i18n.ts                 ES / EN dictionary
-  lib/format.ts           dates (fixed TODAY = 2026-08-25), money, slug
-  data/                   mock members, songs, events, ledger, gear, threads, design-system notes
+  lib/                    Supabase data layer (api/), auth, data provider, formatting, search, offline queue, notify…
+  data/                   changelog ("What's new"), song/genre catalogue, design-system notes
   store/
-    store.tsx             single state object + provider (⌘K / Esc)
-    vm.ts                 pure view-model builders (song / event / tx / gear / thread / member / feedback)
-    useGuataca.ts        the one hook: state + derived view-models + actions
+    store.tsx             single UI-state object + provider (⌘K / Esc)
+    vm.ts, derive.ts      pure view-model builders and list/aggregate logic (unit-tested)
+    useGuataca.ts         the one hook: state + derived view-models + actions
   components/
-    ui/                   Badge, Card, Button, Avatar, IconLink, Modal, Field/Input/Select/Textarea, Segment/Pill…
-    shell/                desktop shell (sidebar, top bar)
-    views/                Dashboard, CalendarView, Repertoire, Ledger, Brainstorm, Members, DesignSystem
-    mobile/               phone-frame preview with Agenda / Repertorio / Fondo / Perfil tabs
-    modals/               event detail (+ retrospective), forms, thread, member, share sheet, custody, ⌘K palette, handoff, tour, toasts
+    ui/                   Badge, Card, Button, Avatar, Modal, ConfirmDialog, Field/Input/Select, Segment/Pill…
+    shell/, views/        desktop shell and views (Dashboard, Calendar, Repertoire, Ledger, Brainstorm, Links, Members, DesignSystem)
+    mobile/               phone layout with Agenda / Repertorio / Fondo / Ideas / Enlaces / Perfil tabs
+    modals/               event detail, forms, thread, member, share sheet, custody, ⌘K palette, search, tour, toasts
 ```
-
-## Mocked on purpose
-
-- Drive / iCloud / Docs / YouTube / Spotify links are placeholders.
-- `navigator.share` and the `instagram://camera` deep link are attempted for real on mobile; on desktop they fall back to a toast.
-- New event / song / movement forms, votes, comments, poll picks, ratings, RSVP answers and custody transfers update local state only.
-- No auth (Phase 2); other spec gaps are listed in [HANDOFF.md](./HANDOFF.md) §3.

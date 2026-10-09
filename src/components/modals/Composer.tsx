@@ -44,14 +44,17 @@ export function Composer({
 
   // Auto-open when the caret sits in an open token; close otherwise. `partial` is
   // recreated every render so key off the token start + query strings.
+  const hasPartial = partial !== null;
+  const partialStart = partial?.start;
+  const partialQuery = partial?.query;
   useEffect(() => {
-    if (partial) {
+    if (hasPartial) {
       setOpen(true);
       setActive(0);
     } else {
       setOpen(false);
     }
-  }, [partial?.start, partial?.query]);
+  }, [hasPartial, partialStart, partialQuery]);
 
   const insert = (id: string) => {
     if (!partial) return;

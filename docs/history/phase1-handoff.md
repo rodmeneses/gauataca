@@ -1,6 +1,6 @@
 # HANDOFF — GUATACA, from Phase 1 (UI) to Phase 2 (backend)
 
-> **Historical (2026-08-25).** This is the Phase 1 → Phase 2 handoff. Phase 2 (Supabase auth, DB, storage, push) has shipped; for the current architecture and conventions read [CLAUDE.md](./CLAUDE.md). Statements below about "mock only / no backend" no longer apply.
+> **Historical (2026-08-25).** This is the Phase 1 → Phase 2 handoff. Phase 2 (Supabase auth, DB, storage, push) has shipped; for the current architecture and conventions read [CLAUDE.md](../../CLAUDE.md). Statements below about "mock only / no backend" no longer apply.
 
 Written 2026-08-25 for the next agent/engineer. Read this first, then the docs it points to. It says what exists,
 what is deliberately fake, what the spec asks for that the UI still lacks, and a concrete plan for Phase 2.
@@ -19,13 +19,13 @@ what is deliberately fake, what the spec asks for that the UI still lacks, and a
 
 | Where | Why |
 | --- | --- |
-| [`SPEC.MD`](./SPEC.MD) | the product contract; Phase 2 stack is stated there (Supabase free tier, Google/Apple auth) |
-| [`docs/design.md`](./docs/design.md) | what every view/overlay is and how it behaves; data model as rendered; the six URL knobs |
-| [`docs/implementation.md`](./docs/implementation.md) | code layout, design→code conventions, how it was verified, known deviations, Phase 2 seams |
+| [`SPEC.MD`](../../SPEC.MD) | the product contract; Phase 2 stack is stated there (Supabase free tier, Google/Apple auth) |
+| [`docs/design.md`](../design.md) | what every view/overlay is and how it behaves; data model as rendered; the six URL knobs |
+| [`docs/implementation.md`](../implementation.md) | code layout, design→code conventions, how it was verified, known deviations, Phase 2 seams |
 | In-app **Notas de entrega** (view *Sistema de diseño*, or ⌘K → "Notas de entrega") | the suggested tables, derived-vs-stored rules and RLS policies, written by the designer |
 | `src/data/system.ts` → `HANDOFF_NOTES` | same notes as data, so you can grep them |
-| Design source | Claude Design project `d7a06c72-dd08-48b8-a34d-cc51a3ff6930`, file `Guataca.dc.html` — snapshot committed in [`design/`](./design/README.md). Ground truth for any UI change |
-| [`docs/iterating.md`](./docs/iterating.md) | how to add features as **deltas** (design-first vs code-first), with ready prompts — RSVP is the worked example |
+| Design source | Claude Design project `d7a06c72-dd08-48b8-a34d-cc51a3ff6930`, file `Guataca.dc.html` — snapshot committed in [`design/`](../../design/README.md). Ground truth for any UI change |
+| [`docs/iterating.md`](../iterating.md) | how to add features as **deltas** (design-first vs code-first), with ready prompts — RSVP is the worked example |
 
 Run it: `npm install && npm run dev` → http://localhost:5173/?tour=0 (Node ≥ 20; `.nvmrc` pins 24).
 

@@ -4,6 +4,7 @@ import { ChevronDown, ChevronRight, Clock, FileText, Gauge, Link, Mic, Music, Pe
 import { useGuataca } from '../../store';
 import { AddButton, AppleMusicIcon, EmptyState, Pill, Segment, SpotifyIcon } from '../ui';
 import type { LinkKind } from '../../types';
+import { prefersReducedMotion } from '../../lib/prefs';
 
 const rowLink = 'flex items-center gap-2 min-h-[44px] py-2 px-3 rounded-lg border border-line bg-raised text-ink-body no-underline font-sans font-medium text-[14px]';
 const chipLink = 'flex items-center gap-2 min-h-[44px] py-2 px-3 rounded-lg border border-line bg-raised text-ink-body no-underline font-sans font-medium text-[14px]';
@@ -22,7 +23,7 @@ export function MobileRepertoire() {
   useEffect(() => {
     if (!state.scrollToSong) return;
     const el = document.getElementById(`song-${state.scrollToSong}`);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (el) el.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
     clearScrollToSong();
   }, [state.scrollToSong, clearScrollToSong]);
 

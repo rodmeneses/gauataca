@@ -73,7 +73,7 @@ const es = {
   anonymous: 'Anónimo',
   switchLang: 'Cambiar a inglés',
   ideaLoaded: 'Idea cargada en el creador de eventos',
-  commentPosted: 'Comentario publicado', commentDeleted: 'Comentario eliminado', deleteComment: 'Eliminar comentario', confirmDeleteComment: 'Se eliminará este comentario y sus respuestas. No se puede deshacer.',
+  commentPosted: 'Comentario publicado', commentDeleted: 'Comentario eliminado', deleteComment: 'Eliminar comentario',
   // forum (ideas board) — comments, replies, reactions and references
   like: 'Me gusta', dislike: 'No me gusta', reactions: 'Reacciones', whoReacted: 'Quién reaccionó',
   reply: 'Responder', replies: 'respuestas', replyPlaceholder: 'Escribe una respuesta…',
@@ -158,7 +158,7 @@ const es = {
   subLinks: 'Carpetas, listas y chats del grupo', newLink: 'Nuevo enlace', noLinks: 'Aún no hay enlaces.',
   linkTitle: 'Título', linkCategory: 'Categoría', linkInvalidUrl: 'Escribe una URL válida (https://…)',
   catDocs: 'Documentos', catMusic: 'Música', catSocial: 'Redes', catLogistics: 'Logística', catOther: 'Otros',
-  deleteLink: 'Eliminar enlace', confirmDeleteLink: 'Se eliminará este enlace para todo el grupo. No se puede deshacer.',
+  deleteLink: 'Eliminar enlace',
   changelogNew: 'Nuevo',
   changelogClose: 'Entendido',
   version: 'Versión',
@@ -177,6 +177,12 @@ const es = {
   queuedWritesSynced: 'Cambios pendientes guardados',
   queuedWritesFailed: 'Algunos cambios pendientes no se pudieron guardar',
   backOnline: 'De vuelta en línea',
+  // error boundary + failed-save reasons
+  errorTitle: 'Algo salió mal', errorBody: 'La app tuvo un error inesperado. Recarga para continuar; tus datos guardados están a salvo.', errorReload: 'Recargar',
+  saveFailed: 'No se pudo guardar el cambio', saveFailedOffline: 'No se pudo guardar: sin conexión', saveFailedDenied: 'No se pudo guardar: no tienes permiso', saveFailedInvalid: 'No se pudo guardar: datos inválidos', saveFailedSession: 'No se pudo guardar: vuelve a iniciar sesión',
+  queuedWritesFailedN: '%d cambios pendientes no se pudieron guardar',
+  uploadFailedFile: 'No se pudo subir %s',
+  undo: 'Deshacer', linkDeleted: 'Enlace eliminado',
   // pin (events + forum ideas) / archive (forum ideas) — added in code, not in the Claude Design file
   pin: 'Fijar', unpin: 'Quitar fijado', pinned: 'Fijado', unpinned: 'Se quitó de fijados',
   archive: 'Archivar', unarchive: 'Desarchivar', archived: 'Archivado', unarchived: 'Se desarchivó',
@@ -255,7 +261,7 @@ const en: typeof es = {
   anonymous: 'Anonymous',
   switchLang: 'Switch to Spanish',
   ideaLoaded: 'Idea loaded into the event creator',
-  commentPosted: 'Comment posted', commentDeleted: 'Comment deleted', deleteComment: 'Delete comment', confirmDeleteComment: 'This comment and its replies will be deleted. This can\'t be undone.',
+  commentPosted: 'Comment posted', commentDeleted: 'Comment deleted', deleteComment: 'Delete comment',
   // forum (ideas board) — comments, replies, reactions and references
   like: 'Like', dislike: 'Dislike', reactions: 'Reactions', whoReacted: 'Who reacted',
   reply: 'Reply', replies: 'replies', replyPlaceholder: 'Write a reply…',
@@ -339,7 +345,7 @@ const en: typeof es = {
   subLinks: 'Folders, playlists and group chats', newLink: 'New link', noLinks: 'No links yet.',
   linkTitle: 'Title', linkCategory: 'Category', linkInvalidUrl: 'Enter a valid URL (https://…)',
   catDocs: 'Docs', catMusic: 'Music', catSocial: 'Social', catLogistics: 'Logistics', catOther: 'Other',
-  deleteLink: 'Delete link', confirmDeleteLink: 'This link will be deleted for the whole band. This can\'t be undone.',
+  deleteLink: 'Delete link',
   changelogNew: 'New',
   changelogClose: 'Got it',
   version: 'Version',
@@ -358,6 +364,12 @@ const en: typeof es = {
   queuedWritesSynced: 'Pending changes saved',
   queuedWritesFailed: "Some pending changes couldn't be saved",
   backOnline: 'Back online',
+  // error boundary + failed-save reasons
+  errorTitle: 'Something went wrong', errorBody: 'The app hit an unexpected error. Reload to continue; your saved data is safe.', errorReload: 'Reload',
+  saveFailed: "Couldn't save the change", saveFailedOffline: "Couldn't save: you're offline", saveFailedDenied: "Couldn't save: you don't have permission", saveFailedInvalid: "Couldn't save: invalid data", saveFailedSession: "Couldn't save: please sign in again",
+  queuedWritesFailedN: "%d pending changes couldn't be saved",
+  uploadFailedFile: 'Could not upload %s',
+  undo: 'Undo', linkDeleted: 'Link deleted',
   // pin (events + forum ideas) / archive (forum ideas)
   pin: 'Pin', unpin: 'Unpin', pinned: 'Pinned', unpinned: 'Unpinned',
   archive: 'Archive', unarchive: 'Unarchive', archived: 'Archived', unarchived: 'Unarchived',

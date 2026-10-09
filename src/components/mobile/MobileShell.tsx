@@ -5,7 +5,7 @@
  * the tab bar off-screen. On a larger viewport it renders the same app inside a
  * 392px phone-preview frame with the dev controls.
  */
-import { useEffect, useState, type ReactNode } from 'react';
+import { Suspense, useEffect, useState, type ReactNode } from 'react';
 import { Calendar, Lightbulb, Link2, Monitor, Music, Receipt, RefreshCw, Search, Smartphone, WifiHigh } from 'lucide-react';
 import { useGuataca } from '../../store';
 import { useData } from '../../lib/data';
@@ -14,11 +14,13 @@ import { BrandMark, Pill, Segment } from '../ui';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import type { MobileTab } from '../../types';
 import { MobileAgenda } from './MobileAgenda';
-import { MobileRepertoire } from './MobileRepertoire';
-import { MobileFund } from './MobileFund';
-import { MobileBrainstorm } from './MobileBrainstorm';
 import { LinksPanel } from '../links/LinksPanel';
-import { MobileProfile } from './MobileProfile';
+import { lazyNamed } from '../../lib/lazyNamed';
+
+const MobileRepertoire = lazyNamed(() => import('./MobileRepertoire'), 'MobileRepertoire');
+const MobileFund = lazyNamed(() => import('./MobileFund'), 'MobileFund');
+const MobileBrainstorm = lazyNamed(() => import('./MobileBrainstorm'), 'MobileBrainstorm');
+const MobileProfile = lazyNamed(() => import('./MobileProfile'), 'MobileProfile');
 
 /* devPill(v): 30x26 icon toggle inside the device Segment */
 const devPill = (active: boolean) => ({
@@ -124,12 +126,14 @@ function MobileApp({ banner }: { banner?: ReactNode }) {
               style={refreshing ? undefined : { transform: `rotate(${pull * 4}deg)`, color: ready ? 'var(--color-emerald)' : undefined }}
             />
           </span>
-          {tab === 'agenda' && <MobileAgenda />}
-          {tab === 'repertoire' && <MobileRepertoire />}
-          {tab === 'fund' && <MobileFund />}
-          {tab === 'brainstorm' && <MobileBrainstorm />}
-          {tab === 'links' && <LinksPanel />}
-          {tab === 'profile' && <MobileProfile />}
+          <Suspense fallback={null}>
+            {tab === 'agenda' && <MobileAgenda />}
+            {tab === 'repertoire' && <MobileRepertoire />}
+            {tab === 'fund' && <MobileFund />}
+            {tab === 'brainstorm' && <MobileBrainstorm />}
+            {tab === 'links' && <LinksPanel />}
+            {tab === 'profile' && <MobileProfile />}
+          </Suspense>
         </div>
       </div>
 

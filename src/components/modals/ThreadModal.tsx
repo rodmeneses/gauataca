@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Archive, ArchiveRestore, CalendarDays, ChartColumn, ImagePlus, Link, MessageCircle, Music, Pin, Plus, Trash2, X } from 'lucide-react';
 import { useGuataca } from '@/store';
-import { Avatar, Button, CloseButton, Modal, useConfirm } from '@/components/ui';
+import { Avatar, Button, CloseButton, Modal } from '@/components/ui';
 import { PhotoStrip } from '@/components/ui/PhotoStrip';
 import { ReactionButtons } from '@/components/ReactionButtons';
 import { Composer } from './Composer';
@@ -119,7 +119,6 @@ export function ThreadModal() {
     setThreadReaction, setCommentReaction, voteThreadPoll, addThreadPollOption, addThreadPhotos, convertThread, goToSong, openEvent,
     toggleThreadPin, toggleThreadArchive, deleteComment, copyLink,
   } = useGuataca();
-  const { confirm, dialog } = useConfirm();
   const ideaFileRef = useRef<HTMLInputElement>(null);
   const [newOption, setNewOption] = useState('');
   const targetComment = state.modal?.kind === 'thread' ? state.modal.commentId : undefined;
@@ -179,7 +178,7 @@ export function ThreadModal() {
             type="button"
             title={t.deleteComment}
             aria-label={t.deleteComment}
-            onClick={() => confirm({ message: t.confirmDeleteComment, onConfirm: () => deleteComment(c.id) })}
+            onClick={() => deleteComment(c.id)}
             className="grid place-items-center min-w-[32px] min-h-[32px] rounded-[9px] border border-line bg-raised text-ink-muted cursor-pointer hover:text-red hover:border-red/40"
           >
             <Trash2 size={13} strokeWidth={2} />
@@ -392,7 +391,6 @@ export function ThreadModal() {
           sendLabel={t.send}
         />
       </div>
-      {dialog}
     </Modal>
   );
 }

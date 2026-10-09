@@ -4,340 +4,23 @@
  */
 import { useMemo } from 'react';
 import { T, type Dict } from '../i18n';
-import {
-  COLOR_TOKENS, GENRES, GENRE_IDS, HANDOFF_NOTES, TOUR_STEPS, TYPE_SCALE,
-} from '../data';
-import { d, days, money, money0, sameMonth } from '../lib/format';
-import type {
-  AppProps, BandEvent, CustodyDialog, FormState, GearCondition, GenreId, Instrument, Lang, LinkKind, Member, MobileTab, Modal, Profile, Proficiency, ProofKind, RatingKey, ReactionKind, RsvpStatus, SettleDialog, ShareSheet, Song, SongSort, Toast, Transaction, TxCategory, TxDate, TxFilter, View, VocalFlag,
-} from '../types';
-import { useStore, type State } from './store';
-import { writeLangPref, writeThemePref, type ThemePref } from '../lib/prefs';
+import { COLOR_TOKENS, GENRES, GENRE_IDS, HANDOFF_NOTES, TOUR_STEPS, TYPE_SCALE } from '../data';
+import { money, money0 } from '../lib/format';
+import type { BandEvent, Member, Profile, RsvpStatus, Song, Transaction, View } from '../types';
+import { useStore } from './store';
+import { writeLangPref, writeThemePref } from '../lib/prefs';
 import { itemUrl } from '../lib/deepLink';
-import { searchAll, type SearchHit } from '../lib/search';
+import { searchAll } from '../lib/search';
 import { useAuth } from '../lib/auth';
 import { useData } from '../lib/data';
+import { UNDO_WINDOW_MS } from '../lib/optimistic';
 import { compressImage } from '../lib/image';
 import { useMediaQuery } from '../lib/useMediaQuery';
-import {
-  L, contributionVm, eventVm, feedbackVm, gearVm, igCaption, memberById, memberVm, songVm, threadVm, txVm,
-  type ContributionVm, type Ctx, type EventVm, type FeedbackVm, type GearVm, type MemberVm, type SongVm, type ThreadVm, type TxVm,
-} from './vm';
+import { bucketEvents, contributionTotals, filterPalette, filterSongs, filterTx, layoutTier, ledgerTotals, mergeInstruments, pinnedFirst, sortTxNewestFirst } from './derive';
+import { L, contributionVm, eventVm, feedbackVm, gearVm, igCaption, memberById, memberVm, songVm, threadVm, txVm, type Ctx } from './vm';
 
-export interface GenreChip {
-  id: GenreId | 'all';
-  label: string;
-  color: string;
-  active: boolean;
-}
-
-export interface PaletteItem {
-  group: string;
-  label: string;
-  sub: string;
-  /** "1".."9" */
-  idx: string;
-  run: () => void;
-}
-
-/** A global-search hit plus the action that navigates to it. */
-export interface SearchResult extends SearchHit {
-  run: () => void;
-}
-
-export interface TourVm {
-  on: boolean;
-  title: string;
-  body: string;
-  num: string;
-  total: string;
-  isLast: boolean;
-}
-
-export interface ToastVm extends Toast {
-  color: string;
-  border: string;
-  bg: string;
-}
-
-export interface FormVm {
-  title: string;
-  venue: string;
-  date: string;
-  time: string;
-  hours: string;
-  fee: string;
-  cost: string;
-  note: string;
-  type: NonNullable<FormState['type']>;
-  desc: string;
-  amt: string;
-  proof: string;
-  proofKind: ProofKind;
-  kind: NonNullable<FormState['kind']>;
-  category: TxCategory;
-  contributor: string;
-  event: string;
-  gear: string;
-  key: string;
-  bpm: string;
-  dur: string;
-  genre: GenreId;
-  songLinks: { kind: LinkKind; label: string; url: string }[];
-  setlist: string[];
-  name: string;
-  custodian: string;
-  cond: GearCondition;
-  boughtBy: string;
-  songInstruments: string[];
-  /** New idea form: title + body + structured song/event refs. */
-  threadTitle: string;
-  threadBody: string;
-  threadRefs: { kind: 'song' | 'event'; id: string }[];
-}
-
-export interface Guataca {
-  // ---- raw state & props
-  state: State;
-  props: AppProps;
-  t: Dict;
-  lang: Lang;
-  /** Localize a {es,en} record with the current language. */
-  L: (v: { es: string; en: string } | string | null | undefined) => string;
-  isAdmin: boolean;
-  isMember: boolean;
-  role: State['role'];
-  roleLabel: string;
-  /** The signed-in member (the current user's profile). */
-  me: Member;
-  /** true when a real Supabase user is signed in. */
-  signedIn: boolean;
-  bandName: string;
-  view: View;
-  viewTitle: string;
-  viewSub: string;
-  isDesktop: boolean;
-  isMobile: boolean;
-  /** Resolved layout tier (viewport or the dev `device` override). */
-  layout: 'phone' | 'tablet' | 'desktop';
-  isPhone: boolean;
-  isTablet: boolean;
-  /** true on touch devices (phones, tablets, touch laptops) — drives 44px/16px touch minimums. */
-  isCoarsePointer: boolean;
-  /** true when the viewport is phone-sized (drives the full-screen mobile shell). */
-  isMobileViewport: boolean;
-  staleDays: number;
-  /** true while the data layer is fetching (live mode). */
-  loading: boolean;
-  /** true while a mutation + its silent refetch are in flight (drives the top progress bar). */
-  mutating: boolean;
-  /** Non-null when a live fetch failed (e.g. schema not applied yet). */
-  error: string | null;
-
-  // ---- collections (view-models)
-  songs: SongVm[];
-  /** Songs after search / genre / stale filters. */
-  filteredSongs: SongVm[];
-  staleSongs: SongVm[];
-  genreChips: GenreChip[];
-  events: EventVm[];
-  upcoming: EventVm[];
-  history: EventVm[];
-  /** Upcoming or history depending on calTab. */
-  calList: EventVm[];
-  /** Next active upcoming event (for dashboard / share). */
-  nextEvent: EventVm | null;
-  /** Up to 3 non-cancelled upcoming events for the dashboard. */
-  dashUpcoming: EventVm[];
-  tx: TxVm[];
-  recentTx: TxVm[];
-  txFilter: TxFilter;
-  txDate: TxDate;
-  /** Per-member voluntary contribution summary. */
-  contributions: ContributionVm[];
-  gear: GearVm[];
-  gearValue: string;
-  threads: ThreadVm[];
-  /** Active or archived, depending on forumTab; pinned ideas sort first. */
-  forumList: ThreadVm[];
-  members: MemberVm[];
-  /** Instrument catalog (basic + custom), for the picker and name resolution. */
-  instruments: Instrument[];
-
-  // ---- headline numbers (pre-formatted)
-  balanceStr: string;
-  /** true when the pool balance is negative (drives red vs green). */
-  balanceNeg: boolean;
-  incomeStr: string;
-  expenseStr: string;
-  txCount: string;
-  statSongs: string;
-  statUpcoming: string;
-  statStale: string;
-  staleHint: string;
-
-  // ---- selection (modals)
-  modal: Modal | null;
-  ev: EventVm | null;
-  fb: FeedbackVm | null;
-  th: ThreadVm | null;
-  mb: MemberVm | null;
-  /** Raw member for the open member modal (for pre-filling the instrument editor). */
-  mbRaw: Member | null;
-  sheet: ShareSheet | null;
-  custody: CustodyDialog | null;
-  custodyTargets: Member[];
-  settle: SettleDialog | null;
-  form: FormVm;
-  paletteResults: PaletteItem[];
-  /** Global search hits for `state.sq` (empty until the query is non-blank). */
-  searchResults: SearchResult[];
-  tour: TourVm;
-  toasts: ToastVm[];
-  tokens: { name: string; varName: string; tw: string; use: string }[];
-  typeScale: typeof TYPE_SCALE;
-  handoffNotes: { h: string; items: string[] }[];
-
-  // ---- actions
-  go: (v: View) => void;
-  setLang: (l: Lang) => void;
-  /** Current appearance preference ('light' | 'dark' | 'system'). */
-  theme: ThemePref;
-  setTheme: (t: ThemePref) => void;
-  toggleRole: () => void;
-  setDevice: (dv: State['device']) => void;
-  setCalTab: (tab: State['calTab']) => void;
-  setForumTab: (tab: State['forumTab']) => void;
-  setMobileTab: (tab: MobileTab) => void;
-  toggleSong: (id: string) => void;
-  /** Navigate to the repertoire and open a specific song (from a setlist, etc.). */
-  goToSong: (id: string) => void;
-  /** Clear the pending scroll-to-song request (called by the repertoire views after scrolling). */
-  clearScrollToSong: () => void;
-  /** Navigate to the ledger and scroll to a specific movement (from a shareable link). */
-  goToTx: (id: string) => void;
-  /** Clear the pending scroll-to-movement request (called by the ledger views after scrolling). */
-  clearScrollToTx: () => void;
-  /** Copy a shareable deep link for an item (event / song / movement) to the clipboard. */
-  copyLink: (kind: 'event' | 'song' | 'tx' | 'thread', id: string, commentId?: number) => void;
-  setQ: (q: string) => void;
-  setGenre: (g: GenreId | 'all') => void;
-  toggleStale: () => void;
-  setSongSort: (s: SongSort) => void;
-  openEvent: (id: string) => void;
-  openThread: (id: string, commentId?: number) => void;
-  openMember: (id: string, edit?: boolean) => void;
-  openNewEvent: () => void;
-  openEditEvent: (id: string) => void;
-  openNewSong: () => void;
-  openEditSong: (id: string) => void;
-  openNewTx: () => void;
-  openEditTx: (id: string) => void;
-  openNewGear: () => void;
-  openNewThread: () => void;
-  /** Create a forum idea (title/body/refs) and upload its photos; an optional poll rides along. */
-  saveThread: (photos: File[], poll?: { question: string; options: string[]; multiple?: boolean } | null) => Promise<void>;
-  setThreadReaction: (threadId: string, kind: ReactionKind | null) => Promise<void>;
-  setCommentReaction: (commentId: number, kind: ReactionKind | null) => Promise<void>;
-  /** Delete one of your own comments (its replies go with it). */
-  deleteComment: (commentId: number) => Promise<void>;
-  /** Add an option to the open idea's poll (admins). */
-  addThreadPollOption: (label: string) => Promise<void>;
-  /** Set the signed-in member's vote on a poll option; re-picking moves the vote. */
-  voteThreadPoll: (optionId: number) => Promise<void>;
-  /** Attach photos to a forum idea (or, with `commentId`, to one of its comments). */
-  addThreadPhotos: (threadId: string, files: File[], commentId?: number | null) => Promise<void>;
-  deleteThreadMedia: (id: number) => Promise<void>;
-  addThreadRefs: (threadId: string, refs: { kind: 'song' | 'event'; id: string }[], commentId?: number | null) => Promise<void>;
-  /** Complete sign-up onboarding (instruments + vocals). */
-  onboard: (instruments: { id: string; lv: Proficiency }[], vocals: VocalFlag[]) => Promise<void>;
-  /** Replace a member's instruments + vocals (admin, or the member editing themselves). */
-  saveMemberInstruments: (profileId: string, instruments: { id: string; lv: Proficiency }[], vocals: VocalFlag[]) => Promise<void>;
-  /** Open the sign-up onboarding modal. */
-  openOnboard: () => void;
-  /** Dismiss onboarding without saving (won't re-open this session). */
-  skipOnboard: () => void;
-  /** Create a custom instrument; resolves to its id. */
-  createInstrument: (name: string) => Promise<string>;
-  setTxFilter: (f: TxFilter) => void;
-  setTxDate: (d: TxDate) => void;
-  openSignIn: () => void;
-  /** Open the Web Push notification preferences modal (desktop). */
-  openNotifications: () => void;
-  /** Open the changelog; with `since`, only entries newer than that version are marked new. */
-  openChangelog: (since?: string) => void;
-  signOut: () => Promise<void>;
-  closeModal: () => void;
-  /** Instagram flow: builds caption and opens the bottom sheet. */
-  openShare: (eventId: string) => void;
-  closeSheet: () => void;
-  copyCaption: () => void;
-  shareNow: () => void;
-  openFlyer: () => void;
-  openCustody: (gearId: string) => void;
-  closeCustody: () => void;
-  transferCustody: (memberId: string) => Promise<void>;
-  openSettle: (eventId: string) => void;
-  closeSettle: () => void;
-  settleEvent: (eventId: string, input: { happened: boolean; fee: number; cost: number }) => Promise<void>;
-  /** Upload a receipt/invoice file; resolves to its public URL, or null on failure. */
-  uploadProof: (file: File) => Promise<string | null>;
-  /** Set the signed-in member's RSVP; choosing the current answer again withdraws it (back to pending). */
-  setRsvp: (eventId: string, status: RsvpStatus) => Promise<void>;
-  /** Toggle an event's pinned state (admin only). */
-  toggleEventPin: (eventId: string) => Promise<void>;
-  /** Cancel an event (it moves to history) or reinstate a cancelled one (admin only). */
-  toggleEventCancelled: (eventId: string) => Promise<void>;
-  /** Replace an event's setlist (ordered song ids). */
-  setEventSetlist: (eventId: string, songIds: string[]) => Promise<void>;
-  /** Add a recording ("take") of a song during a practice event. */
-  addTake: (eventId: string, songId: string, url: string) => Promise<void>;
-  /** Remove a recording ("take"). */
-  deleteTake: (id: string) => Promise<void>;
-  /** Add a video link (Google Drive) to an event. */
-  addEventVideo: (eventId: string, label: string, url: string) => Promise<void>;
-  /** Compress + upload one or more photos to an event. */
-  addEventPhotos: (eventId: string, files: File[]) => Promise<void>;
-  /** Remove a photo or video from an event. */
-  deleteEventMedia: (id: number) => Promise<void>;
-  setCommentDraft: (s: string) => void;
-  /** Post a top-level comment (optionally with photos). */
-  sendComment: (photos?: File[]) => Promise<void>;
-  /** Begin replying to a specific comment id (null clears the reply composer). */
-  setReplyTarget: (target: number | null) => void;
-  setReplyDraft: (s: string) => void;
-  /** Post a one-level reply to the active reply target (optionally with photos). */
-  sendReply: (photos?: File[]) => Promise<void>;
-  convertThread: (id: string) => void;
-  /** Toggle a forum idea's pinned state (admin only). */
-  toggleThreadPin: (id: string) => Promise<void>;
-  /** Toggle a forum idea's archived state (admin only). */
-  toggleThreadArchive: (id: string) => Promise<void>;
-  pickPoll: (i: number) => Promise<void>;
-  setRating: (k: RatingKey, n: number) => void;
-  toggleAnon: () => void;
-  setFbWell: (s: string) => void;
-  setFbImprove: (s: string) => void;
-  submitFb: () => Promise<void>;
-  setForm: <K extends keyof FormState>(k: K, v: FormState[K]) => void;
-  saveEvent: () => Promise<void>;
-  saveTx: () => Promise<void>;
-  deleteTx: (id: string) => Promise<void>;
-  saveSong: () => Promise<void>;
-  saveGear: () => Promise<void>;
-  openPalette: () => void;
-  closePalette: () => void;
-  setPq: (s: string) => void;
-  openSearch: () => void;
-  closeSearch: () => void;
-  setSq: (s: string) => void;
-  tourNext: () => void;
-  tourEnd: () => void;
-  toggleHandoff: () => void;
-  closeHandoff: () => void;
-  toast: (msg: string, tone?: Toast['tone']) => void;
-  dismissToast: (id: string) => void;
-}
+import type { Guataca, FormVm, GenreChip, PaletteItem, SearchResult, TourVm } from './guataca.types';
+export type * from './guataca.types';
 
 function profileToMember(p: Profile): Member {
   return {
@@ -393,90 +76,49 @@ export function useGuataca(): Guataca {
     };
     const isAdmin = profile?.role === 'admin' || (!user && st.role === 'admin');
     // Layout tier. `device` is the dev preview override; 'auto' follows the viewport.
-    const forced = st.device === 'mobile' ? 'phone' : st.device === 'tablet' ? 'tablet' : st.device === 'desktop' ? 'desktop' : null;
-    const viewportLayout: 'phone' | 'tablet' | 'desktop' = isMobileViewport ? 'phone' : isTabletViewport ? 'tablet' : 'desktop';
-    const layout = forced ?? viewportLayout;
+    const layout = layoutTier(st.device, isMobileViewport, isTabletViewport);
     const isPhone = layout === 'phone';
     const isTablet = layout === 'tablet';
     const isMobile = isPhone; // back-compat alias
     const isDesktop = layout === 'desktop';
     const staleDays = props.staleDays || 30;
     const me = user && profile ? profileToMember(profile) : memberById(dbMembers, isAdmin ? 'm1' : 'm2');
-    const instruments: Instrument[] = (() => {
-      const seen = new Set(dbInstruments.map((i) => i.id));
-      return [...dbInstruments, ...st.customInstruments.filter((c) => !seen.has(c.id)).map((c) => ({ ...c, isBasic: false }))];
-    })();
+    const instruments = mergeInstruments(dbInstruments, st.customInstruments);
     const ctx: Ctx = { lang, t, staleDays, meId: me.id, isAdmin, members: dbMembers, events: dbEvents, songs: dbSongs, gear: dbGear, instruments, takes: dbTakes };
     const Lx = (v: { es: string; en: string } | string | null | undefined) => L(lang, v);
 
     /* ---- raw collections (from the data layer) */
     const allSongs: Song[] = dbSongs;
     const allEvents: BandEvent[] = dbEvents;
-    const allTx: Transaction[] = [...dbTx].sort((a, b) => (a.date < b.date ? 1 : -1));
+    const allTx: Transaction[] = sortTxNewestFirst(dbTx);
 
-    const income = allTx.filter((x) => x.kind === 'in').reduce((a, b) => a + b.amt, 0);
-    const expense = allTx.filter((x) => x.kind === 'out').reduce((a, b) => a + b.amt, 0);
-    const balance = income - expense;
+    const { income, expense, balance } = ledgerTotals(allTx);
 
-    const upcomingRaw = allEvents.filter((e) => days(e.date) >= 0 && e.state !== 'cancelled').sort((a, b) => d(a.date).getTime() - d(b.date).getTime());
-    const historyRaw = allEvents.filter((e) => days(e.date) < 0 || e.state === 'cancelled').sort((a, b) => d(b.date).getTime() - d(a.date).getTime());
-    const nextRaw = upcomingRaw.find((e) => e.state === 'active') ?? null;
+    const { upcoming: upcomingRaw, history: historyRaw, next: nextRaw } = bucketEvents(allEvents);
 
     const songs = allSongs.map((s) => songVm(s, allEvents, st.openSong, ctx));
     const staleSongs = songs.filter((s) => s.isStale).sort((a, b) => (a.lastDate < b.lastDate ? -1 : 1));
-    const q = st.q.trim().toLowerCase();
-    const filteredSongs = songs
-      .filter(
-        (s) =>
-          (st.genre === 'all' || s.genre === st.genre) &&
-          (!st.staleOnly || s.isStale) &&
-          (!q || s.title.toLowerCase().includes(q) || s.genreLabel.toLowerCase().includes(q) || s.key.toLowerCase() === q),
-      )
-      .sort((a, b) => {
-        if (st.songSort === 'name') return a.title.localeCompare(b.title);
-        if (st.songSort === 'takes') return a.takeCount - b.takeCount || a.title.localeCompare(b.title);
-        return b.takeCount - a.takeCount || a.title.localeCompare(b.title); // 'recorded' (most takes first)
-      });
+    const filteredSongs = filterSongs(songs, { genre: st.genre, staleOnly: st.staleOnly, query: st.q, sort: st.songSort });
     const genreChips: GenreChip[] = [
       { id: 'all', label: t.allGenres, color: 'var(--color-violet-light)', active: st.genre === 'all' },
       ...GENRE_IDS.map((k): GenreChip => ({ id: k, label: Lx(GENRES[k].label), color: GENRES[k].color, active: st.genre === k })),
     ];
 
     const evm = (e: BandEvent) => eventVm(e, allSongs, ctx);
-    // Pinned events float to the top of each list; Array#sort is stable, so the
-    // existing date order is preserved within the pinned and unpinned groups.
-    const pinnedFirst = <V extends { pinned: boolean }>(arr: V[]): V[] => [...arr].sort((a, b) => Number(b.pinned) - Number(a.pinned));
+    // Pinned events float to the top of each list, keeping date order within each group.
     const upcoming = pinnedFirst(upcomingRaw.map(evm));
     const history = pinnedFirst(historyRaw.map(evm));
     const events = [...upcoming, ...history];
     const nextEvent = nextRaw ? evm(nextRaw) : null;
     const dashUpcoming = upcomingRaw.filter((e) => e.state !== 'cancelled').slice(0, 3).map(evm);
 
-    const txFiltered = allTx.filter((x) => {
-      if (st.txFilter !== 'all' && x.kind !== st.txFilter) return false;
-      if (st.txDate !== 'all' && days(x.date) < -Number(st.txDate)) return false;
-      return true;
-    });
+    const txFiltered = filterTx(allTx, st.txFilter, st.txDate);
     const tx = txFiltered.map((x) => txVm(x, ctx));
     const recentTx = allTx.slice(0, 4).map((x) => txVm(x, ctx));
 
-    // Any income with a contributor counts toward the member's contributions
-    // (donations, contributions, etc.), not just category 'contribution'.
-    // DTV income is the org's, never a member's — excluded from the section.
-    const contribTx = allTx.filter((x) => x.kind === 'in' && x.contributor && x.category !== 'DTV');
-    const contribByMember = new Map<string, { total: number; month: number }>();
-    for (const x of contribTx) {
-      const key = x.contributor!;
-      const cur = contribByMember.get(key) ?? { total: 0, month: 0 };
-      cur.total += x.amt * 100;
-      if (sameMonth(x.date)) cur.month += x.amt * 100;
-      contribByMember.set(key, cur);
-    }
-    const contributions = dbMembers
-      .map((m) => {
-        const c = contribByMember.get(m.id) ?? { total: 0, month: 0 };
-        return contributionVm(m, c.total, c.month);
-      })
+    // Voluntary contributions per member (DTV income is the org's, not a member's).
+    const contributions = contributionTotals(allTx, dbMembers)
+      .map((c) => contributionVm(c.member, c.total, c.month))
       .sort((a, b) => a.name.localeCompare(b.name));
 
     const gear = dbGear.map((g) => gearVm(g, g.holder, ctx));
@@ -536,13 +178,7 @@ export function useGuataca(): Guataca {
         run: () => set({ palette: false, view: 'repertoire', openSong: s.id, q: '', genre: 'all', staleOnly: false }),
       })),
     ];
-    const pq = st.pq.trim().toLowerCase();
-    const paletteResults: PaletteItem[] = (pq
-      ? paletteBase.filter((i) => i.label.toLowerCase().includes(pq) || i.group.toLowerCase().includes(pq) || i.sub.toLowerCase().includes(pq))
-      : paletteBase
-    )
-      .slice(0, 9)
-      .map((i, n) => ({ ...i, idx: String(n + 1) }));
+    const paletteResults: PaletteItem[] = filterPalette(paletteBase, st.pq);
 
     /* ---- global search (mobile): events, songs, fund movements, ideas, polls, links */
     const searchResults: SearchResult[] = st.search
@@ -615,10 +251,15 @@ export function useGuataca(): Guataca {
 
     const viewSubKey = ('sub' + st.view.charAt(0).toUpperCase() + st.view.slice(1)) as keyof Dict;
 
+    /** Name the file(s) that didn't upload so a multi-photo pick says which one failed. */
+    const uploadFailedMsg = (names: string[]) =>
+      names.length === 1 ? t.uploadFailedFile.replace('%s', names[0]) : `${t.uploadFailed}: ${names.join(', ')}`;
+
     /* ---- forum photo upload (compress → bucket → attach); shared by idea
     /*      creation, the idea composer and the reply composer. */
     const uploadToThread = async (threadId: string, files: File[], commentId: number | null = null) => {
       const urls: string[] = [];
+      const failed: string[] = [];
       for (const file of files) {
         try {
           let blob: Blob;
@@ -631,15 +272,14 @@ export function useGuataca(): Guataca {
             blob = file;
           }
           const url = await persistUploadForumPhoto(blob);
-          if (url) urls.push(url);
+          if (url) urls.push(url); else failed.push(file.name);
         } catch (err) {
           console.error('Photo upload failed:', file.name, err);
+          failed.push(file.name);
         }
       }
-      if (urls.length === 0) {
-        toast(t.uploadFailed, 'err');
-        return;
-      }
+      if (failed.length) toast(uploadFailedMsg(failed), 'err');
+      if (urls.length === 0) return;
       const ok = await persistAddThreadMedia(threadId, urls, commentId);
       if (!ok) {
         toast(t.uploadFailed, 'err');
@@ -855,6 +495,7 @@ export function useGuataca(): Guataca {
       },
       addEventPhotos: async (eventId, files) => {
         const urls: string[] = [];
+        const failed: string[] = [];
         for (const file of files) {
           try {
             let blob: Blob;
@@ -867,15 +508,14 @@ export function useGuataca(): Guataca {
               blob = file;
             }
             const url = await persistUploadEventPhoto(blob);
-            if (url) urls.push(url);
+            if (url) urls.push(url); else failed.push(file.name);
           } catch (err) {
             console.error('Photo upload failed:', file.name, err);
+            failed.push(file.name);
           }
         }
-        if (urls.length === 0) {
-          toast(t.uploadFailed, 'err');
-          return;
-        }
+        if (failed.length) toast(uploadFailedMsg(failed), 'err');
+        if (urls.length === 0) return;
         const ok = await persistAddEventPhotos(eventId, urls);
         if (!ok) {
           toast(t.uploadFailed, 'err');
@@ -909,8 +549,8 @@ export function useGuataca(): Guataca {
         await persistCommentReaction(commentId, kind);
       },
       deleteComment: async (commentId) => {
-        await persistDeleteComment(commentId);
-        toast(t.commentDeleted);
+        const undo = persistDeleteComment(commentId);
+        toast(t.commentDeleted, 'ok', { action: { label: t.undo, run: undo }, ttl: UNDO_WINDOW_MS });
       },
       sendComment: async (photos) => {
         const txt = st.commentDraft.trim();
@@ -1081,5 +721,5 @@ export function useGuataca(): Guataca {
       toast,
       dismissToast,
     };
-  }, [st, props, set, toast, dismissToast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbLinks, dbInstruments, dbTakes, myPollPicks, loading, mutating, error, isPhoneViewport, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, updateEvent, createSong, updateSong, persistSongLinks, createTransaction, persistUpdateTransaction, persistDeleteTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistAddEventMedia, persistAddEventPhotos, persistDeleteEventMedia, persistUploadEventPhoto, persistRsvp, persistCreateThread, persistComment, persistThreadReaction, persistCommentReaction, persistDeleteComment, persistAddThreadMedia, persistDeleteThreadMedia, persistThreadRefs, persistUploadForumPhoto, persistCreateThreadPoll, persistAddThreadPollOption, persistVoteThreadPoll, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload]);
+  }, [st, props, set, toast, dismissToast, user, profile, signOut, refreshProfile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbLinks, dbInstruments, dbTakes, myPollPicks, loading, mutating, error, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, updateEvent, createSong, updateSong, persistSongLinks, createTransaction, persistUpdateTransaction, persistDeleteTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistAddEventMedia, persistAddEventPhotos, persistDeleteEventMedia, persistUploadEventPhoto, persistRsvp, persistCreateThread, persistComment, persistThreadReaction, persistCommentReaction, persistDeleteComment, persistAddThreadMedia, persistDeleteThreadMedia, persistThreadRefs, persistUploadForumPhoto, persistCreateThreadPoll, persistAddThreadPollOption, persistVoteThreadPoll, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload, persistEventPinned, persistEventState, persistThreadArchived, persistThreadPinned]);
 }
