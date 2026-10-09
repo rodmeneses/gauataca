@@ -21,6 +21,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     title: { es: 'Más fiable y más rápida', en: 'More reliable and faster' },
     changes: [
       { es: 'Si la app tiene un error inesperado, ahora muestra un aviso con botón para recargar en vez de quedarse en blanco.', en: 'If the app hits an unexpected error it now shows a message with a reload button instead of a blank screen.' },
+      { es: 'Si un cambio no se puede guardar, ahora la app te avisa y explica el motivo (sin conexión, sin permiso, sesión vencida…).', en: 'When a change can\'t be saved, the app now tells you and explains why (offline, no permission, session expired…).' },
     ],
   },
   {

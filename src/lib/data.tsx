@@ -8,6 +8,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { useAuth } from './auth';
 import * as opt from './optimistic';
 import { createOfflineQueue } from './offlineQueue';
+import { classifySaveError } from './errors';
 import {
   addComment as apiAddComment, addEventMedia as apiAddEventMedia, addEventPhotos as apiAddEventPhotos, addTake as apiAddTake, createEvent as apiCreateEvent, createGear as apiCreateGear, createInstrument as apiCreateInstrument, createLink as apiCreateLink, deleteLink as apiDeleteLink,
   createSong as apiCreateSong, createThread as apiCreateThread, addThreadPollOption as apiAddThreadPollOption, createThreadPoll as apiCreateThreadPoll, createTransaction as apiCreateTransaction, deleteComment as apiDeleteComment, deleteEventMedia as apiDeleteEventMedia, deleteTake as apiDeleteTake, deleteThreadMedia as apiDeleteThreadMedia, deleteTransaction as apiDeleteTransaction, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
@@ -129,7 +130,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       if (opts?.silent) {
         // Don't tear down the screen for a failed background refetch — the
         // write itself likely succeeded; just surface it like any mutation error.
-        window.dispatchEvent(new Event('guataca:mutation-error'));
+        window.dispatchEvent(new CustomEvent('guataca:mutation-error', { detail: { reason: classifySaveError(err) } }));
       } else {
         setSnap(EMPTY);
         setError(err instanceof Error ? err.message : String(err));
@@ -177,7 +178,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         return result;
       } catch (err) {
         console.error('Mutation failed:', err);
-        window.dispatchEvent(new Event('guataca:mutation-error'));
+        window.dispatchEvent(new CustomEvent('guataca:mutation-error', { detail: { reason: classifySaveError(err) } }));
         return undefined;
       } finally {
         setMutating(false);

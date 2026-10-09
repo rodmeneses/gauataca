@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react';
 import { WifiOff } from 'lucide-react';
 import { useGuataca } from '@/store';
+import { SAVE_FAILURE_KEY, type SaveFailure } from '../../lib/errors';
 
 export function OfflineBanner() {
   const { t, toast } = useGuataca();
@@ -19,6 +20,10 @@ export function OfflineBanner() {
     };
     const goOffline = () => setOnline(false);
     const onQueuedWrite = () => toast(t.offlineWriteQueued, 'violet');
+    const onSaveFailed = (e: Event) => {
+      const reason = (e as CustomEvent<{ reason: SaveFailure }>).detail?.reason ?? 'unknown';
+      toast(t[SAVE_FAILURE_KEY[reason]], 'err');
+    };
     const onFlushed = (e: Event) => {
       const failed = (e as CustomEvent<{ failed: number }>).detail?.failed ?? 0;
       toast(failed ? t.queuedWritesFailed : t.queuedWritesSynced, failed ? 'err' : 'ok');
@@ -28,11 +33,13 @@ export function OfflineBanner() {
     window.addEventListener('offline', goOffline);
     window.addEventListener('guataca:offline-write', onQueuedWrite);
     window.addEventListener('guataca:queue-flushed', onFlushed);
+    window.addEventListener('guataca:mutation-error', onSaveFailed);
     return () => {
       window.removeEventListener('online', goOnline);
       window.removeEventListener('offline', goOffline);
       window.removeEventListener('guataca:offline-write', onQueuedWrite);
       window.removeEventListener('guataca:queue-flushed', onFlushed);
+      window.removeEventListener('guataca:mutation-error', onSaveFailed);
     };
   }, [t, toast]);
 
