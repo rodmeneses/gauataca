@@ -286,7 +286,7 @@ export function NewTxModal() {
           </div>
           <input ref={fileRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={onPick} />
           {isImage && (
-            <img src={form.proof} alt="" className="mt-2 max-h-[120px] rounded-[8px] border border-line" />
+            <img src={form.proof} alt={t.proofPreview} className="mt-2 max-h-[120px] rounded-[8px] border border-line" />
           )}
           <span className="block text-[11.5px] text-ink-dim mt-2 leading-[1.5]">{t.proofHint}</span>
         </Field>
@@ -486,7 +486,7 @@ export function NewGearModal() {
           </div>
           <input ref={fileRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={onPick} />
           {isImage && (
-            <img src={form.proof} alt="" className="mt-2 max-h-[120px] rounded-[8px] border border-line" />
+            <img src={form.proof} alt={t.proofPreview} className="mt-2 max-h-[120px] rounded-[8px] border border-line" />
           )}
           <span className="block text-[11.5px] text-ink-dim mt-2 leading-[1.5]">{t.proofHint}</span>
         </Field>

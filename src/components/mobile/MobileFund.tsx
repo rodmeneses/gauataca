@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeftRight, ExternalLink, Link, Package, Pencil, Trash2 } from 'lucide-react';
 import { useGuataca } from '../../store';
-import { AddButton, useConfirm } from '../ui';
+import { AddButton, EmptyState, useConfirm } from '../ui';
 import type { TxDate, TxFilter } from '../../types';
 
 const SECTION = 'font-display font-semibold text-[12px] tracking-[.08em] uppercase text-ink-muted';
@@ -67,6 +67,7 @@ export function MobileFund() {
           </select>
         </div>
 
+        {tx.length === 0 && <EmptyState icon={ArrowLeftRight} title={t.noTransactions} hint={t.noTransactionsHint} />}
         {tx.map((x) => (
           <div key={x.id} id={`tx-${x.id}`} className={`bg-surface border border-line rounded-xl py-3.5 px-4 flex flex-col gap-2.5 ${hlTx === x.id ? 'ring-2 ring-emerald/50' : ''}`}>
             <div className="flex items-center gap-3">
@@ -150,6 +151,7 @@ export function MobileFund() {
             <AddButton className="ml-auto" onClick={openNewGear}>{t.newGear}</AddButton>
           )}
         </div>
+        {gear.length === 0 && <EmptyState icon={Package} title={t.noGear} hint={t.noGearHint} />}
         {gear.map((g) => (
           <div key={g.id} className="bg-surface border border-line rounded-xl p-3.5 flex flex-col gap-2.5">
             <div className="flex gap-3 items-start">

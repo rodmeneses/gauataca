@@ -63,10 +63,10 @@ export default async function handler(req: { method?: string; body?: Record<stri
   }
 
   // Build the notification payload from the DB (never trust the request text).
-  let title = 'GUATACA';
-  let bodyText = '';
-  let targetUrl = '/';
-  let exclude: string | null = null;
+  let title: string;
+  let bodyText: string;
+  let targetUrl: string;
+  let exclude: string | null;
   let notifyId: string | null = null; // reaction pushes go to this member only
   try {
     if (kind === 'event') {

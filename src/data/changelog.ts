@@ -16,6 +16,21 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.7.0',
+    date: '2026-10-08',
+    title: { es: 'Accesibilidad, modo sin conexión y calendario', en: 'Accessibility, offline mode and calendar' },
+    changes: [
+      { es: 'Pantalla de carga con esqueleto y mensajes claros cuando no hay movimientos, canciones, equipo o ideas.', en: 'A skeleton loading screen and friendly empty messages when there are no transactions, songs, gear or ideas.' },
+      { es: 'Suscríbete al calendario de la banda desde Apple, Google u Outlook Calendar con un enlace privado (en Notificaciones, o en tu perfil en el móvil).', en: 'Subscribe to the band calendar from Apple, Google or Outlook Calendar with a private link (under Notifications, or in your profile on mobile).' },
+      { es: 'Sin conexión, tus cambios se guardan en cola y se envían solos al volver el internet (mantén la app abierta).', en: 'Offline, your changes are queued and sent automatically when you\'re back online (keep the app open).' },
+      { es: 'Los avisos (toasts) y los diálogos ahora se anuncian correctamente con lector de pantalla.', en: 'Toasts and dialogs are now announced properly by screen readers.' },
+      { es: 'Las fotos y vistas previas ahora tienen descripción para lectores de pantalla.', en: 'Photos and previews now have descriptions for screen readers.' },
+      { es: 'Fijar, archivar, responder asistencia y reaccionar a ideas ahora se ven al instante, sin esperar la recarga de datos.', en: 'Pinning, archiving, RSVPs and reacting to ideas now show up instantly instead of waiting for the data reload.' },
+      { es: 'Copiar enlaces o leyendas ahora avisa si el portapapeles falla en vez de decir que se copió.', en: 'Copying links or captions now tells you if the clipboard fails instead of claiming it copied.' },
+      { es: 'El idioma de la página ahora se actualiza al cambiar entre español e inglés (mejora lectores de pantalla y traducción automática).', en: 'The page language now updates when you switch between Spanish and English (better for screen readers and auto-translate).' },
+    ],
+  },
+  {
     version: '0.6.1',
     date: '2026-10-07',
     title: { es: 'Foro más ordenado', en: 'Tidier forum' },

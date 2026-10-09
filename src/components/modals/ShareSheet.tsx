@@ -33,7 +33,7 @@ export function ShareSheet() {
             className="w-10 h-10 rounded-xl grid place-items-center flex-none"
             style={{ background: 'linear-gradient(135deg,var(--color-violet),var(--color-fuchsia))' }}
           >
-            <Instagram size={20} strokeWidth={2} color="#fff" />
+            <Instagram size={20} strokeWidth={2} color="var(--color-on-accent)" />
           </span>
           <div className="min-w-0 flex-1">
             <div className="font-display font-semibold text-[15px] leading-[normal] text-ink-bright">{t.prepIg}</div>

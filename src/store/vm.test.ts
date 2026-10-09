@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { T } from '../i18n';
 import type {
-  BandEvent, EventFeedback, Gear, Instrument, Member, Song, Take, Thread, Transaction,
+  BandEvent, EventFeedback, Gear, Instrument, Localized, Member, Song, Take, Thread, Transaction,
 } from '../types';
 import {
   L, memberById, songVm, takeVm, rsvpLabel, eventVm, txVm, contributionVm, gearVm,
@@ -69,7 +69,7 @@ describe('L', () => {
     expect(L('es', { es: 'Hola', en: 'Hello' })).toBe('Hola');
   });
   it('falls back to es when the requested language is missing', () => {
-    expect(L('en', { es: 'Hola' } as any)).toBe('Hola');
+    expect(L('en', { es: 'Hola' } as unknown as Localized)).toBe('Hola');
   });
   it('passes through a plain string unchanged', () => {
     expect(L('en', 'plain')).toBe('plain');

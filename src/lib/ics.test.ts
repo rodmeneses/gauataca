@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { buildIcs, downloadIcs } from './ics';
+import { buildIcs, buildIcsFeed, downloadIcs } from './ics';
 
 const base = { id: 'ev1', title: 'Gig, Bar; Café', venue: 'El Patio', note: 'Line 1\nLine 2', date: '2026-09-12', time: '20:30', hours: 2.5 };
 
@@ -79,5 +79,20 @@ describe('downloadIcs', () => {
 
     expect(clickSpy).toHaveBeenCalledTimes(1);
     clickSpy.mockRestore();
+  });
+});
+
+describe('buildIcsFeed', () => {
+  it('wraps every event in one calendar with a name', () => {
+    const ics = buildIcsFeed([base, { ...base, id: 'ev2', cancelled: true }], 'GUATACA, eventos');
+    expect(ics.match(/BEGIN:VCALENDAR/g)).toHaveLength(1);
+    expect(ics.match(/BEGIN:VEVENT/g)).toHaveLength(2);
+    expect(ics).toContain('X-WR-CALNAME:GUATACA\\, eventos');
+    expect(ics).toContain('UID:ev2@gauataca.vercel.app');
+    expect(ics).toContain('STATUS:CANCELLED');
+    expect(ics.endsWith('END:VCALENDAR\r\n')).toBe(true);
+  });
+  it('is still a valid empty calendar with no events', () => {
+    expect(buildIcsFeed([], 'x')).not.toContain('BEGIN:VEVENT');
   });
 });

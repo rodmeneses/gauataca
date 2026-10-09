@@ -5,7 +5,7 @@
  */
 import { BarChart3, Lightbulb, MessageSquare } from 'lucide-react';
 import { useGuataca } from '@/store';
-import { AddButton, Badge, Button, Card, Pill, Segment } from '@/components/ui';
+import { AddButton, Badge, Button, Card, EmptyState, Pill, Segment } from '@/components/ui';
 import { ReactionButtons } from '@/components/ReactionButtons';
 
 export function Brainstorm() {
@@ -36,9 +36,7 @@ export function Brainstorm() {
         </div>
       </div>
       {forumList.length === 0 && (
-        <Card className="p-[18px] font-sans font-normal text-[13.5px] text-ink-meta">
-          {tab === 'archived' ? t.noArchivedIdeas : t.noResults}
-        </Card>
+        <EmptyState icon={Lightbulb} title={tab === 'archived' ? t.noArchivedIdeas : t.noResults} />
       )}
       {forumList.map((b) => (
         <Card key={b.id} as="article" className="p-[18px] flex gap-4">

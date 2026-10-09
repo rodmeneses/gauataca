@@ -1,5 +1,7 @@
 # GUATACA — Session Handoff
 
+> **Historical (2026-09-07).** Snapshot of an earlier session; the git state and migration list below are out of date. Current architecture and conventions: [CLAUDE.md](./CLAUDE.md).
+
 > Written 2026-09-07. Pick up from here in a new session.
 
 ## What this is

@@ -5,6 +5,7 @@ import { Pill, Segment } from '../ui';
 import { APP_VERSION } from '../../data/changelog';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { NotificationPrefs } from '../notifications/NotificationPrefs';
+import { CalendarFeed } from '../notifications/CalendarFeed';
 
 export function MobileProfile() {
   const { t, lang, setLang, signedIn, signOut, openSignIn, me, roleLabel, members, isAdmin, openMember, openChangelog } = useGuataca();
@@ -37,6 +38,13 @@ export function MobileProfile() {
         <section className="flex flex-col gap-2.5">
           <span className="font-display font-semibold text-[12px] tracking-[.08em] uppercase text-ink-muted">{t.notifications}</span>
           <NotificationPrefs />
+        </section>
+      )}
+
+      {signedIn && (
+        <section className="flex flex-col gap-2.5">
+          <span className="font-display font-semibold text-[12px] tracking-[.08em] uppercase text-ink-muted">{t.calendarFeed}</span>
+          <CalendarFeed />
         </section>
       )}
 

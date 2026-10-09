@@ -6,6 +6,8 @@
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useAuth } from './auth';
+import * as opt from './optimistic';
+import { createOfflineQueue } from './offlineQueue';
 import {
   addComment as apiAddComment, addEventMedia as apiAddEventMedia, addEventPhotos as apiAddEventPhotos, addTake as apiAddTake, createEvent as apiCreateEvent, createGear as apiCreateGear, createInstrument as apiCreateInstrument, createLink as apiCreateLink, deleteLink as apiDeleteLink,
   createSong as apiCreateSong, createThread as apiCreateThread, addThreadPollOption as apiAddThreadPollOption, createThreadPoll as apiCreateThreadPoll, createTransaction as apiCreateTransaction, deleteComment as apiDeleteComment, deleteEventMedia as apiDeleteEventMedia, deleteTake as apiDeleteTake, deleteThreadMedia as apiDeleteThreadMedia, deleteTransaction as apiDeleteTransaction, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
@@ -104,6 +106,8 @@ const EMPTY: DataSnapshot = {
   myPollPicks: {},
 };
 
+const offlineQueue = createOfflineQueue();
+
 export function DataProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [snap, setSnap] = useState<DataSnapshot>(EMPTY);
@@ -139,15 +143,33 @@ export function DataProvider({ children }: { children: ReactNode }) {
     void reload();
   }, [reload]);
 
+  // Replay writes that were queued while offline, then refresh from the server.
+  useEffect(() => {
+    const onOnline = async () => {
+      if (offlineQueue.size() === 0) return;
+      const failed = await offlineQueue.flush();
+      window.dispatchEvent(new CustomEvent('guataca:queue-flushed', { detail: { failed } }));
+      await reload({ silent: true });
+    };
+    window.addEventListener('online', onOnline);
+    return () => window.removeEventListener('online', onOnline);
+  }, [reload]);
+
   const value = useMemo<DataValue>(() => {
     const uid = user?.id ?? '';
-    const run = async <T,>(fn: () => Promise<T>): Promise<T | undefined> => {
-      // Don't let a write hang on a dead connection — bail early and let the UI
-      // surface it (see OfflineBanner). The service worker never caches writes.
+    // `patch` paints the expected result immediately; the silent refetch below
+    // replaces it with server truth (and so undoes it if the write failed).
+    const run = async <T,>(fn: () => Promise<T>, patch?: opt.Patch): Promise<T | undefined> => {
+      // Don't let a write hang on a dead connection — queue it (and show the
+      // expected result) to replay on reconnect; OfflineBanner tells the user.
+      // The service worker never caches writes.
       if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        if (patch) setSnap(patch);
+        offlineQueue.push(fn);
         window.dispatchEvent(new Event('guataca:offline-write'));
         return undefined;
       }
+      if (patch) setSnap(patch);
       setMutating(true);
       try {
         const result = await fn();
@@ -188,18 +210,18 @@ export function DataProvider({ children }: { children: ReactNode }) {
       uploadEventPhoto: async (blob) => {
         return apiUploadEventPhoto(blob);
       },
-      setRsvp: (eventId, status) => run(() => apiSetRsvp(eventId, status, uid)),
-      setEventPinned: (id, pinned) => run(() => apiSetEventPinned(id, pinned)),
+      setRsvp: (eventId, status) => run(() => apiSetRsvp(eventId, status, uid), opt.rsvp(eventId, status, uid)),
+      setEventPinned: (id, pinned) => run(() => apiSetEventPinned(id, pinned), opt.pinEvent(id, pinned)),
       setEventState: (id, state) => run(() => apiSetEventState(id, state)),
       createLink: (input) => run(() => apiCreateLink(input, uid)),
       deleteLink: (id) => run(() => apiDeleteLink(id)),
       createThread: (input) => run(() => apiCreateThread(input, uid)),
       addComment: (threadId, body, parentId = null) => run(() => apiAddComment(threadId, body, uid, parentId)),
-      setThreadReaction: (threadId, kind) => run(() => apiSetThreadReaction(threadId, kind, uid)),
+      setThreadReaction: (threadId, kind) => run(() => apiSetThreadReaction(threadId, kind, uid), opt.reactToThread(threadId, kind, uid)),
       setCommentReaction: (commentId, kind) => run(() => apiSetCommentReaction(commentId, kind, uid)),
       deleteComment: (commentId) => run(() => apiDeleteComment(commentId)),
-      setThreadPinned: (id, pinned) => run(() => apiSetThreadPinned(id, pinned)),
-      setThreadArchived: (id, archived) => run(() => apiSetThreadArchived(id, archived)),
+      setThreadPinned: (id, pinned) => run(() => apiSetThreadPinned(id, pinned), opt.pinThread(id, pinned)),
+      setThreadArchived: (id, archived) => run(() => apiSetThreadArchived(id, archived), opt.archiveThread(id, archived)),
       addThreadMedia: (threadId, urls, commentId = null) => run(() => apiAddThreadMedia(threadId, urls, uid, commentId)),
       deleteThreadMedia: (id) => run(() => apiDeleteThreadMedia(id)),
       addThreadRefs: (threadId, refs, commentId = null) => run(() => apiAddThreadRefs(threadId, refs, uid, commentId)),

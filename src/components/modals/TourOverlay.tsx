@@ -14,7 +14,7 @@ export function TourOverlay() {
       <div className="w-full max-w-[470px] bg-[linear-gradient(160deg,var(--color-hover),var(--color-raised))] border border-violet/40 rounded-[20px] p-[28px] animate-rise [animation-duration:.3s]">
         <div className="flex items-center gap-[12px] mb-[18px]">
           <span className="w-[36px] h-[36px] rounded-[11px] bg-[linear-gradient(145deg,var(--color-violet),var(--color-violet-deeper))] grid place-items-center flex-none">
-            <Sparkle size={18} strokeWidth={2} color="#f5f3ff" />
+            <Sparkle size={18} strokeWidth={2} color="var(--color-on-accent)" />
           </span>
           <span className="font-mono font-semibold text-[11px] leading-[normal] text-violet-light ml-auto whitespace-nowrap">
             {tour.num} / {tour.total}

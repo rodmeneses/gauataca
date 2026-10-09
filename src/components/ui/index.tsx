@@ -3,7 +3,7 @@
  * Views compose these plus Tailwind utilities (arbitrary values allowed, e.g. text-[13.5px]).
  */
 import { useEffect, useRef, type ButtonHTMLAttributes, type CSSProperties, type HTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, type LucideIcon } from 'lucide-react';
 import { useMediaQuery } from '../../lib/useMediaQuery';
 
 /** Lock body scroll (ref-counted) + trap focus inside `ref` while a dialog is open. */
@@ -183,6 +183,16 @@ export function Modal({ onClose, maxWidth, align = 'center', z = 80, labelledBy,
   const sheet = useMediaQuery('(max-width: 767.98px), (pointer: coarse)');
   const cardRef = useRef<HTMLDivElement>(null);
   useDialogChrome(cardRef);
+  // Most modals don't pass `labelledBy`; name the dialog after its first heading so
+  // screen readers announce it instead of an anonymous "dialog".
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!card || labelledBy) return;
+    const h = card.querySelector('h1,h2,h3');
+    if (!h) return;
+    if (!h.id) h.id = `dlg-${Math.random().toString(36).slice(2, 8)}`;
+    card.setAttribute('aria-labelledby', h.id);
+  }, [labelledBy]);
 
   return (
     <div
@@ -249,7 +259,7 @@ export function BrandMark({ size = 38, radius = 11, icon = 20 }: { size?: number
       className="grid place-items-center flex-none"
       style={{ width: size, height: size, borderRadius: radius, background: 'linear-gradient(to bottom, var(--color-flag-yellow) 0 33.33%, var(--color-flag-blue) 33.33% 66.66%, var(--color-flag-red) 66.66% 100%)', boxShadow: size >= 36 ? '0 0 0 1px color-mix(in srgb,var(--color-line-strong) 55%,transparent),0 6px 18px -6px color-mix(in srgb,var(--color-flag-blue) 60%,transparent)' : undefined }}
     >
-      <svg width={icon} height={icon} viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+      <svg width={icon} height={icon} viewBox="0 0 24 24" fill="none" stroke="var(--color-on-accent)" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
         <path d="M9 18V5l12-2v13" />
         <circle cx="6" cy="18" r="3" />
         <circle cx="18" cy="16" r="3" />
@@ -324,3 +334,23 @@ export function Switch({ checked, onChange, label, ...rest }: { checked: boolean
 export { cx };
 export { DatePicker } from './DatePicker';
 export { useConfirm } from './ConfirmDialog';
+
+/* ------------------------------------------------------------ EmptyState */
+/** Friendly placeholder for a list with nothing in it yet. */
+export function EmptyState({ icon: Icon, title, hint, className }: { icon: LucideIcon; title: string; hint?: string; className?: string }) {
+  return (
+    <div className={cx('flex flex-col items-center text-center gap-2 py-10 px-6 rounded-[14px] border border-dashed border-line bg-surface', className)}>
+      <span className="w-11 h-11 rounded-[12px] bg-raised border border-line-soft grid place-items-center text-ink-muted">
+        <Icon size={20} strokeWidth={1.8} aria-hidden />
+      </span>
+      <div className="font-display font-semibold text-[14px] text-ink">{title}</div>
+      {hint && <div className="font-sans text-[13px] leading-[1.5] text-ink-dim max-w-[320px]">{hint}</div>}
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------- Skeleton */
+/** Pulsing placeholder block shown while data loads. Size it with className. */
+export function Skeleton({ className }: { className?: string }) {
+  return <div aria-hidden className={cx('rounded-[10px] bg-raised animate-pulse-soft', className)} />;
+}
