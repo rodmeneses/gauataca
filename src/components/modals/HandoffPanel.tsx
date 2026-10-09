@@ -2,16 +2,19 @@
  * Handoff notes side panel (design lines 1460–1490): a fixed right-hand drawer
  * listing the "for Claude Code — Phase 2" notes, grouped by heading.
  */
+import { useRef } from 'react';
 import { BookOpen } from 'lucide-react';
 import { useGuataca } from '@/store';
-import { CloseButton } from '@/components/ui';
+import { CloseButton, useDialogChrome } from '@/components/ui';
 
 export function HandoffPanel() {
   const { state, t, handoffNotes, closeHandoff } = useGuataca();
+  const panelRef = useRef<HTMLDivElement>(null);
+  useDialogChrome(panelRef);
   if (!state.handoff) return null;
 
   return (
-    <div className="fixed top-0 right-0 bottom-0 w-[480px] max-w-[92vw] z-[88] bg-raised border-l border-line-strong shadow-panel flex flex-col animate-slide">
+    <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={t.handoff} className="fixed top-0 right-0 bottom-0 w-[480px] max-w-[92vw] z-[88] bg-raised border-l border-line-strong shadow-panel flex flex-col animate-slide">
       <div className="p-[20px_22px] border-b border-line-soft flex items-center gap-[14px]">
         <span className="w-[34px] h-[34px] rounded-[10px] bg-[var(--color-tint-violet)] border border-violet/40 grid place-items-center text-violet-lighter flex-none">
           <BookOpen size={17} strokeWidth={1.9} />

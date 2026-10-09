@@ -25,6 +25,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       { es: 'Si el internet se cae mientras se envían los cambios en cola, ya no se pierden: se reintentan al volver, y si alguno falla se indica cuántos.', en: 'If the connection drops while queued changes are being sent, they are no longer lost: they retry on reconnect, and if any fail you\'re told how many.' },
       { es: 'Si una foto no se sube, el aviso ahora dice cuál falló (y las demás sí se guardan).', en: 'If a photo fails to upload, the message now says which one (the rest still get saved).' },
       { es: 'La app abre más rápido: las pantallas y ventanas se cargan solo cuando las abres.', en: 'The app opens faster: screens and dialogs now load only when you open them.' },
+      { es: 'Mejor accesibilidad con teclado y lector de pantalla: la búsqueda, el tour, las notas y el menú de compartir ahora atrapan el foco y lo devuelven al cerrarse.', en: 'Better keyboard and screen-reader accessibility: search, the tour, the notes panel and the share sheet now keep focus inside and return it when closed.' },
     ],
   },
   {

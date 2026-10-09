@@ -2,11 +2,15 @@
  * ⌘K command palette (design lines 1429–1458): search input, up to nine
  * results with group chip + numeric kbd, and an empty state.
  */
+import { useRef } from 'react';
 import { Search } from 'lucide-react';
 import { useGuataca } from '@/store';
+import { useDialogChrome } from '@/components/ui';
 
 export function CommandPalette() {
   const { t, state, setPq, closePalette, paletteResults } = useGuataca();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogChrome(dialogRef);
 
   return (
     <div
@@ -15,8 +19,11 @@ export function CommandPalette() {
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
+        aria-label={t.searchPlaceholder}
         className="w-full max-w-[580px] bg-raised border border-line-strong rounded-2xl overflow-hidden shadow-pop animate-rise [animation-duration:.2s]"
       >
         <div className="flex items-center gap-3 p-[16px_18px] border-b border-line-soft">

@@ -2,8 +2,10 @@
  * Instagram bottom sheet (design lines 1356–1409): caption preview, the three
  * automated steps and the copy / flyer / share / cancel actions.
  */
+import { useRef } from 'react';
 import { Copy, Image, Instagram, Share } from 'lucide-react';
 import { useGuataca } from '@/store';
+import { useDialogChrome } from '@/components/ui';
 
 const STEP_NUM =
   'w-5 h-5 rounded-[6px] bg-[var(--color-tint-emerald)] text-emerald-light grid place-items-center font-mono font-semibold text-[10px] leading-[normal] flex-none mt-[1px]';
@@ -13,6 +15,8 @@ const ACTION_BTN =
 
 export function ShareSheet() {
   const { t, sheet, closeSheet, copyCaption, openFlyer, shareNow } = useGuataca();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogChrome(dialogRef);
   if (!sheet) return null;
 
   return (
@@ -22,8 +26,11 @@ export function ShareSheet() {
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
+        aria-label={sheet.title}
         className="w-full max-w-[440px] bg-raised border border-line border-b-0 rounded-[24px_24px_0_0] p-[24px_22px_30px] animate-sheet"
       >
         <div className="w-[42px] h-[4px] rounded-[3px] bg-ink-faint mx-auto mb-5" />
