@@ -140,7 +140,7 @@ export function DatePicker({ value, onChange, lang, placeholder }: {
                     className="grid place-items-center h-8 rounded-[8px] font-mono font-semibold text-[12px] cursor-pointer border-none"
                     style={{
                       background: selected ? 'linear-gradient(100deg,var(--color-violet),var(--color-fuchsia))' : isToday ? 'var(--color-tint-emerald)' : 'transparent',
-                      color: selected ? '#fff' : isToday ? 'var(--color-emerald)' : 'var(--color-ink-body)',
+                      color: selected ? 'var(--color-on-accent)' : isToday ? 'var(--color-emerald)' : 'var(--color-ink-body)',
                     }}
                   >
                     {d}

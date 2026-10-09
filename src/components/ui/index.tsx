@@ -249,7 +249,7 @@ export function BrandMark({ size = 38, radius = 11, icon = 20 }: { size?: number
       className="grid place-items-center flex-none"
       style={{ width: size, height: size, borderRadius: radius, background: 'linear-gradient(to bottom, var(--color-flag-yellow) 0 33.33%, var(--color-flag-blue) 33.33% 66.66%, var(--color-flag-red) 66.66% 100%)', boxShadow: size >= 36 ? '0 0 0 1px color-mix(in srgb,var(--color-line-strong) 55%,transparent),0 6px 18px -6px color-mix(in srgb,var(--color-flag-blue) 60%,transparent)' : undefined }}
     >
-      <svg width={icon} height={icon} viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+      <svg width={icon} height={icon} viewBox="0 0 24 24" fill="none" stroke="var(--color-on-accent)" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
         <path d="M9 18V5l12-2v13" />
         <circle cx="6" cy="18" r="3" />
         <circle cx="18" cy="16" r="3" />

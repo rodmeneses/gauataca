@@ -55,6 +55,7 @@
   --color-emerald: var(--g-emerald); /* active, income, balance */
   --color-emerald-light: var(--g-emerald-light);
   --color-emerald-lighter: var(--g-emerald-lighter);
+  --color-on-accent: #ffffff; /* glyphs/text on saturated brand fills — same in both themes */
   --color-violet: var(--g-violet); /* brand */
   --color-violet-deep: var(--g-violet-deep);
   --color-violet-deeper: var(--g-violet-deeper);
