@@ -16,6 +16,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.9.1',
+    date: '2026-10-10',
+    title: { es: 'Resaltado en la búsqueda', en: 'Search highlight' },
+    changes: [
+      { es: 'Al abrir una canción desde la búsqueda rápida, la tarjeta se resalta un momento para que la encuentres fácil.', en: 'When you open a song from quick search, its card is briefly highlighted so it is easy to spot.' },
+    ],
+  },
+  {
     version: '0.9.0',
     date: '2026-10-09',
     title: { es: 'Fotos más rápidas y avisos de guardado fiables', en: 'Faster photos and reliable save errors' },

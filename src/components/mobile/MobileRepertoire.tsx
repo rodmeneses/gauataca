@@ -1,5 +1,5 @@
 /** Mobile "Repertorio" tab: search + genre/sort filters + song cards with streaming links, chart links, takes and a collapsible rehearsal log. */
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronDown, ChevronRight, Clock, FileText, Gauge, Link, Mic, Music, Pencil, Youtube } from 'lucide-react';
 import { useGuataca } from '../../store';
 import { AddButton, AppleMusicIcon, EmptyState, Pill, Segment, SpotifyIcon } from '../ui';
@@ -19,11 +19,16 @@ function streamIcon(kind: LinkKind) {
 export function MobileRepertoire() {
   const { t, isAdmin, state, setQ, filteredSongs, statSongs, openNewSong, openEditSong, openEvent, genreChips, setGenre, toggleStale, setSongSort, toggleSong, clearScrollToSong, copyLink } = useGuataca();
 
-  // After a cross-view jump (goToSong), scroll the target song card into view.
+  // After a cross-view jump (goToSong), scroll the target song card into view and flash it.
+  const [hlSong, setHlSong] = useState<string | null>(null);
   useEffect(() => {
     if (!state.scrollToSong) return;
     const el = document.getElementById(`song-${state.scrollToSong}`);
-    if (el) el.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
+    if (el) {
+      el.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
+      setHlSong(state.scrollToSong);
+      window.setTimeout(() => setHlSong(null), 2200);
+    }
     clearScrollToSong();
   }, [state.scrollToSong, clearScrollToSong]);
 
@@ -72,7 +77,7 @@ export function MobileRepertoire() {
 
       {filteredSongs.length === 0 && <EmptyState icon={Music} title={t.noSongs} hint={t.noSongsHint} />}
       {filteredSongs.map((s) => (
-        <div key={s.id} id={`song-${s.id}`} className="bg-surface border border-line rounded-2xl py-3.5 px-4 flex flex-col gap-3">
+        <div key={s.id} id={`song-${s.id}`} className={`bg-surface border border-line rounded-2xl py-3.5 px-4 flex flex-col gap-3 ${hlSong === s.id ? 'ring-2 ring-emerald/50' : ''}`}>
           <div className="flex items-stretch gap-3">
             <span className="w-1 rounded-full flex-none" style={{ background: s.genreColor }} />
             <button type="button" onClick={() => toggleSong(s.id)} aria-expanded={s.open} className="min-w-0 flex-1 border-none bg-transparent cursor-pointer text-left text-inherit">
