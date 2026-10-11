@@ -45,6 +45,7 @@ export function CommandPalette() {
         <div className="flex items-center gap-3 p-[16px_18px] border-b border-line-soft">
           <Search size={18} strokeWidth={2} color="var(--color-ink-dim)" className="flex-none" />
           <input
+            enterKeyHint="search"
             value={state.pq}
             onChange={(e) => { setPq(e.target.value); setActive(0); }}
             onKeyDown={onKeyDown}

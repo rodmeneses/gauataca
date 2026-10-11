@@ -5,6 +5,7 @@
  * container: drag down from scrollTop 0, release past the threshold to refetch.
  */
 import { useEffect, useRef, useState } from 'react';
+import { haptic } from '../../lib/haptics';
 
 const THRESHOLD = 64;
 const MAX_PULL = 96;
@@ -55,6 +56,7 @@ export function usePullToRefresh(onRefresh: () => Promise<unknown>) {
         return;
       }
       busy = true;
+      haptic('tap');
       setRefreshing(true);
       setPull(THRESHOLD);
       void Promise.allSettled([refreshFn.current(), new Promise((r) => setTimeout(r, MIN_SPIN_MS))]).then(() => {

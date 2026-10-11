@@ -8,7 +8,7 @@ import { CalendarSync, Copy, RefreshCw } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { useAuth } from '@/lib/auth';
 import { getCalendarToken, rotateCalendarToken } from '@/lib/api';
-import { Button } from '@/components/ui';
+import { Button, useCopyFallback } from '@/components/ui';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 
 export function CalendarFeed() {
@@ -16,6 +16,7 @@ export function CalendarFeed() {
   const { user } = useAuth();
   const { confirm, dialog } = useConfirm();
   const [busy, setBusy] = useState(false);
+  const { copyOrShow, dialog: copyDialog } = useCopyFallback();
 
   if (!user) return null;
 
@@ -34,8 +35,7 @@ export function CalendarFeed() {
     }
   };
 
-  const copy = (url: string) =>
-    navigator.clipboard.writeText(url).then(() => toast(t.calendarFeedCopied), () => { window.prompt(t.calendarFeedCopy, url); });
+  const copy = (url: string) => copyOrShow(t.calendarFeedCopy, url, () => toast(t.calendarFeedCopied))
 
   return (
     <div className="flex flex-col gap-2.5">
@@ -66,6 +66,7 @@ export function CalendarFeed() {
         {t.calendarFeedResetBtn}
       </button>
       {dialog}
+      {copyDialog}
     </div>
   );
 }

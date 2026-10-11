@@ -6,7 +6,7 @@
  * log entries link to their event.
  */
 import { useEffect, useState } from 'react';
-import { ChevronDown, ChevronRight, Clock, FileText, Gauge, Link, Mic, Music, Pencil, Search, Youtube } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clock, FileText, Gauge, Link, Mic, Music, Pencil, Search, Share2, Youtube } from 'lucide-react';
 import { AddButton, AppleMusicIcon, EmptyState, Pill, Segment, SpotifyIcon } from '@/components/ui';
 import { useGuataca } from '@/store';
 import type { LinkKind } from '@/types';
@@ -25,7 +25,7 @@ function streamIcon(kind: LinkKind) {
 }
 
 export function Repertoire() {
-  const { state, t, isAdmin, setQ, openNewSong, openEditSong, openEvent, genreChips, setGenre, toggleStale, filteredSongs, statSongs, setSongSort, toggleSong, clearScrollToSong, copyLink } = useGuataca();
+  const { state, t, isAdmin, setQ, openNewSong, openEditSong, openEvent, genreChips, setGenre, toggleStale, filteredSongs, statSongs, setSongSort, toggleSong, clearScrollToSong, copyLink, canShare, shareLink } = useGuataca();
 
   // After a cross-view jump (goToSong), scroll the target song card into view and flash it.
   const [hlSong, setHlSong] = useState<string | null>(null);
@@ -49,6 +49,7 @@ export function Repertoire() {
             <Search size={17} strokeWidth={2} />
           </span>
           <input
+            enterKeyHint="search"
             value={state.q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={t.search}
@@ -139,6 +140,17 @@ export function Repertoire() {
                   className="grid place-items-center w-[30px] h-[30px] rounded-[9px] border border-line bg-raised text-ink-muted hover:text-ink-body hover:border-line-hover cursor-pointer flex-none"
                 >
                   <Pencil size={14} strokeWidth={2} />
+                </button>
+              )}
+              {canShare && (
+                <button
+                  type="button"
+                  onClick={() => shareLink('song', s.id, s.title)}
+                  title={t.shareLink}
+                  aria-label={`${t.shareLink} — ${s.title}`}
+                  className="grid place-items-center w-[30px] h-[30px] rounded-[9px] border border-line bg-raised text-ink-muted hover:text-ink-body hover:border-line-hover cursor-pointer flex-none"
+                >
+                  <Share2 size={14} strokeWidth={2} />
                 </button>
               )}
               <button

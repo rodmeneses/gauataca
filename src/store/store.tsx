@@ -3,6 +3,7 @@ import type {
   AppProps, CalTab, CustodyDialog, Device, ForumTab, FormState, GenreId, Lang, Localized, MobileTab, Modal,
   RatingKey, Role, SettleDialog, ShareSheet, SongSort, Toast, TxDate, TxFilter, View,
 } from '../types';
+import { haptic } from '../lib/haptics';
 import { applyTheme, readThemePref, type ThemePref } from '../lib/prefs';
 
 /**
@@ -49,6 +50,8 @@ export interface State {
   txFilter: TxFilter;
   txDate: TxDate;
   mobileTab: MobileTab;
+  /** Where a cross-view jump (goToSong / goToTx) came from, so a "Back" chip can return there. */
+  backTo: { view: View; mobileTab: MobileTab } | null;
   sheet: ShareSheet | null;
   custody: CustodyDialog | null;
   settle: SettleDialog | null;
@@ -126,6 +129,7 @@ export function initialState(props: AppProps): State {
     txFilter: 'all',
     txDate: 'all',
     mobileTab: mobileTabForView(props.startView || 'dashboard'),
+    backTo: null,
     sheet: null,
     custody: null,
     settle: null,
@@ -149,6 +153,7 @@ export function GuatacaProvider({ props, children }: { props: AppProps; children
 
   const toast = useCallback(
     (msg: string, tone: Toast['tone'] = 'ok', opts?: ToastOptions) => {
+      haptic(tone === 'err' ? 'error' : 'success');
       const id = 'k' + Date.now() + '-' + seqRef.current++;
       setState((s) => ({ ...s, toasts: [...s.toasts, { id, msg, tone, action: opts?.action }] }));
       window.setTimeout(() => dismissToast(id), opts?.ttl ?? 3600);

@@ -4,13 +4,15 @@ import { Plus, Search, X } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { DatePicker, Field, Input, Modal, Select, Textarea } from '@/components/ui';
 import type { EventType } from '@/types';
-import { FormHeader, FormBody, FormFooter } from './FormFrame';
+import { FormHeader, FormBody, FormFooter, useValidated } from './FormFrame';
+import { validateEvent } from '../../lib/validate';
 
 /* -------------------------------------------------------------- new event */
 export function NewEventModal() {
   const { t, lang, form, setForm, closeModal, saveEvent, songs, modal } = useGuataca();
   const editing = modal?.kind === 'newEvent' && !!modal.id;
   const [query, setQuery] = useState('');
+  const { err, save } = useValidated(validateEvent(form), saveEvent);
 
   const byId = useMemo(() => new Map(songs.map((s) => [s.id, s])), [songs]);
   const selected = (form.setlist || []).map((id) => byId.get(id)).filter((s): s is NonNullable<typeof s> => !!s);
@@ -26,8 +28,8 @@ export function NewEventModal() {
     <Modal onClose={closeModal} maxWidth={560}>
       <FormHeader title={editing ? t.editEvent : t.newEvent} onClose={closeModal} />
       <FormBody>
-        <Field label={t.titleL}>
-          <Input value={form.title} onChange={(e) => setForm('title', e.target.value)} placeholder="Festival Latino de Fruitvale" />
+        <Field label={t.titleL} error={err('title', form.title)}>
+          <Input aria-invalid={!!err('title', form.title) || undefined} value={form.title} onChange={(e) => setForm('title', e.target.value)} placeholder="Festival Latino de Fruitvale" />
         </Field>
         <Field label={t.type}>
           <Select value={form.type} onChange={(e) => setForm('type', e.target.value as EventType)}>
@@ -43,19 +45,19 @@ export function NewEventModal() {
           <Field label={t.hourL}>
             <Input mono type="time" value={form.time} onChange={(e) => setForm('time', e.target.value)} />
           </Field>
-          <Field label={t.hoursL}>
-            <Input mono type="number" min="0.5" step="0.5" value={form.hours} onChange={(e) => setForm('hours', e.target.value)} placeholder="2.5" />
+          <Field label={t.hoursL} error={err('hours', form.hours)}>
+            <Input mono type="number" inputMode="decimal" min="0.5" step="0.5" aria-invalid={!!err('hours', form.hours) || undefined} value={form.hours} onChange={(e) => setForm('hours', e.target.value)} placeholder="2.5" />
           </Field>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-[1.4fr_1fr_1fr] gap-3">
           <Field label={t.venueL}>
             <Input value={form.venue} onChange={(e) => setForm('venue', e.target.value)} placeholder="Oakland, CA" />
           </Field>
-          <Field label={`${t.fee} (USD)`}>
-            <Input mono value={form.fee} onChange={(e) => setForm('fee', e.target.value)} placeholder="600" />
+          <Field label={`${t.fee} (USD)`} error={err('fee', form.fee)}>
+            <Input mono inputMode="decimal" aria-invalid={!!err('fee', form.fee) || undefined} value={form.fee} onChange={(e) => setForm('fee', e.target.value)} placeholder="600" />
           </Field>
-          <Field label={`${t.costLabel} (USD)`}>
-            <Input mono value={form.cost} onChange={(e) => setForm('cost', e.target.value)} placeholder="50" />
+          <Field label={`${t.costLabel} (USD)`} error={err('cost', form.cost)}>
+            <Input mono inputMode="decimal" aria-invalid={!!err('cost', form.cost) || undefined} value={form.cost} onChange={(e) => setForm('cost', e.target.value)} placeholder="50" />
           </Field>
         </div>
         <Field label={t.notesL}>
@@ -110,7 +112,7 @@ export function NewEventModal() {
           </div>
         </div>
       </FormBody>
-      <FormFooter cancel={t.cancel} save={t.save} onCancel={closeModal} onSave={saveEvent} />
+      <FormFooter cancel={t.cancel} save={t.save} onCancel={closeModal} onSave={save} />
     </Modal>
   );
 }

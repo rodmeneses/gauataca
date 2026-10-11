@@ -3,10 +3,12 @@
  * "edit" affordance for admins; editing swaps in a draft with add / remove / reorder
  * and a live runtime total. Save persists the ordered song ids via the store action.
  */
-import { useMemo, useState } from 'react';
-import { ArrowDown, ArrowUp, Plus, Search, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowDown, ArrowUp, GripVertical, Plus, Search, X } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
 import { durationSeconds } from '@/lib/format';
+import { reorder, rowIndexAt } from '@/lib/reorder';
+import { haptic } from '@/lib/haptics';
 import type { Dict } from '@/i18n';
 import type { SongVm } from '@/store';
 
@@ -27,6 +29,33 @@ export function SetlistEditor({ currentIds, songs, setlistLabel, isAdmin, onSave
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<string[]>(currentIds);
   const [query, setQuery] = useState('');
+  // Pointer-based drag (works for mouse, touch and pen): grab a row's handle and move it; rows swap live.
+  const [dragId, setDragId] = useState<string | null>(null);
+  const rowRefs = useRef(new Map<string, HTMLDivElement>());
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
+  useEffect(() => {
+    if (!dragId) return;
+    const onMove = (e: PointerEvent) => {
+      const d = draftRef.current;
+      const rects = d.map((id) => rowRefs.current.get(id)?.getBoundingClientRect() ?? { top: 0, bottom: 0 });
+      const from = d.indexOf(dragId);
+      const to = rowIndexAt(rects, e.clientY);
+      if (from !== to) {
+        haptic('tap');
+        setDraft(reorder(d, from, to));
+      }
+    };
+    const end = () => setDragId(null);
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', end);
+    window.addEventListener('pointercancel', end);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', end);
+      window.removeEventListener('pointercancel', end);
+    };
+  }, [dragId]);
 
   const byId = useMemo(() => new Map(songs.map((s) => [s.id, s])), [songs]);
   const draftSongs = draft.map((id) => byId.get(id)).filter((s): s is SongVm => !!s);
@@ -109,7 +138,20 @@ export function SetlistEditor({ currentIds, songs, setlistLabel, isAdmin, onSave
               <p className="m-0 font-sans font-normal text-[12.5px] leading-[normal] text-ink-dim">{t.noSongsYet}</p>
             )}
             {draftSongs.map((s, i) => (
-              <div key={s.id} className={rowCls}>
+              <div
+                key={s.id}
+                ref={(el) => { if (el) rowRefs.current.set(s.id, el); else rowRefs.current.delete(s.id); }}
+                className={`${rowCls} ${dragId === s.id ? 'border-emerald/60 shadow-pop' : ''}`}
+              >
+                <button
+                  type="button"
+                  onPointerDown={(e) => { e.preventDefault(); haptic('tap'); setDragId(s.id); }}
+                  title={t.dragToReorder}
+                  aria-label={`${t.dragToReorder} — ${s.title}`}
+                  className={`grid place-items-center w-[26px] h-[34px] -ml-1 border-0 bg-transparent text-ink-dim hover:text-ink-body flex-none touch-none ${dragId === s.id ? 'cursor-grabbing' : 'cursor-grab'}`}
+                >
+                  <GripVertical size={16} strokeWidth={2} />
+                </button>
                 <span className="font-mono font-semibold text-[12px] leading-[normal] text-ink-dim flex-none">{String(i + 1).padStart(2, '0')}</span>
                 <span className="w-[3px] h-[22px] rounded-[2px] flex-none" style={{ background: s.genreColor }} />
                 <span className="flex-1 min-w-0 font-sans font-semibold text-[14px] leading-[normal] text-ink-base">{s.title}</span>

@@ -2,7 +2,7 @@
  * Event detail modal (design lines 929–1111): header, 4 stat tiles, setlist,
  * media gallery, retrospective (ratings, well/improve, poll, my ratings) and footer.
  */
-import { CalendarPlus, Instagram, Link, Pencil, Pin } from 'lucide-react';
+import { CalendarPlus, Instagram, Link, Pencil, Pin, Share2 } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { Badge, Button, CloseButton, Modal, useConfirm } from '@/components/ui';
 import { downloadIcs } from '@/lib/ics';
@@ -14,7 +14,7 @@ import { EventFeedbackSection } from './EventFeedbackSection';
 import { tile, tileLabel } from './eventModalStyles';
 
 export function EventModal() {
-  const { t, ev, fb, songs, isAdmin, closeModal, openShare, openSettle, openEditEvent, setEventSetlist, addTake, deleteTake, goToSong, copyLink, toggleEventPin, toggleEventCancelled } = useGuataca();
+  const { t, ev, fb, songs, isAdmin, closeModal, openShare, openSettle, openEditEvent, setEventSetlist, addTake, deleteTake, goToSong, copyLink, canShare, shareLink, toggleEventPin, toggleEventCancelled } = useGuataca();
   const { confirm, dialog } = useConfirm();
   if (!ev) return null;
 
@@ -151,6 +151,12 @@ export function EventModal() {
           >
             <CalendarPlus size={15} strokeWidth={1.9} />
             {t.addToCalendar}
+          </Button>
+        )}
+        {canShare && (
+          <Button variant="surface" onClick={() => shareLink('event', ev.id, ev.title)} className="py-[11px] px-4 rounded-[11px]">
+            <Share2 size={15} strokeWidth={1.9} />
+            {t.shareLink}
           </Button>
         )}
         <Button variant="surface" onClick={() => copyLink('event', ev.id)} className="py-[11px] px-4 rounded-[11px]">

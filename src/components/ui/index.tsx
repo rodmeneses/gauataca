@@ -2,7 +2,7 @@
  * Shared primitives. Values are copied from the design verbatim — do not "improve" them.
  * Views compose these plus Tailwind utilities (arbitrary values allowed, e.g. text-[13.5px]).
  */
-import { useEffect, useRef, type ButtonHTMLAttributes, type CSSProperties, type HTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
+import { forwardRef, useEffect, useRef, type ButtonHTMLAttributes, type CSSProperties, type HTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
 import { Plus, X, type LucideIcon } from 'lucide-react';
 import { useMediaQuery } from '../../lib/useMediaQuery';
 
@@ -135,18 +135,19 @@ export function CloseButton({ onClick, size = 34, className, label = 'Close' }: 
 }
 
 /* ------------------------------------------------------------------ Field */
-export function Field({ label, children, className, labelClassName, labelStyle, as: Tag = 'label' }: { label: ReactNode; children: ReactNode; className?: string; labelClassName?: string; labelStyle?: CSSProperties; as?: 'label' | 'div' }) {
+export function Field({ label, children, className, labelClassName, labelStyle, as: Tag = 'label', error }: { label: ReactNode; children: ReactNode; className?: string; labelClassName?: string; labelStyle?: CSSProperties; as?: 'label' | 'div'; error?: string }) {
   return (
     <Tag className={cx('block', className)}>
       <span className={cx('field-label', labelClassName)} style={labelStyle}>{label}</span>
       {children}
+      {error && <span role="alert" className="block mt-1.5 font-sans text-[12px] leading-[1.4] text-red">{error}</span>}
     </Tag>
   );
 }
 
-export function Input({ mono, className, ...rest }: InputHTMLAttributes<HTMLInputElement> & { mono?: boolean }) {
-  return <input className={cx('input', mono && 'input-mono', className)} {...rest} />;
-}
+export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement> & { mono?: boolean }>(function Input({ mono, className, ...rest }, ref) {
+  return <input ref={ref} className={cx('input', mono && 'input-mono', rest['aria-invalid'] && 'border-red', className)} {...rest} />;
+});
 
 export function Select({ className, children, ...rest }: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
@@ -334,6 +335,7 @@ export function Switch({ checked, onChange, label, ...rest }: { checked: boolean
 export { cx };
 export { DatePicker } from './DatePicker';
 export { useConfirm } from './ConfirmDialog';
+export { useCopyFallback } from './CopyDialog';
 
 /* ------------------------------------------------------------ EmptyState */
 /** Friendly placeholder for a list with nothing in it yet. */

@@ -195,6 +195,10 @@ export interface Guataca {
   toggleSong: (id: string) => void;
   /** Navigate to the repertoire and open a specific song (from a setlist, etc.). */
   goToSong: (id: string) => void;
+  /** Label of the place a cross-view jump came from (null = no Back chip). */
+  backLabel: string | null;
+  /** Return to where the last cross-view jump came from. */
+  goBack: () => void;
   /** Clear the pending scroll-to-song request (called by the repertoire views after scrolling). */
   clearScrollToSong: () => void;
   /** Navigate to the ledger and scroll to a specific movement (from a shareable link). */
@@ -203,6 +207,10 @@ export interface Guataca {
   clearScrollToTx: () => void;
   /** Copy a shareable deep link for an item (event / song / movement) to the clipboard. */
   copyLink: (kind: 'event' | 'song' | 'tx' | 'thread', id: string, commentId?: number) => void;
+  /** True when the browser has the native share sheet (navigator.share). */
+  canShare: boolean;
+  /** Open the native share sheet for an item's deep link (no-op without navigator.share). */
+  shareLink: (kind: 'event' | 'song', id: string, title: string) => void;
   setQ: (q: string) => void;
   setGenre: (g: GenreId | 'all') => void;
   toggleStale: () => void;

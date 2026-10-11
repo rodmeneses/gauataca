@@ -16,6 +16,20 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.10.0',
+    date: '2026-10-11',
+    title: { es: 'Formularios y listas más cómodos', en: 'Smoother forms and lists' },
+    changes: [
+      { es: 'Los formularios de eventos, canciones y movimientos avisan junto al campo qué falta o está mal, en vez de dejarte adivinar.', en: 'Event, song and movement forms now tell you right at the field what is missing or wrong instead of leaving you guessing.' },
+      { es: 'En el celular, los campos de montos, BPM y correo abren el teclado correcto (numérico, de correo), y los montos aceptan coma decimal.', en: 'On your phone, amount, BPM and email fields open the right keyboard (numeric, email), and amounts accept a decimal comma.' },
+      { es: 'Reordena el setlist arrastrando las canciones desde el asa, además de los botones de subir y bajar.', en: 'Reorder a setlist by dragging songs by their handle, in addition to the up and down buttons.' },
+      { es: 'Si algo no se guarda por un problema de conexión, el aviso trae un botón Reintentar.', en: 'If a save fails because of a connection problem, the notice now has a Retry button.' },
+      { es: 'Nuevo botón Compartir en eventos y canciones (donde tu dispositivo lo permite) y vibración suave al confirmar o fallar una acción.', en: 'New Share button on events and songs (where your device supports it) and a light vibration when an action succeeds or fails.' },
+      { es: 'Si el navegador no deja copiar un enlace, ahora aparece un cuadro con el texto ya seleccionado.', en: 'If the browser will not let you copy a link, a dialog now shows it with the text already selected.' },
+      { es: 'Al saltar a una canción o movimiento desde otra pantalla, aparece un botón Volver para regresar a donde estabas.', en: 'When you jump to a song or movement from another screen, a Back button appears to return to where you were.' },
+    ],
+  },
+  {
     version: '0.9.1',
     date: '2026-10-10',
     title: { es: 'Resaltado en la búsqueda', en: 'Search highlight' },

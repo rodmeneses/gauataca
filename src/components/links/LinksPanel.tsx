@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Copy, ExternalLink, Link2, Trash2 } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { useData } from '@/lib/data';
-import { AddButton, Badge, Button, Card, Field, Input, Select } from '@/components/ui';
+import { AddButton, Badge, Button, Card, Field, Input, Select, useCopyFallback } from '@/components/ui';
 import type { BandLink, LinkCategory } from '@/types';
 import { UNDO_WINDOW_MS } from '@/lib/optimistic';
 
@@ -36,6 +36,7 @@ export function LinksPanel() {
   const [url, setUrl] = useState('');
   const [category, setCategory] = useState<LinkCategory>('other');
   const [touched, setTouched] = useState(false);
+  const { copyOrShow, dialog: copyDialog } = useCopyFallback();
 
   const catLabel: Record<LinkCategory, string> = { docs: t.catDocs, music: t.catMusic, social: t.catSocial, logistics: t.catLogistics, other: t.catOther };
   const normalized = normalizeUrl(url);
@@ -49,14 +50,7 @@ export function LinksPanel() {
   };
 
   const groups = CATEGORIES.map((c) => ({ c, items: links.filter((l) => l.category === c) })).filter((g) => g.items.length > 0);
-  const copy = async (l: BandLink) => {
-    try {
-      await navigator.clipboard.writeText(l.url);
-      toast(t.linkCopied);
-    } catch {
-      window.prompt(t.copyLink, l.url);
-    }
-  };
+  const copy = (l: BandLink) => copyOrShow(t.copyLink, l.url, () => toast(t.linkCopied));
   const canDelete = (l: BandLink) => isAdmin || l.createdBy === me.id;
 
   return (
@@ -138,6 +132,7 @@ export function LinksPanel() {
           </ul>
         </section>
       ))}
+      {copyDialog}
     </div>
   );
 }
