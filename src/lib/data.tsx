@@ -182,7 +182,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         return result;
       } catch (err) {
         console.error('Mutation failed:', err);
-        window.dispatchEvent(new CustomEvent('guataca:mutation-error', { detail: { reason: classifySaveError(err) } }));
+        window.dispatchEvent(new CustomEvent('guataca:mutation-error', { detail: { reason: classifySaveError(err), retry: () => { void run(fn, patch); } } }));
         return undefined;
       } finally {
         setMutating(false);

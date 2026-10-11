@@ -6,7 +6,8 @@ import { useMemo } from 'react';
 import type { Dict } from '../i18n';
 import { COLOR_TOKENS, HANDOFF_NOTES, TOUR_STEPS, TYPE_SCALE } from '../data';
 import { money, money0 } from '../lib/format';
-import type { RsvpStatus, View } from '../types';
+import type { MobileTab, RsvpStatus, View } from '../types';
+import type { State } from './store';
 import { useStore } from './store';
 import { writeLangPref, writeThemePref } from '../lib/prefs';
 import { itemUrl } from '../lib/deepLink';
@@ -19,6 +20,8 @@ import { useMediaQuery } from '../lib/useMediaQuery';
 import { filterPalette, layoutTier } from './derive';
 import { feedbackVm, igCaption, memberById, memberVm, threadVm, txVm } from './vm';
 import { useDerived } from './useDerived';
+import { parseNum } from '../lib/validate';
+import { haptic } from '../lib/haptics';
 
 import type { Guataca, FormVm, PaletteItem, SearchResult, TourVm } from './guataca.types';
 export type * from './guataca.types';
@@ -80,9 +83,15 @@ export function useGuataca(): Guataca {
 
     /* ---- actions */
     const go = (v: View) => {
-      set({ view: v, palette: false, openSong: null });
+      set({ view: v, palette: false, openSong: null, backTo: null });
       window.scrollTo({ top: 0 });
     };
+    /** Remember where a cross-view jump started (null when it stays on the same screen). */
+    const backFrom = (view: View, tab: MobileTab): State['backTo'] =>
+      (isMobileViewport ? st.mobileTab !== tab : st.view !== view) ? { view: st.view, mobileTab: st.mobileTab } : null;
+    const backLabel = st.backTo
+      ? t[(isMobileViewport ? st.backTo.mobileTab : st.backTo.view) as keyof Dict] as string
+      : null;
     const openShare = (eventId: string) => {
       const e = allEvents.find((x) => x.id === eventId);
       if (!e) return;
@@ -265,12 +274,24 @@ export function useGuataca(): Guataca {
       setDevice: (dv) => set({ device: dv }),
       setCalTab: (tab) => set({ calTab: tab }),
       setForumTab: (tab) => set({ forumTab: tab }),
-      setMobileTab: (tab) => set({ mobileTab: tab }),
+      setMobileTab: (tab) => set({ mobileTab: tab, backTo: null }),
       toggleSong: (id) => set((s) => ({ openSong: s.openSong === id ? null : id })),
-      goToSong: (id) => set({ view: 'repertoire', mobileTab: 'repertoire', openSong: id, scrollToSong: id, q: '', genre: 'all', staleOnly: false, modal: null, palette: false }),
+      backLabel,
+      goBack: () => {
+        if (!st.backTo) return;
+        haptic('tap');
+        set({ view: st.backTo.view, mobileTab: st.backTo.mobileTab, backTo: null, openSong: null });
+      },
+      goToSong: (id) => set({ backTo: backFrom('repertoire', 'repertoire'), view: 'repertoire', mobileTab: 'repertoire', openSong: id, scrollToSong: id, q: '', genre: 'all', staleOnly: false, modal: null, palette: false }),
       clearScrollToSong: () => set({ scrollToSong: null }),
-      goToTx: (id) => set({ view: 'ledger', mobileTab: 'fund', scrollToTx: id, modal: null, palette: false }),
+      goToTx: (id) => set({ backTo: backFrom('ledger', 'fund'), view: 'ledger', mobileTab: 'fund', scrollToTx: id, modal: null, palette: false }),
       clearScrollToTx: () => set({ scrollToTx: null }),
+      canShare: typeof navigator !== 'undefined' && typeof navigator.share === 'function',
+      shareLink: (kind, id, title) => {
+        if (typeof navigator.share !== 'function') return;
+        // Dismissing the share sheet rejects with AbortError — not worth a toast.
+        navigator.share({ title, url: itemUrl(kind, id) }).catch(() => {});
+      },
       copyLink: (kind, id, commentId) => {
         copyText(itemUrl(kind, id, commentId), t.linkCopied);
       },
@@ -574,8 +595,8 @@ export function useGuataca(): Guataca {
         const songIds = f.setlist || [];
         set({ modal: null, form: {} });
         const input = {
-          title: f.title || 'Evento nuevo', venue: f.venue || 'Bay Area, CA', date: dte, time: f.time || '19:00', hours: +(f.hours || 0),
-          fee: +(f.fee || 0), cost: +(f.cost || 0), note: f.note || '', type: f.type || 'gig',
+          title: f.title || 'Evento nuevo', venue: f.venue || 'Bay Area, CA', date: dte, time: f.time || '19:00', hours: parseNum(f.hours) || 0,
+          fee: parseNum(f.fee) || 0, cost: parseNum(f.cost) || 0, note: f.note || '', type: f.type || 'gig',
         };
         if (editingId) {
           await updateEvent(editingId, input);
@@ -590,7 +611,7 @@ export function useGuataca(): Guataca {
         const editingId = st.modal?.kind === 'newTx' ? st.modal.id : undefined;
         set({ modal: null, form: {} });
         const input = {
-          kind: f.kind || 'in', amt: +(f.amt || 0), date: f.date || '2026-08-25', desc: f.desc || 'Movimiento', proof: f.proof || null,
+          kind: f.kind || 'in', amt: parseNum(f.amt) || 0, date: f.date || '2026-08-25', desc: f.desc || 'Movimiento', proof: f.proof || null,
           proofKind: f.proofKind || 'receipt', event: f.event || undefined, gear: f.gear || undefined,
           category: (f.kind || 'in') === 'in' ? (f.category || undefined) : undefined,
           // DTV income is the org's — never attribute it to a member.
@@ -612,7 +633,7 @@ export function useGuataca(): Guataca {
         const songInstruments = f.songInstruments || [];
         const songLinks = f.songLinks || [];
         set({ modal: null, form: {} });
-        const input = { title: f.title || 'Canción nueva', genre: f.genre || 'joropo', key: f.key || 'Am', bpm: +(f.bpm || 120), dur: f.dur || '3:30' };
+        const input = { title: f.title || 'Canción nueva', genre: f.genre || 'joropo', key: f.key || 'Am', bpm: parseNum(f.bpm) || 120, dur: f.dur || '3:30' };
         if (editingId) {
           await updateSong(editingId, input);
           await persistSongLinks(editingId, songLinks);

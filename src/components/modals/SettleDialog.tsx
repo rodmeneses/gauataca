@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { useGuataca } from '@/store';
 import { Button, Field, Input } from '@/components/ui';
+import { parseNum } from '../../lib/validate';
 
 export function SettleDialog() {
   const { t, settle, settleEvent, closeSettle } = useGuataca();
@@ -47,11 +48,11 @@ export function SettleDialog() {
 
         {happened && (
           <Field label={`${t.fee} (USD)`}>
-            <Input mono value={fee} onChange={(e) => setFee(e.target.value)} placeholder="600" />
+            <Input mono inputMode="decimal" value={fee} onChange={(e) => setFee(e.target.value)} placeholder="600" />
           </Field>
         )}
         <Field label={`${t.costLabel} (USD)`}>
-          <Input mono value={cost} onChange={(e) => setCost(e.target.value)} placeholder="50" />
+          <Input mono inputMode="decimal" value={cost} onChange={(e) => setCost(e.target.value)} placeholder="50" />
         </Field>
 
         <div className="flex gap-[10px] justify-end mt-[18px]">
@@ -62,7 +63,7 @@ export function SettleDialog() {
           >
             {t.cancel}
           </button>
-          <Button variant="primary" className="p-[11px_17px]" onClick={() => settleEvent(settle.id, { happened, fee: +(fee || 0), cost: +(cost || 0) })}>
+          <Button variant="primary" className="p-[11px_17px]" onClick={() => settleEvent(settle.id, { happened, fee: parseNum(fee) || 0, cost: parseNum(cost) || 0 })}>
             {t.settle}
           </Button>
         </div>

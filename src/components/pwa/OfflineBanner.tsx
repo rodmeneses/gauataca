@@ -21,8 +21,10 @@ export function OfflineBanner() {
     const goOffline = () => setOnline(false);
     const onQueuedWrite = () => toast(t.offlineWriteQueued, 'violet');
     const onSaveFailed = (e: Event) => {
-      const reason = (e as CustomEvent<{ reason: SaveFailure }>).detail?.reason ?? 'unknown';
-      toast(t[SAVE_FAILURE_KEY[reason]], 'err');
+      const { reason = 'unknown', retry } = (e as CustomEvent<{ reason: SaveFailure; retry?: () => void }>).detail ?? {};
+      // Only transient failures are worth retrying; a permission or validation error will just fail again.
+      const retryable = retry && (reason === 'offline' || reason === 'unknown');
+      toast(t[SAVE_FAILURE_KEY[reason]], 'err', retryable ? { action: { label: t.retry, run: retry }, ttl: 9000 } : undefined);
     };
     const onFlushed = (e: Event) => {
       const failed = (e as CustomEvent<{ failed: number }>).detail?.failed ?? 0;

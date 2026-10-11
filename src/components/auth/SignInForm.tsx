@@ -54,14 +54,14 @@ export function SignInForm({ onSuccess }: { onSuccess?: () => void }) {
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {mode === 'signup' && (
           <Field label={t.name}>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t.name} required />
+            <Input autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} placeholder={t.name} required />
           </Field>
         )}
         <Field label={t.email}>
-          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
+          <Input type="email" inputMode="email" autoComplete="email" autoCapitalize="none" autoCorrect="off" enterKeyHint="go" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
         </Field>
         <Field label={t.password}>
-          <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
+          <Input type="password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
         </Field>
 
         {error && <p className="text-[13px] text-rose-400">{error}</p>}

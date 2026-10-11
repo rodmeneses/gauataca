@@ -10,6 +10,7 @@ import { DesktopShell } from './DesktopShell';
 import { MobileShell } from '../mobile/MobileShell';
 import { Toasts } from '../modals/Toasts';
 import { TopProgress } from './TopProgress';
+import { BackChip } from './BackChip';
 import { UpdatePrompt } from '../pwa/UpdatePrompt';
 import { OfflineBanner } from '../pwa/OfflineBanner';
 import { lazyNamed } from '../../lib/lazyNamed';
@@ -179,6 +180,7 @@ export function Shell() {
       {bs.state.handoff && <HandoffPanel />}
       {bs.tour.on && <TourOverlay />}
       </Suspense>
+      <BackChip />
       {bs.toasts.length > 0 && <Toasts />}
       <TopProgress />
       <OfflineBanner />

@@ -5,7 +5,8 @@ import { Field, Input, Modal, Select } from '@/components/ui';
 import { GENRES, GENRE_IDS } from '@/data';
 import { InstrumentPicker } from './InstrumentPicker';
 import type { GenreId, LinkKind } from '@/types';
-import { FormHeader, FormBody, FormFooter } from './FormFrame';
+import { FormHeader, FormBody, FormFooter, useValidated } from './FormFrame';
+import { validateSong } from '../../lib/validate';
 
 /* --------------------------------------------------------- song link editor */
 function SongLinksEditor() {
@@ -56,12 +57,13 @@ function SongLinksEditor() {
 export function NewSongModal() {
   const { t, L, form, setForm, closeModal, saveSong, modal } = useGuataca();
   const editing = modal?.kind === 'newSong' && !!modal.id;
+  const { err, save } = useValidated(validateSong(form), saveSong);
   return (
     <Modal onClose={closeModal} maxWidth={520}>
       <FormHeader title={editing ? t.editSong : t.newSong} onClose={closeModal} />
       <FormBody>
-        <Field label={t.titleL}>
-          <Input value={form.title} onChange={(e) => setForm('title', e.target.value)} placeholder="Fiesta en Elorza" />
+        <Field label={t.titleL} error={err('title', form.title)}>
+          <Input aria-invalid={!!err('title', form.title) || undefined} value={form.title} onChange={(e) => setForm('title', e.target.value)} placeholder="Fiesta en Elorza" />
         </Field>
         <Field label={t.genreL}>
           <Select value={form.genre} onChange={(e) => setForm('genre', e.target.value as GenreId)}>
@@ -76,11 +78,11 @@ export function NewSongModal() {
           <Field label={t.key}>
             <Input mono value={form.key} onChange={(e) => setForm('key', e.target.value)} placeholder="Am" />
           </Field>
-          <Field label={t.bpm}>
-            <Input mono value={form.bpm} onChange={(e) => setForm('bpm', e.target.value)} placeholder="196" />
+          <Field label={t.bpm} error={err('bpm', form.bpm)}>
+            <Input mono inputMode="numeric" aria-invalid={!!err('bpm', form.bpm) || undefined} value={form.bpm} onChange={(e) => setForm('bpm', e.target.value)} placeholder="196" />
           </Field>
-          <Field label={t.dur}>
-            <Input mono value={form.dur} onChange={(e) => setForm('dur', e.target.value)} placeholder="3:45" />
+          <Field label={t.dur} error={err('dur', form.dur)}>
+            <Input mono aria-invalid={!!err('dur', form.dur) || undefined} value={form.dur} onChange={(e) => setForm('dur', e.target.value)} placeholder="3:45" />
           </Field>
         </div>
         <SongLinksEditor />
@@ -92,7 +94,7 @@ export function NewSongModal() {
           />
         </Field>
       </FormBody>
-      <FormFooter cancel={t.cancel} save={t.save} onCancel={closeModal} onSave={saveSong} />
+      <FormFooter cancel={t.cancel} save={t.save} onCancel={closeModal} onSave={save} />
     </Modal>
   );
 }

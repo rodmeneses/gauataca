@@ -1,8 +1,32 @@
 /** Shared frame for the form-style modals: header, scrolling body and footer. */
-import { type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { Button } from '@/components/ui';
+import { haptic } from '../../lib/haptics';
+import type { FormErrors } from '../../lib/validate';
+
+/**
+ * Inline validation for a form modal. A field's error shows once it holds a bad
+ * value, or for every bad field after a save attempt; saving with errors is blocked.
+ */
+export function useValidated(errors: FormErrors, onSave: () => void) {
+  const { t } = useGuataca();
+  const [tried, setTried] = useState(false);
+  const err = (field: string, value: string | undefined): string | undefined => {
+    const key = errors[field];
+    return key && (tried || (value ?? '').trim() !== '') ? t[key] : undefined;
+  };
+  const save = () => {
+    if (Object.keys(errors).length > 0) {
+      setTried(true);
+      haptic('error');
+      return;
+    }
+    onSave();
+  };
+  return { err, save };
+}
 
 /* ------------------------------------------------------------ shared frame */
 export function FormHeader({ title, onClose }: { title: string; onClose: () => void }) {

@@ -4,7 +4,8 @@ import { ExternalLink, Upload } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { DatePicker, Field, Input, Modal, Select } from '@/components/ui';
 import type { ProofKind, TxCategory, TxKind } from '@/types';
-import { FormHeader, FormBody, FormFooter } from './FormFrame';
+import { FormHeader, FormBody, FormFooter, useValidated } from './FormFrame';
+import { validateTx } from '../../lib/validate';
 
 /* ---------------------------------------------------------- new movement */
 export function NewTxModal() {
@@ -12,6 +13,7 @@ export function NewTxModal() {
   const editing = modal?.kind === 'newTx' && !!modal.id;
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const { err, save } = useValidated(validateTx(form), saveTx);
 
   const onPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -43,8 +45,8 @@ export function NewTxModal() {
               <option value="out">{t.expense}</option>
             </Select>
           </Field>
-          <Field label={`${t.amount} (USD)`}>
-            <Input mono value={form.amt} onChange={(e) => setForm('amt', e.target.value)} placeholder="450.00" />
+          <Field label={`${t.amount} (USD)`} error={err('amt', form.amt)}>
+            <Input mono inputMode="decimal" enterKeyHint="next" autoComplete="off" aria-invalid={!!err('amt', form.amt) || undefined} value={form.amt} onChange={(e) => setForm('amt', e.target.value)} placeholder="450.00" />
           </Field>
         </div>
         {form.kind === 'in' && (
@@ -146,7 +148,7 @@ export function NewTxModal() {
           <span className="block text-[11.5px] text-ink-dim mt-2 leading-[1.5]">{t.proofHint}</span>
         </Field>
       </FormBody>
-      <FormFooter cancel={t.cancel} save={t.save} onCancel={closeModal} onSave={saveTx} />
+      <FormFooter cancel={t.cancel} save={t.save} onCancel={closeModal} onSave={save} />
     </Modal>
   );
 }
