@@ -20,6 +20,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-10-11',
     title: { es: 'Formularios y listas más cómodos', en: 'Smoother forms and lists' },
     changes: [
+      { es: 'El logo dentro de la app ahora es igual al ícono de la app instalada: cuadrado redondeado con la bandera, las siete estrellas y la nota musical.', en: 'The in-app logo now matches the installed app icon: rounded-square flag with the seven stars and the music note.' },
       { es: 'Los formularios de eventos, canciones y movimientos avisan junto al campo qué falta o está mal, en vez de dejarte adivinar.', en: 'Event, song and movement forms now tell you right at the field what is missing or wrong instead of leaving you guessing.' },
       { es: 'En el celular, los campos de montos, BPM y correo abren el teclado correcto (numérico, de correo), y los montos aceptan coma decimal.', en: 'On your phone, amount, BPM and email fields open the right keyboard (numeric, email), and amounts accept a decimal comma.' },
       { es: 'Reordena el setlist arrastrando las canciones desde el asa, además de los botones de subir y bajar.', en: 'Reorder a setlist by dragging songs by their handle, in addition to the up and down buttons.' },

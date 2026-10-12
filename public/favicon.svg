@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
   <defs>
     <clipPath id="circle">
-      <circle cx="512" cy="512" r="512"/>
+      <rect width="1024" height="1024" rx="230"/>
     </clipPath>
     <path id="star" d="M 0 -40 L 8.93 -12.30 L 38.04 -12.36 L 14.46 4.70 L 23.51 32.36 L 0 15.2 L -23.51 32.36 L -14.46 4.70 L -38.04 -12.36 L -8.93 -12.30 Z"/>
     <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">

@@ -252,19 +252,30 @@ export function AppleMusicIcon({ size = 19, strokeWidth = 1.8, className }: { si
 }
 
 /* -------------------------------------------------------------- BrandMark */
-/** Venezuelan tricolor tile with the music-note glyph (sidebar + phone header + tour). */
-export function BrandMark({ size = 38, radius = 11, icon = 20 }: { size?: number; radius?: number; icon?: number }) {
+const BRAND_STAR = 'M 0 -40 L 8.93 -12.30 L 38.04 -12.36 L 14.46 4.70 L 23.51 32.36 L 0 15.2 L -23.51 32.36 L -14.46 4.70 L -38.04 -12.36 L -8.93 -12.30 Z';
+const BRAND_STARS: [number, number][] = [[831.5, 471], [772.4, 434.9], [682, 408.1], [512, 393.8], [342, 408.1], [251.6, 434.9], [192.5, 471]];
+
+/** The PWA/favicon mark (public/favicon.svg): rounded-square flag, seven stars, eighth note (sidebar + phone header + tour). */
+export function BrandMark({ size = 38 }: { size?: number }) {
   return (
-    <span
-      className="grid place-items-center flex-none"
-      style={{ width: size, height: size, borderRadius: radius, background: 'linear-gradient(to bottom, var(--color-flag-yellow) 0 33.33%, var(--color-flag-blue) 33.33% 66.66%, var(--color-flag-red) 66.66% 100%)', boxShadow: size >= 36 ? '0 0 0 1px color-mix(in srgb,var(--color-line-strong) 55%,transparent),0 6px 18px -6px color-mix(in srgb,var(--color-flag-blue) 60%,transparent)' : undefined }}
-    >
-      <svg width={icon} height={icon} viewBox="0 0 24 24" fill="none" stroke="var(--color-on-accent)" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 18V5l12-2v13" />
-        <circle cx="6" cy="18" r="3" />
-        <circle cx="18" cy="16" r="3" />
-      </svg>
-    </span>
+    <svg width={size} height={size} viewBox="0 0 1024 1024" aria-hidden="true" className="flex-none" style={{ filter: size >= 36 ? 'drop-shadow(0 6px 10px color-mix(in srgb,var(--color-flag-blue) 45%,transparent))' : undefined }}>
+      <clipPath id="brand-clip">
+        <rect width="1024" height="1024" rx="230" />
+      </clipPath>
+      <g clipPath="url(#brand-clip)">
+        <rect width="1024" height="341.33" fill="#FFCC00" />
+        <rect y="341.33" width="1024" height="341.33" fill="#00247D" />
+        <rect y="682.67" width="1024" height="341.33" fill="#CF142B" />
+      </g>
+      <g fill="#FFFFFF">
+        {BRAND_STARS.map(([x, y]) => (
+          <path key={x} d={BRAND_STAR} transform={`translate(${x} ${y}) scale(0.55)`} />
+        ))}
+        <ellipse cx="460" cy="720" rx="95" ry="68" transform="rotate(-20 460 720)" />
+        <rect x="535" y="360" width="18" height="350" rx="9" />
+        <path d="M 544 360 C 645 360, 700 395, 700 480 C 660 435, 610 415, 544 415 Z" />
+      </g>
+    </svg>
   );
 }
 
