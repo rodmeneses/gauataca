@@ -35,7 +35,7 @@ export function useGuataca(): Guataca {
   const {
     songs: dbSongs, gear: dbGear, threads: dbThreads, members: dbMembers, links: dbLinks,
     myPollPicks, loading, mutating, error,
-    createEvent, updateEvent, createSong, updateSong, setSongLinks: persistSongLinks, createTransaction, updateTransaction: persistUpdateTransaction, deleteTransaction: persistDeleteTransaction, createGear: persistGear, createInstrument: persistInstrument,
+    createEvent, updateEvent, createSong, updateSong, setSongLinks: persistSongLinks, setEventLinks: persistEventLinks, createTransaction, updateTransaction: persistUpdateTransaction, deleteTransaction: persistDeleteTransaction, createGear: persistGear, createInstrument: persistInstrument,
     onboard: persistOnboard, updateMemberInstruments: persistMemberInstruments, setSongInstruments: persistSongInstruments,
     addTake: persistTake, deleteTake: persistDeleteTake,
     addEventMedia: persistAddEventMedia, addEventPhotos: persistAddEventPhotos, deleteEventMedia: persistDeleteEventMedia, uploadEventPhoto: persistUploadEventPhoto,
@@ -194,6 +194,7 @@ export function useGuataca(): Guataca {
       type: f.type || 'gig', desc: f.desc || '', amt: f.amt || '', proof: f.proof || '', proofKind: f.proofKind || 'receipt', kind: f.kind || 'in',
       event: f.event || '', gear: f.gear || '', category: f.category || 'fee', contributor: f.contributor || '',
       key: f.key || '', bpm: f.bpm || '', dur: f.dur || '', genre: f.genre || 'joropo', songLinks: f.songLinks || [],
+      eventLinks: f.eventLinks || [],
       setlist: f.setlist || [],
       name: f.name || '', custodian: f.custodian || '', cond: f.cond || 'good', boughtBy: f.boughtBy || '',
       songInstruments: f.songInstruments || [],
@@ -313,6 +314,7 @@ export function useGuataca(): Guataca {
             hours: e.hours != null ? String(e.hours) : '',
             fee: e.fee ? String(e.fee) : '', cost: e.cost ? String(e.cost) : '',
             note: Lx(e.note), type: e.type, setlist: e.setlist,
+            eventLinks: (e.links || []).map((l) => ({ ...l })),
           },
         });
       },
@@ -593,6 +595,9 @@ export function useGuataca(): Guataca {
         const editingId = st.modal?.kind === 'newEvent' ? st.modal.id : undefined;
         const dte = f.date || '2026-11-07';
         const songIds = f.setlist || [];
+        const eventLinks = (f.eventLinks || []).map((l) => ({ label: l.label.trim(), url: l.url.trim() }))
+          .filter((l) => l.url)
+          .map((l) => ({ ...l, url: /^https?:\/\//i.test(l.url) ? l.url : `https://${l.url}` }));
         set({ modal: null, form: {} });
         const input = {
           title: f.title || 'Evento nuevo', venue: f.venue || 'Bay Area, CA', date: dte, time: f.time || '19:00', hours: parseNum(f.hours) || 0,
@@ -601,9 +606,11 @@ export function useGuataca(): Guataca {
         if (editingId) {
           await updateEvent(editingId, input);
           await persistSetlist(editingId, songIds);
+          await persistEventLinks(editingId, eventLinks);
         } else {
           const id = await createEvent(input);
           if (id && songIds.length) await persistSetlist(id, songIds);
+          if (id && eventLinks.length) await persistEventLinks(id, eventLinks);
         }
         toast(editingId ? t.eventSaved : t.eventCreated);
       },
@@ -668,5 +675,5 @@ export function useGuataca(): Guataca {
       toast,
       dismissToast,
     };
-  }, [derived, st, props, set, toast, dismissToast, user, signOut, refreshProfile, dbSongs, dbGear, dbThreads, dbMembers, dbLinks, myPollPicks, loading, mutating, error, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, updateEvent, createSong, updateSong, persistSongLinks, createTransaction, persistUpdateTransaction, persistDeleteTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistAddEventMedia, persistAddEventPhotos, persistDeleteEventMedia, persistUploadEventPhoto, persistRsvp, persistCreateThread, persistComment, persistThreadReaction, persistCommentReaction, persistDeleteComment, persistAddThreadMedia, persistDeleteThreadMedia, persistThreadRefs, persistUploadForumPhoto, persistCreateThreadPoll, persistAddThreadPollOption, persistVoteThreadPoll, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload, persistEventPinned, persistEventState, persistThreadArchived, persistThreadPinned]);
+  }, [derived, st, props, set, toast, dismissToast, user, signOut, refreshProfile, dbSongs, dbGear, dbThreads, dbMembers, dbLinks, myPollPicks, loading, mutating, error, isTabletViewport, isCoarsePointer, isMobileViewport, createEvent, updateEvent, createSong, updateSong, persistSongLinks, persistEventLinks, createTransaction, persistUpdateTransaction, persistDeleteTransaction, persistGear, persistInstrument, persistOnboard, persistMemberInstruments, persistSongInstruments, persistTake, persistDeleteTake, persistAddEventMedia, persistAddEventPhotos, persistDeleteEventMedia, persistUploadEventPhoto, persistRsvp, persistCreateThread, persistComment, persistThreadReaction, persistCommentReaction, persistDeleteComment, persistAddThreadMedia, persistDeleteThreadMedia, persistThreadRefs, persistUploadForumPhoto, persistCreateThreadPoll, persistAddThreadPollOption, persistVoteThreadPoll, persistFeedback, persistPoll, persistCustody, persistSetlist, persistSettle, persistUpload, persistEventPinned, persistEventState, persistThreadArchived, persistThreadPinned]);
 }

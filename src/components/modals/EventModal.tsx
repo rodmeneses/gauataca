@@ -2,7 +2,7 @@
  * Event detail modal (design lines 929–1111): header, 4 stat tiles, setlist,
  * media gallery, retrospective (ratings, well/improve, poll, my ratings) and footer.
  */
-import { CalendarPlus, Instagram, Link, Pencil, Pin, Share2 } from 'lucide-react';
+import { CalendarPlus, ExternalLink, Instagram, Link, Link2, Pencil, Pin, Share2 } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { Badge, Button, CloseButton, Modal, useConfirm } from '@/components/ui';
 import { downloadIcs } from '@/lib/ics';
@@ -115,6 +115,27 @@ export function EventModal() {
           onAdd={(songId, url) => addTake(ev.id, songId, url)}
           onDelete={(id) => confirm({ message: t.confirmDeleteTake, onConfirm: () => deleteTake(id) })}
         />
+      )}
+
+      {ev.links.length > 0 && (
+        <div className="py-5 px-6 border-b border-line-soft">
+          <h3 className="mt-0 mx-0 mb-[13px] font-display font-semibold text-[13px] leading-[normal] text-ink-body">{t.links}</h3>
+          <div className="flex flex-col gap-[7px]">
+            {ev.links.map((l, i) => (
+              <a
+                key={i}
+                href={l.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 py-3 px-[14px] rounded-[11px] border border-line bg-surface text-ink-body hover:text-ink-body no-underline font-sans font-medium text-[13px] leading-[normal]"
+              >
+                <Link2 size={16} strokeWidth={1.9} className="flex-none" style={{ color: 'var(--color-emerald-light)' }} />
+                <span className="flex-1 truncate">{l.label || l.url.replace(/^https?:\/\//, '')}</span>
+                <ExternalLink size={14} strokeWidth={2.1} style={{ color: 'var(--color-ink-dim)' }} />
+              </a>
+            ))}
+          </div>
+        </div>
       )}
 
       {(ev.hasMedia || isAdmin) && <EventMediaSection ev={ev} />}

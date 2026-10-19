@@ -99,6 +99,8 @@ export interface EventVm {
   /** Video links (Google Drive). */
   videos: { id: number; label: string; url: string }[];
   hasMedia: boolean;
+  /** Labelled links attached to the event. */
+  links: { label: string; url: string }[];
   /** Recordings ("takes") made during this practice event. */
   takes: TakeVm[];
   hasTakes: boolean;
@@ -195,6 +197,7 @@ export function eventVm(e: BandEvent, allSongs: Song[], ctx: Ctx): EventVm {
     photos: (e.media || []).filter((m) => m.kind === 'photo').map((m) => ({ id: m.id, url: m.url })),
     videos: (e.media || []).filter((m) => m.kind === 'video').map((m) => ({ id: m.id, label: L(lang, m.label), url: m.url })),
     hasMedia: (e.media || []).length > 0,
+    links: e.links ?? [],
     takes,
     hasTakes: takes.length > 0,
     hasFeedback: !!e.feedback,

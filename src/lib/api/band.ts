@@ -116,6 +116,16 @@ export async function setSongLinks(
   }
 }
 
+/** Replace an event's links (delete then insert, preserving order via position). */
+export async function setEventLinks(eventId: string, links: { label: string; url: string }[]): Promise<void> {
+  await supabase.from('event_links').delete().eq('event_id', eventId).throwOnError();
+  if (links.length) {
+    await supabase.from('event_links').insert(
+      links.map((l, i) => ({ event_id: eventId, label: l.label, url: l.url, position: i + 1 })),
+    ).throwOnError();
+  }
+}
+
 /** Create a custom instrument in the catalog; returns its id. */
 export async function createInstrument(name: string): Promise<string> {
   const id = newId('i');

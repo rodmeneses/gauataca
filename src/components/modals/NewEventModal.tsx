@@ -7,6 +7,43 @@ import type { EventType } from '@/types';
 import { FormHeader, FormBody, FormFooter, useValidated } from './FormFrame';
 import { validateEvent } from '../../lib/validate';
 
+/* --------------------------------------------------------- event link editor */
+function EventLinksEditor() {
+  const { t, form, setForm } = useGuataca();
+  const links = form.eventLinks || [];
+  const set = (next: { label: string; url: string }[]) => setForm('eventLinks', next);
+  const update = (i: number, patch: Partial<{ label: string; url: string }>) =>
+    set(links.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
+  const remove = (i: number) => set(links.filter((_, idx) => idx !== i));
+
+  return (
+    <div>
+      <div className="font-display font-semibold text-[10.5px] leading-[normal] tracking-[.11em] uppercase text-ink-muted mb-[9px]">{t.links}</div>
+      <div className="flex flex-col gap-[8px]">
+        {links.map((l, i) => (
+          <div key={i} className="flex flex-col gap-[6px] p-[10px] rounded-[10px] border border-line-soft bg-surface">
+            <div className="flex gap-2 items-center">
+              <Input value={l.label} onChange={(e) => update(i, { label: e.target.value })} placeholder={t.linkLabel} className="flex-1" />
+              <button type="button" onClick={() => remove(i)} title={t.removeLink} aria-label={t.removeLink} className="grid place-items-center w-[28px] h-[28px] rounded-[8px] border border-line bg-raised text-ink-muted hover:text-ink-body hover:border-rose/40 cursor-pointer flex-none">
+                <X size={13} strokeWidth={2.2} />
+              </button>
+            </div>
+            <Input mono inputMode="url" autoCapitalize="none" autoCorrect="off" value={l.url} onChange={(e) => update(i, { url: e.target.value })} placeholder="https://…" className="text-[13px]" />
+          </div>
+        ))}
+      </div>
+      <button
+        type="button"
+        onClick={() => set([...links, { label: '', url: '' }])}
+        className="mt-[9px] inline-flex items-center gap-[6px] py-[8px] px-[12px] rounded-[9px] border border-emerald/40 bg-[var(--color-tint-emerald)] text-emerald-light font-sans font-semibold text-[12.5px] leading-[normal] cursor-pointer hover:bg-[var(--color-tint-emerald)]"
+      >
+        <Plus size={14} strokeWidth={2.2} />
+        {t.addLink}
+      </button>
+    </div>
+  );
+}
+
 /* -------------------------------------------------------------- new event */
 export function NewEventModal() {
   const { t, lang, form, setForm, closeModal, saveEvent, songs, modal } = useGuataca();
@@ -69,6 +106,8 @@ export function NewEventModal() {
             className="text-[13.5px]"
           />
         </Field>
+
+        <EventLinksEditor />
 
         {/* setlist picker */}
         <div>

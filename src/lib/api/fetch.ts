@@ -105,6 +105,7 @@ function mapEvents(
   events: Row[],
   eventSongs: Row[],
   eventMedia: Row[],
+  eventLinks: Row[],
   attendance: Row[],
   feedback: Row[],
   polls: Row[],
@@ -114,6 +115,7 @@ function mapEvents(
 ): BandEvent[] {
   const songsByEvent = groupBy(eventSongs, 'event_id');
   const mediaByEvent = groupBy(eventMedia, 'event_id');
+  const linksByEvent = groupBy(eventLinks, 'event_id');
   const attByEvent = groupBy(attendance, 'event_id');
   const fbByEvent = groupBy(feedback, 'event_id');
   const pollsByEvent = groupBy(polls, 'event_id');
@@ -146,6 +148,7 @@ function mapEvents(
       flyer: e.flyer_url ?? undefined,
       prevDate: e.previous_starts_at ? e.previous_starts_at.slice(0, 10) : undefined,
       media: (mediaByEvent.get(e.id) ?? []).map((m) => ({ id: m.id, kind: m.kind, label: { es: m.label_es, en: m.label_en }, url: m.url })),
+      links: (linksByEvent.get(e.id) ?? []).sort((a, b) => a.position - b.position).map((l) => ({ label: l.label, url: l.url })),
       feedback: fbRows.length ? buildFeedback(fbRows, poll, optsByPoll, votesByOpt, memberShort) : undefined,
       pinned: !!e.pinned,
     };
@@ -284,7 +287,7 @@ function mapThreads(
 /* ------------------------------------------------------------------ fetch */
 export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
   const [
-    profiles, profileInstruments, vocals, songs, songInstruments, songLinks, events, eventSongs, eventMedia, attendance,
+    profiles, profileInstruments, vocals, songs, songInstruments, songLinks, events, eventSongs, eventMedia, eventLinks, attendance,
     feedback, polls, pollOptions, pollVotes, gear, transactions, threads, threadReactions, threadComments, threadCommentReactions,
     threadMedia, threadRefs, threadPolls, threadPollOptions, threadPollVotes, instruments, takes, links,
   ] = await Promise.all([
@@ -297,6 +300,7 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
     supabase.from('events').select('*'),
     supabase.from('event_songs').select('*'),
     supabase.from('event_media').select('*'),
+    supabase.from('event_links').select('*'),
     supabase.from('event_attendance').select('*'),
     supabase.from('feedback').select('*'),
     supabase.from('polls').select('*'),
@@ -337,7 +341,7 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
   return {
     songs: mapSongs(songs.data ?? [], songInstruments.data ?? [], songLinks.data ?? []),
     events: mapEvents(
-      events.data ?? [], eventSongs.data ?? [], eventMedia.data ?? [], attendance.data ?? [],
+      events.data ?? [], eventSongs.data ?? [], eventMedia.data ?? [], eventLinks.data ?? [], attendance.data ?? [],
       feedback.data ?? [], polls.data ?? [], pollOptions.data ?? [], pollVotes.data ?? [], members,
     ),
     transactions: tx,
