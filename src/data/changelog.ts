@@ -16,6 +16,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.11.0',
+    date: '2026-10-19',
+    title: { es: 'Enlaces en los eventos', en: 'Event links' },
+    changes: [
+      { es: 'Ahora puedes agregar enlaces a un evento (documento del setlist, página del lugar, carpeta de Drive…) desde el formulario de edición, igual que en las canciones; aparecen en el detalle del evento.', en: 'You can now add links to an event (setlist doc, venue page, Drive folder…) from the edit form, just like on songs; they show up in the event details.' },
+    ],
+  },
+  {
     version: '0.10.0',
     date: '2026-10-11',
     title: { es: 'Formularios y listas más cómodos', en: 'Smoother forms and lists' },

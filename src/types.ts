@@ -130,6 +130,8 @@ export interface BandEvent {
   flyer?: string;
   prevDate?: string;
   media?: { id: number; kind: 'photo' | 'video'; label: Localized; url: string }[];
+  /** Labelled links (setlist doc, venue page, …), in display order. */
+  links?: { label: string; url: string }[];
   feedback?: EventFeedback;
   /** Admin-pinned events sort to the top of the calendar's upcoming/history lists. */
   pinned: boolean;
@@ -326,6 +328,8 @@ export interface FormState {
   genre?: GenreId;
   /** Song form: streaming + chart links (kind, label, url). */
   songLinks?: { kind: LinkKind; label: string; url: string }[];
+  /** Event form: labelled links. */
+  eventLinks?: { label: string; url: string }[];
   /** Song ids picked for a new event's setlist. */
   setlist?: string[];
   /** New gear form. */

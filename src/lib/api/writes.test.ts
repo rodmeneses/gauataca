@@ -66,6 +66,7 @@ const writes: Array<[string, () => Promise<unknown>]> = [
   ['createSong', () => band.createSong(song, 'u')],
   ['updateSong', () => band.updateSong('s', song, 'u')],
   ['setSongLinks', () => band.setSongLinks('s', [{ kind: 'youtube', label: 'l', url: 'https://y' }])],
+  ['setEventLinks', () => band.setEventLinks('e', [{ label: 'l', url: 'https://x' }])],
   ['createInstrument', () => band.createInstrument('cuatro')],
   ['onboard', () => band.onboard('u', [{ id: 'i1', lv: 'expert' }], ['lead'])],
   ['setSongInstruments', () => band.setSongInstruments('s', ['i1'])],
