@@ -45,6 +45,8 @@ export interface BandEvent {
   flyer?: string;
   prevDate?: string;
   media?: { id: number; kind: 'photo' | 'video'; label: Localized; url: string }[];
+  /** Labelled links (setlist doc, venue page, …), in display order. */
+  links?: { label: string; url: string }[];
   feedback?: EventFeedback;
   /** Admin-pinned events sort to the top of the calendar's upcoming/history lists. */
   pinned: boolean;

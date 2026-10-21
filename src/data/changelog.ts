@@ -16,13 +16,21 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
-    version: '0.11.0',
+    version: '0.12.0',
     date: '2026-10-21',
     title: { es: 'Disponibilidad, mejor búsqueda y carga más fluida', en: 'Availability, better search and smoother loading' },
     changes: [
       { es: 'Nueva pestaña Disponibilidad en el calendario: un admin propone varias fechas para una presentación y cada quien marca Puedo, Quizás o No puedo. La app resalta la mejor fecha y, con un toque, crea el evento en ese día.', en: 'New Availability tab in the calendar: an admin proposes several dates for a gig and everyone marks I can, Maybe or Can\'t. The app highlights the best date and, with one tap, creates the event on that day.' },
       { es: 'La búsqueda tolera errores de escritura (“lanera” encuentra “Llanera”), pone primero las coincidencias exactas, tiene filtros por tipo y recuerda tus búsquedas recientes.', en: 'Search now forgives typos (“lanera” finds “Llanera”), puts exact matches first, has filters by type and remembers your recent searches.' },
       { es: 'Mientras carga la app, la pantalla de espera imita la pantalla a la que vas (panel, repertorio, fondo, …) en vez de un bloque genérico.', en: 'While the app loads, the placeholder now mirrors the screen you are heading to (dashboard, repertoire, fund, …) instead of a generic block.' },
+    ],
+  },
+  {
+    version: '0.11.0',
+    date: '2026-10-19',
+    title: { es: 'Enlaces en los eventos', en: 'Event links' },
+    changes: [
+      { es: 'Ahora puedes agregar enlaces a un evento (documento del setlist, página del lugar, carpeta de Drive…) desde el formulario de edición, igual que en las canciones; aparecen en el detalle del evento.', en: 'You can now add links to an event (setlist doc, venue page, Drive folder…) from the edit form, just like on songs; they show up in the event details.' },
     ],
   },
   {

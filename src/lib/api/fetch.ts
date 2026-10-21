@@ -12,7 +12,7 @@ import { mapAvailability } from './map/availability';
 /* ------------------------------------------------------------------ fetch */
 export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
   const [
-    profiles, profileInstruments, vocals, songs, songInstruments, songLinks, events, eventSongs, eventMedia, attendance,
+    profiles, profileInstruments, vocals, songs, songInstruments, songLinks, events, eventSongs, eventMedia, eventLinks, attendance,
     feedback, polls, pollOptions, pollVotes, gear, transactions, threads, threadReactions, threadComments, threadCommentReactions,
     threadMedia, threadRefs, threadPolls, threadPollOptions, threadPollVotes, instruments, takes, links,
     availabilityPolls, availabilityDates, availabilityVotes,
@@ -26,6 +26,7 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
     supabase.from('events').select('*'),
     supabase.from('event_songs').select('*'),
     supabase.from('event_media').select('*'),
+    supabase.from('event_links').select('*'),
     supabase.from('event_attendance').select('*'),
     supabase.from('feedback').select('*'),
     supabase.from('polls').select('*'),
@@ -69,7 +70,7 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
   return {
     songs: mapSongs(songs.data ?? [], songInstruments.data ?? [], songLinks.data ?? []),
     events: mapEvents(
-      events.data ?? [], eventSongs.data ?? [], eventMedia.data ?? [], attendance.data ?? [],
+      events.data ?? [], eventSongs.data ?? [], eventMedia.data ?? [], eventLinks.data ?? [], attendance.data ?? [],
       feedback.data ?? [], polls.data ?? [], pollOptions.data ?? [], pollVotes.data ?? [], members,
     ),
     transactions: tx,

@@ -53,6 +53,7 @@ export function eventActions(ctx: ActionCtx): EventActions {
           hours: e.hours != null ? String(e.hours) : '',
           fee: e.fee ? String(e.fee) : '', cost: e.cost ? String(e.cost) : '',
           note: Lx(e.note), type: e.type, setlist: e.setlist,
+          eventLinks: (e.links || []).map((l) => ({ ...l })),
         },
       });
     },
@@ -60,6 +61,9 @@ export function eventActions(ctx: ActionCtx): EventActions {
       const editingId = st.modal?.kind === 'newEvent' ? st.modal.id : undefined;
       const dte = f.date || '2026-11-07';
       const songIds = f.setlist || [];
+      const eventLinks = (f.eventLinks || []).map((l) => ({ label: l.label.trim(), url: l.url.trim() }))
+        .filter((l) => l.url)
+        .map((l) => ({ ...l, url: /^https?:\/\//i.test(l.url) ? l.url : `https://${l.url}` }));
       set({ modal: null, form: {} });
       const input = {
         title: f.title || 'Evento nuevo', venue: f.venue || 'Bay Area, CA', date: dte, time: f.time || '19:00', hours: parseNum(f.hours) || 0,
@@ -68,9 +72,11 @@ export function eventActions(ctx: ActionCtx): EventActions {
       if (editingId) {
         await data.updateEvent(editingId, input);
         await data.setEventSetlist(editingId, songIds);
+        await data.setEventLinks(editingId, eventLinks);
       } else {
         const id = await data.createEvent(input);
         if (id && songIds.length) await data.setEventSetlist(id, songIds);
+        if (id && eventLinks.length) await data.setEventLinks(id, eventLinks);
       }
       toast(editingId ? t.eventSaved : t.eventCreated);
     },

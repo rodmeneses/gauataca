@@ -12,7 +12,7 @@ import { classifySaveError } from './errors';
 import {
   addComment as apiAddComment, addEventMedia as apiAddEventMedia, addEventPhotos as apiAddEventPhotos, addTake as apiAddTake, createEvent as apiCreateEvent, createGear as apiCreateGear, createInstrument as apiCreateInstrument, createLink as apiCreateLink, deleteLink as apiDeleteLink,
   createSong as apiCreateSong, createThread as apiCreateThread, addThreadPollOption as apiAddThreadPollOption, createThreadPoll as apiCreateThreadPoll, createTransaction as apiCreateTransaction, deleteComment as apiDeleteComment, deleteEventMedia as apiDeleteEventMedia, deleteTake as apiDeleteTake, deleteThreadMedia as apiDeleteThreadMedia, deleteTransaction as apiDeleteTransaction, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
-  setEventPinned as apiSetEventPinned, setEventState as apiSetEventState, setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, setSongInstruments as apiSetSongInstruments, setSongLinks as apiSetSongLinks,
+  setEventPinned as apiSetEventPinned, setEventState as apiSetEventState, setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, setSongInstruments as apiSetSongInstruments, setSongLinks as apiSetSongLinks, setEventLinks as apiSetEventLinks,
   addThreadMedia as apiAddThreadMedia, addThreadRefs as apiAddThreadRefs, settleEvent as apiSettleEvent, setCommentReaction as apiSetCommentReaction, setThreadArchived as apiSetThreadArchived, setThreadPinned as apiSetThreadPinned, setThreadReaction as apiSetThreadReaction, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateEvent as apiUpdateEvent, updateMemberInstruments as apiUpdateMemberInstruments, updateSong as apiUpdateSong, updateTransaction as apiUpdateTransaction, voteThreadPoll as apiVoteThreadPoll,
   createAvailabilityPoll as apiCreateAvailabilityPoll, deleteAvailabilityPoll as apiDeleteAvailabilityPoll, setAvailability as apiSetAvailability, setAvailabilityClosed as apiSetAvailabilityClosed,
   uploadEventPhoto as apiUploadEventPhoto, uploadForumPhoto as apiUploadForumPhoto, uploadProof as apiUploadProof, type DataSnapshot,
@@ -22,6 +22,7 @@ import type { AvailabilityAnswer, EventType, LinkCategory, GearCondition, GenreI
 export interface CreateThreadInput { title: string; body: string; }
 export interface CreateEventInput { title: string; venue: string; date: string; time: string; hours: number; fee: number; cost: number; note: string; type: EventType; }
 export interface CreateSongInput { title: string; genre: GenreId; key: string; bpm: number; dur: string; }
+export interface EventLinkInput { label: string; url: string; }
 export interface SongLinkInput { kind: LinkKind; label: string; url: string; }
 export interface CreateTxInput { kind: TxKind; amt: number; date: string; desc: string; proof: string | null; proofKind: ProofKind; event?: string; gear?: string; category?: TxCategory; contributor?: string; }
 export interface CreateGearInput { name: string; cost: number; date: string; custodian: string; cond: GearCondition; note: string; boughtBy: string; proof: string | null; proofKind: ProofKind; }
@@ -39,6 +40,7 @@ export interface DataValue extends DataSnapshot {
   createSong: (input: CreateSongInput) => Promise<string | undefined>;
   updateSong: (id: string, input: CreateSongInput) => Promise<void>;
   setSongLinks: (songId: string, links: SongLinkInput[]) => Promise<void>;
+  setEventLinks: (eventId: string, links: EventLinkInput[]) => Promise<void>;
   createTransaction: (input: CreateTxInput) => Promise<void>;
   updateTransaction: (id: string, input: CreateTxInput) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
@@ -217,6 +219,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       createSong: (input) => run(() => apiCreateSong(input, uid)),
       updateSong: (id, input) => run(() => apiUpdateSong(id, input, uid)),
       setSongLinks: (songId, links) => run(() => apiSetSongLinks(songId, links)),
+      setEventLinks: (eventId, links) => run(() => apiSetEventLinks(eventId, links)),
       createTransaction: (input) => run(() => apiCreateTransaction(input, uid)),
       updateTransaction: (id, input) => run(() => apiUpdateTransaction(id, input, uid)),
       deleteTransaction: (id) => run(() => apiDeleteTransaction(id)),

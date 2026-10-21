@@ -91,6 +91,8 @@ export interface FormState {
   genre?: GenreId;
   /** Song form: streaming + chart links (kind, label, url). */
   songLinks?: { kind: LinkKind; label: string; url: string }[];
+  /** Event form: labelled links. */
+  eventLinks?: { label: string; url: string }[];
   /** Song ids picked for a new event's setlist. */
   setlist?: string[];
   /** New gear form. */

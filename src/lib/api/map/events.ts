@@ -42,6 +42,7 @@ export function mapEvents(
   events: Row[],
   eventSongs: Row[],
   eventMedia: Row[],
+  eventLinks: Row[],
   attendance: Row[],
   feedback: Row[],
   polls: Row[],
@@ -51,6 +52,7 @@ export function mapEvents(
 ): BandEvent[] {
   const songsByEvent = groupBy(eventSongs, 'event_id');
   const mediaByEvent = groupBy(eventMedia, 'event_id');
+  const linksByEvent = groupBy(eventLinks, 'event_id');
   const attByEvent = groupBy(attendance, 'event_id');
   const fbByEvent = groupBy(feedback, 'event_id');
   const pollsByEvent = groupBy(polls, 'event_id');
@@ -83,6 +85,7 @@ export function mapEvents(
       flyer: e.flyer_url ?? undefined,
       prevDate: e.previous_starts_at ? e.previous_starts_at.slice(0, 10) : undefined,
       media: (mediaByEvent.get(e.id) ?? []).map((m) => ({ id: m.id, kind: m.kind, label: { es: m.label_es, en: m.label_en }, url: m.url })),
+      links: (linksByEvent.get(e.id) ?? []).sort((a, b) => a.position - b.position).map((l) => ({ label: l.label, url: l.url })),
       feedback: fbRows.length ? buildFeedback(fbRows, poll, optsByPoll, votesByOpt, memberShort) : undefined,
       pinned: !!e.pinned,
     };

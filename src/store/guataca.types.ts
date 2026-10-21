@@ -74,6 +74,7 @@ export interface FormVm {
   genre: GenreId;
   songLinks: { kind: LinkKind; label: string; url: string }[];
   setlist: string[];
+  eventLinks: { label: string; url: string }[];
   name: string;
   custodian: string;
   cond: GearCondition;

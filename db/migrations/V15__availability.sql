@@ -1,4 +1,4 @@
--- GUATACA — V14: availability polls.
+-- GUATACA — V15: availability polls.
 --
 -- Before a gig is on the calendar, an admin proposes a few candidate dates and each
 -- member marks which ones they can make:
