@@ -3,6 +3,7 @@ import { Pin } from 'lucide-react';
 import { useGuataca } from '../../store';
 import { AddButton, Pill, Segment } from '../ui';
 import { PhotoStrip } from '../ui/PhotoStrip';
+import { AvailabilityPanel } from '../availability/AvailabilityPanel';
 
 export function MobileAgenda() {
   const { t, isAdmin, state, calList, setCalTab, openNewEvent, openEvent, toggleEventPin } = useGuataca();
@@ -17,12 +18,16 @@ export function MobileAgenda() {
         <Pill active={tab === 'history'} color="var(--color-emerald)" size="md" className="flex-1" onClick={() => setCalTab('history')}>
           {t.history}
         </Pill>
+        <Pill active={tab === 'availability'} color="var(--color-emerald)" size="md" className="flex-1" onClick={() => setCalTab('availability')}>
+          {t.availability}
+        </Pill>
       </Segment>
-      {isAdmin && (
+      {tab === 'availability' && <AvailabilityPanel />}
+      {isAdmin && tab !== 'availability' && (
         <AddButton block onClick={openNewEvent}>{t.newEvent}</AddButton>
       )}
 
-      {calList.map((e) => (
+      {tab !== 'availability' && calList.map((e) => (
         <article key={e.id} className={`bg-surface border border-line rounded-2xl p-4 flex flex-col gap-3 ${e.state === 'cancelled' ? 'opacity-60' : ''}`}>
           <div className="flex items-center gap-1.5 flex-wrap">
             <span

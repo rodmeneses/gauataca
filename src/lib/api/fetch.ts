@@ -7,6 +7,7 @@ import { mapSongs, mapTakes } from './map/songs';
 import { mapEvents } from './map/events';
 import { mapTransactions, mapGear } from './map/ledger';
 import { mapThreads } from './map/forum';
+import { mapAvailability } from './map/availability';
 
 /* ------------------------------------------------------------------ fetch */
 export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
@@ -14,6 +15,7 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
     profiles, profileInstruments, vocals, songs, songInstruments, songLinks, events, eventSongs, eventMedia, attendance,
     feedback, polls, pollOptions, pollVotes, gear, transactions, threads, threadReactions, threadComments, threadCommentReactions,
     threadMedia, threadRefs, threadPolls, threadPollOptions, threadPollVotes, instruments, takes, links,
+    availabilityPolls, availabilityDates, availabilityVotes,
   ] = await Promise.all([
     supabase.from('profiles').select('*'),
     supabase.from('profile_instruments').select('*'),
@@ -43,6 +45,9 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
     supabase.from('instruments').select('*'),
     supabase.from('takes').select('*'),
     supabase.from('links').select('*').order('created_at', { ascending: false }),
+    supabase.from('availability_polls').select('*'),
+    supabase.from('availability_dates').select('*'),
+    supabase.from('availability_votes').select('*'),
   ]);
 
   const members = mapMembers(profiles.data ?? [], profileInstruments.data ?? [], vocals.data ?? []);
@@ -77,6 +82,7 @@ export async function fetchAll(userId: string | null): Promise<DataSnapshot> {
     members,
     instruments: mapInstruments(instruments.data ?? []),
     takes: mapTakes(takes.data ?? []),
+    availability: mapAvailability(availabilityPolls.data ?? [], availabilityDates.data ?? [], availabilityVotes.data ?? []),
     myPollPicks,
   };
 }

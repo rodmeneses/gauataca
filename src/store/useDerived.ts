@@ -86,7 +86,7 @@ export function useDerived() {
       t, lang, Lx, ctx, isAdmin, staleDays, me, instruments,
       allSongs, allEvents, allTx, income, expense, balance, upcomingRaw, nextRaw,
       songs, staleSongs, filteredSongs, genreChips, evm,
-      upcoming, history, events, nextEvent, dashUpcoming, calList: calTab === 'upcoming' ? upcoming : history,
+      upcoming, history, events, nextEvent, dashUpcoming, calList: calTab === 'history' ? history : upcoming,
       tx, recentTx, contributions, gear, threads, forumList, members,
     };
   }, [lang, openSong, genre, staleOnly, q, songSort, calTab, txFilter, txDate, forumTab, role, customInstruments, props.staleDays, user, profile, dbSongs, dbEvents, dbTx, dbGear, dbThreads, dbMembers, dbInstruments, dbTakes]);

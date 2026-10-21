@@ -59,3 +59,18 @@ export interface Take {
   /** Take number for this song (1-based, global across all practices). */
   n: number;
 }
+
+/** A member's answer for one candidate date — absent = hasn't answered yet. */
+export type AvailabilityAnswer = 'yes' | 'maybe' | 'no';
+
+/** "Which date works?" poll: candidate dates plus every member's answers. */
+export interface AvailabilityPoll {
+  id: number;
+  title: string;
+  closed: boolean;
+  createdBy: string;
+  /** Candidate dates, ISO (YYYY-MM-DD), ascending. */
+  dates: string[];
+  votes: { date: string; profileId: string; answer: AvailabilityAnswer }[];
+}
+

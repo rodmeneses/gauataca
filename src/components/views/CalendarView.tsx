@@ -6,6 +6,7 @@ import { Clock, Lock, MapPin, Mic, Music, Pin, RefreshCcw } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { AddButton, Badge, Button, Card, Pill, Segment } from '@/components/ui';
 import { PhotoStrip } from '@/components/ui/PhotoStrip';
+import { AvailabilityPanel } from '@/components/availability/AvailabilityPanel';
 
 export function CalendarView() {
   const { t, state, isAdmin, isMember, calList, setCalTab, openNewEvent, openEvent, toggleEventPin } = useGuataca();
@@ -22,6 +23,9 @@ export function CalendarView() {
           <Pill active={tab === 'history'} color="var(--color-emerald)" onClick={() => setCalTab('history')}>
             {t.history}
           </Pill>
+          <Pill active={tab === 'availability'} color="var(--color-emerald)" onClick={() => setCalTab('availability')}>
+            {t.availability}
+          </Pill>
         </Segment>
         {isAdmin && (
           <AddButton className="ml-auto" onClick={openNewEvent}>
@@ -36,8 +40,10 @@ export function CalendarView() {
         )}
       </div>
 
+      {tab === 'availability' && <AvailabilityPanel />}
+
       {/* ---- event cards */}
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(370px,1fr))] gap-[14px]">
+      {tab !== 'availability' && <div className="grid grid-cols-[repeat(auto-fill,minmax(370px,1fr))] gap-[14px]">
         {calList.map((e) => (
           <Card key={e.id} as="article" className={`overflow-hidden flex flex-col ${e.state === 'cancelled' ? 'opacity-60' : ''}`}>
             <div className="h-[3px] opacity-70" style={{ background: e.state === 'cancelled' ? 'var(--color-ink-muted)' : e.typeColor }} />
@@ -140,7 +146,7 @@ export function CalendarView() {
             </div>
           </Card>
         ))}
-      </div>
+      </div>}
     </div>
   );
 }

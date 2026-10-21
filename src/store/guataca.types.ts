@@ -133,7 +133,7 @@ export interface GuatacaView {
   events: EventVm[];
   upcoming: EventVm[];
   history: EventVm[];
-  /** Upcoming or history depending on calTab. */
+  /** History when calTab is 'history', otherwise upcoming (the availability tab shows polls instead). */
   calList: EventVm[];
   /** Next active upcoming event (for dashboard / share). */
   nextEvent: EventVm | null;

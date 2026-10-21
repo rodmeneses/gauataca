@@ -5,7 +5,7 @@
  * write rolls back by itself.
  */
 import type { DataSnapshot } from './api';
-import type { ReactionKind, ReactionTally, RsvpStatus } from '../types';
+import type { AvailabilityAnswer, ReactionKind, ReactionTally, RsvpStatus } from '../types';
 
 export type Patch = (s: DataSnapshot) => DataSnapshot;
 
@@ -33,6 +33,21 @@ export const rsvp = (eventId: string, status: RsvpStatus | null, userId: string)
     else attendance[userId] = status;
     return { ...e, attendance };
   }),
+});
+
+/** Set (or, with `null`, clear) `userId`'s answer for one date of an availability poll. */
+export const answerAvailability = (pollId: number, date: string, answer: AvailabilityAnswer | null, userId: string): Patch => (s) => ({
+  ...s,
+  availability: s.availability.map((p) => {
+    if (p.id !== pollId) return p;
+    const others = p.votes.filter((v) => !(v.date === date && v.profileId === userId));
+    return { ...p, votes: answer === null ? others : [...others, { date, profileId: userId, answer }] };
+  }),
+});
+
+export const closeAvailability = (id: number, closed: boolean): Patch => (s) => ({
+  ...s,
+  availability: s.availability.map((p) => (p.id === id ? { ...p, closed } : p)),
 });
 
 /** Move `userId` from their previous reaction (if any) to `next` in a tally. */

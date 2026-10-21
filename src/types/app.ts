@@ -10,7 +10,7 @@ export type View = 'dashboard' | 'calendar' | 'repertoire' | 'ledger' | 'brainst
 export type Device = 'auto' | 'desktop' | 'tablet' | 'mobile';
 export type Layout = 'phone' | 'tablet' | 'desktop';
 export type MobileTab = 'agenda' | 'repertoire' | 'fund' | 'brainstorm' | 'links' | 'profile';
-export type CalTab = 'upcoming' | 'history';
+export type CalTab = 'upcoming' | 'history' | 'availability';
 /** Brainstorm/forum tab: everyday ideas, or ones an admin has archived. */
 export type ForumTab = 'active' | 'archived';
 
