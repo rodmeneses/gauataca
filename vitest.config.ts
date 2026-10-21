@@ -38,7 +38,7 @@ export default defineConfig({
         'src/store/vm/*.ts',
         'src/store/derive.ts',
         'src/data/changelog.ts',
-        'src/i18n.ts',
+        'src/i18n/*.ts',
       ],
       thresholds: {
         lines: 95,

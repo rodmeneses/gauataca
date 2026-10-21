@@ -1,0 +1,43 @@
+/** Shared band links. */
+import { defineStrings } from './define';
+
+export const links = defineStrings(
+  {
+    links: 'Enlaces',
+    addLink: 'Agregar enlace',
+    linkLabel: 'Etiqueta',
+    linkUrl: 'URL',
+    removeLink: 'Quitar',
+    subLinks: 'Carpetas, listas y chats del grupo',
+    newLink: 'Nuevo enlace',
+    noLinks: 'Aún no hay enlaces.',
+    linkTitle: 'Título',
+    linkCategory: 'Categoría',
+    linkInvalidUrl: 'Escribe una URL válida (https://…)',
+    catDocs: 'Documentos',
+    catMusic: 'Música',
+    catSocial: 'Redes',
+    catLogistics: 'Logística',
+    catOther: 'Otros',
+    deleteLink: 'Eliminar enlace',
+  },
+  {
+    links: 'Links',
+    addLink: 'Add link',
+    linkLabel: 'Label',
+    linkUrl: 'URL',
+    removeLink: 'Remove',
+    subLinks: 'Folders, playlists and group chats',
+    newLink: 'New link',
+    noLinks: 'No links yet.',
+    linkTitle: 'Title',
+    linkCategory: 'Category',
+    linkInvalidUrl: 'Enter a valid URL (https://…)',
+    catDocs: 'Docs',
+    catMusic: 'Music',
+    catSocial: 'Social',
+    catLogistics: 'Logistics',
+    catOther: 'Other',
+    deleteLink: 'Delete link',
+  },
+);
