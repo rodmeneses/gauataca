@@ -11,7 +11,7 @@ import type { FormErrors } from '../../lib/validate';
  * Inline validation for a form modal. A field's error shows once it holds a bad
  * value, or for every bad field after a save attempt; saving with errors is blocked.
  */
-export function useValidated(errors: FormErrors, onSave: () => void) {
+export function useValidated(errors: FormErrors, onSave: () => void | Promise<void>) {
   const { t } = useGuataca();
   const [tried, setTried] = useState(false);
   const err = (field: string, value: string | undefined): string | undefined => {
@@ -24,7 +24,7 @@ export function useValidated(errors: FormErrors, onSave: () => void) {
       haptic('error');
       return;
     }
-    onSave();
+    void onSave();
   };
   return { err, save };
 }

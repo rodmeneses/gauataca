@@ -1,5 +1,5 @@
 /** Read side: map PostgREST rows into events domain shapes. */
-import { Row, groupBy } from '../shared';
+import { type Row, groupBy } from '../shared';
 import type { BandEvent, EventFeedback, Member } from '../../../types';
 
 /* ------------------------------------------------------------------ events */

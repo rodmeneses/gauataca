@@ -54,7 +54,7 @@ export function NewThreadModal() {
             onChange={(v) => setForm('threadBody', v)}
             onSend={() => {
               if (canSave) {
-                saveThread(files, poll);
+                void saveThread(files, poll);
                 setFiles([]);
               }
             }}
@@ -179,7 +179,7 @@ export function NewThreadModal() {
         saveDisabled={!canSave}
         onSave={() => {
           if (canSave) {
-            saveThread(files, poll);
+            void saveThread(files, poll);
             setFiles([]);
           }
         }}

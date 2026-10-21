@@ -6,7 +6,7 @@
  * `markdownLite` — see that file for the supported syntax. Author line breaks
  * within a paragraph are preserved (`whitespace-pre-wrap`).
  */
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { CalendarDays, Music } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { parseMentions } from '@/lib/mentions';

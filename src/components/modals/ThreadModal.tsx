@@ -171,7 +171,7 @@ export function ThreadModal() {
           onChange={(e) => {
             const picked = Array.from(e.target.files ?? []);
             e.target.value = '';
-            if (picked.length) addThreadPhotos(th.id, picked);
+            if (picked.length) void addThreadPhotos(th.id, picked);
           }}
         />
       </div>

@@ -156,8 +156,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       if (offlineQueue.size() === 0 || failed > 0) window.dispatchEvent(new CustomEvent('guataca:queue-flushed', { detail: { failed } }));
       await reload({ silent: true });
     };
-    window.addEventListener('online', onOnline);
-    return () => window.removeEventListener('online', onOnline);
+    const handler = () => { void onOnline(); };
+    window.addEventListener('online', handler);
+    return () => window.removeEventListener('online', handler);
   }, [reload]);
 
   const value = useMemo<DataValue>(() => {

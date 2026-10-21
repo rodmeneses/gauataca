@@ -1,5 +1,5 @@
 /** Read side: map PostgREST rows into ledger domain shapes. */
-import { Row } from '../shared';
+import { type Row } from '../shared';
 import type { Gear, Transaction } from '../../../types';
 
 /* ------------------------------------------------------------ transactions */

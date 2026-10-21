@@ -1,5 +1,5 @@
 /** Read side: map PostgREST rows into songs domain shapes. */
-import { Row, groupBy } from '../shared';
+import { type Row, groupBy } from '../shared';
 import type { LinkKind, Song, Take } from '../../../types';
 
 /* -------------------------------------------------------------------- songs */

@@ -1,5 +1,5 @@
 /** Read side: map PostgREST rows into members domain shapes. */
-import { Row, groupBy, shortName, initials } from '../shared';
+import { type Row, groupBy, shortName, initials } from '../shared';
 import type { Instrument, Member } from '../../../types';
 
 /* ------------------------------------------------------------------ members */
