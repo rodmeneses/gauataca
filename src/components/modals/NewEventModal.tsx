@@ -4,12 +4,13 @@ import { Plus, Search, X } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { DatePicker, Field, Input, Modal, Select, Textarea } from '@/components/ui';
 import type { EventType } from '@/types';
-import { FormHeader, FormBody, FormFooter, useValidated } from './FormFrame';
+import { useFormBind, FormHeader, FormBody, FormFooter, useValidated } from './FormFrame';
 import { validateEvent } from '../../lib/validate';
 
 /* -------------------------------------------------------------- new event */
 export function NewEventModal() {
   const { t, lang, form, setForm, closeModal, saveEvent, songs, modal } = useGuataca();
+  const bind = useFormBind();
   const editing = modal?.kind === 'newEvent' && !!modal.id;
   const [query, setQuery] = useState('');
   const { err, save } = useValidated(validateEvent(form), saveEvent);
@@ -29,7 +30,7 @@ export function NewEventModal() {
       <FormHeader title={editing ? t.editEvent : t.newEvent} onClose={closeModal} />
       <FormBody>
         <Field label={t.titleL} error={err('title', form.title)}>
-          <Input aria-invalid={!!err('title', form.title) || undefined} value={form.title} onChange={(e) => setForm('title', e.target.value)} placeholder="Festival Latino de Fruitvale" />
+          <Input aria-invalid={!!err('title', form.title) || undefined} {...bind('title')} placeholder="Festival Latino de Fruitvale" />
         </Field>
         <Field label={t.type}>
           <Select value={form.type} onChange={(e) => setForm('type', e.target.value as EventType)}>
@@ -43,27 +44,26 @@ export function NewEventModal() {
             <DatePicker value={form.date} onChange={(v) => setForm('date', v)} lang={lang} placeholder={t.pickDate} />
           </Field>
           <Field label={t.hourL}>
-            <Input mono type="time" value={form.time} onChange={(e) => setForm('time', e.target.value)} />
+            <Input mono type="time" {...bind('time')} />
           </Field>
           <Field label={t.hoursL} error={err('hours', form.hours)}>
-            <Input mono type="number" inputMode="decimal" min="0.5" step="0.5" aria-invalid={!!err('hours', form.hours) || undefined} value={form.hours} onChange={(e) => setForm('hours', e.target.value)} placeholder="2.5" />
+            <Input mono type="number" inputMode="decimal" min="0.5" step="0.5" aria-invalid={!!err('hours', form.hours) || undefined} {...bind('hours')} placeholder="2.5" />
           </Field>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-[1.4fr_1fr_1fr] gap-3">
           <Field label={t.venueL}>
-            <Input value={form.venue} onChange={(e) => setForm('venue', e.target.value)} placeholder="Oakland, CA" />
+            <Input {...bind('venue')} placeholder="Oakland, CA" />
           </Field>
           <Field label={`${t.fee} (USD)`} error={err('fee', form.fee)}>
-            <Input mono inputMode="decimal" aria-invalid={!!err('fee', form.fee) || undefined} value={form.fee} onChange={(e) => setForm('fee', e.target.value)} placeholder="600" />
+            <Input mono inputMode="decimal" aria-invalid={!!err('fee', form.fee) || undefined} {...bind('fee')} placeholder="600" />
           </Field>
           <Field label={`${t.costLabel} (USD)`} error={err('cost', form.cost)}>
-            <Input mono inputMode="decimal" aria-invalid={!!err('cost', form.cost) || undefined} value={form.cost} onChange={(e) => setForm('cost', e.target.value)} placeholder="50" />
+            <Input mono inputMode="decimal" aria-invalid={!!err('cost', form.cost) || undefined} {...bind('cost')} placeholder="50" />
           </Field>
         </div>
         <Field label={t.notesL}>
           <Textarea
-            value={form.note}
-            onChange={(e) => setForm('note', e.target.value)}
+            {...bind('note')}
             rows={3}
             placeholder="Set de 45 min. Llegar 17:30 para prueba de sonido."
             className="text-[13.5px]"
