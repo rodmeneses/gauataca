@@ -1,10 +1,16 @@
 /** Types for the `useGuataca` view-model: the `Guataca` shape and the pieces it is built from. */
 import type { Dict } from '../i18n';
 import type { TYPE_SCALE } from '../data';
-import type { AppProps, CustodyDialog, FormState, GearCondition, GenreId, Instrument, Lang, LinkKind, Member, MobileTab, Modal, Proficiency, ProofKind, RatingKey, ReactionKind, RsvpStatus, SettleDialog, ShareSheet, SongSort, Toast, TxCategory, TxDate, TxFilter, View, VocalFlag } from '../types';
+import type { AppProps, CustodyDialog, FormState, GearCondition, GenreId, Instrument, Lang, LinkKind, Member, Modal, ProofKind, SettleDialog, ShareSheet, Toast, TxCategory, TxDate, TxFilter, View } from '../types';
 import type { State } from './store';
-import type { ThemePref } from '../lib/prefs';
 import type { SearchHit } from '../lib/search';
+import type { NavActions } from './slices/nav';
+import type { SongActions } from './slices/songs';
+import type { EventActions } from './slices/events';
+import type { LedgerActions } from './slices/ledger';
+import type { ForumActions } from './slices/forum';
+import type { MemberActions } from './slices/members';
+import type { UiActions } from './slices/ui';
 import type { ContributionVm, EventVm, FeedbackVm, GearVm, MemberVm, SongVm, ThreadVm, TxVm } from './vm';
 
 export interface GenreChip {
@@ -80,7 +86,8 @@ export interface FormVm {
   threadRefs: { kind: 'song' | 'event'; id: string }[];
 }
 
-export interface Guataca {
+/** Read-only part of the view model: state, derived lists, headline numbers and modal selections. */
+export interface GuatacaView {
   // ---- raw state & props
   state: State;
   props: AppProps;
@@ -127,7 +134,7 @@ export interface Guataca {
   events: EventVm[];
   upcoming: EventVm[];
   history: EventVm[];
-  /** Upcoming or history depending on calTab. */
+  /** History when calTab is 'history', otherwise upcoming (the availability tab shows polls instead). */
   calList: EventVm[];
   /** Next active upcoming event (for dashboard / share). */
   nextEvent: EventVm | null;
@@ -181,152 +188,7 @@ export interface Guataca {
   tokens: { name: string; varName: string; tw: string; use: string }[];
   typeScale: typeof TYPE_SCALE;
   handoffNotes: { h: string; items: string[] }[];
-
-  // ---- actions
-  go: (v: View) => void;
-  setLang: (l: Lang) => void;
-  /** Current appearance preference ('light' | 'dark' | 'system'). */
-  theme: ThemePref;
-  setTheme: (t: ThemePref) => void;
-  toggleRole: () => void;
-  setDevice: (dv: State['device']) => void;
-  setCalTab: (tab: State['calTab']) => void;
-  setForumTab: (tab: State['forumTab']) => void;
-  setMobileTab: (tab: MobileTab) => void;
-  toggleSong: (id: string) => void;
-  /** Navigate to the repertoire and open a specific song (from a setlist, etc.). */
-  goToSong: (id: string) => void;
-  /** Label of the place a cross-view jump came from (null = no Back chip). */
-  backLabel: string | null;
-  /** Return to where the last cross-view jump came from. */
-  goBack: () => void;
-  /** Clear the pending scroll-to-song request (called by the repertoire views after scrolling). */
-  clearScrollToSong: () => void;
-  /** Navigate to the ledger and scroll to a specific movement (from a shareable link). */
-  goToTx: (id: string) => void;
-  /** Clear the pending scroll-to-movement request (called by the ledger views after scrolling). */
-  clearScrollToTx: () => void;
-  /** Copy a shareable deep link for an item (event / song / movement) to the clipboard. */
-  copyLink: (kind: 'event' | 'song' | 'tx' | 'thread', id: string, commentId?: number) => void;
-  /** True when the browser has the native share sheet (navigator.share). */
-  canShare: boolean;
-  /** Open the native share sheet for an item's deep link (no-op without navigator.share). */
-  shareLink: (kind: 'event' | 'song', id: string, title: string) => void;
-  setQ: (q: string) => void;
-  setGenre: (g: GenreId | 'all') => void;
-  toggleStale: () => void;
-  setSongSort: (s: SongSort) => void;
-  openEvent: (id: string) => void;
-  openThread: (id: string, commentId?: number) => void;
-  openMember: (id: string, edit?: boolean) => void;
-  openNewEvent: () => void;
-  openEditEvent: (id: string) => void;
-  openNewSong: () => void;
-  openEditSong: (id: string) => void;
-  openNewTx: () => void;
-  openEditTx: (id: string) => void;
-  openNewGear: () => void;
-  openNewThread: () => void;
-  /** Create a forum idea (title/body/refs) and upload its photos; an optional poll rides along. */
-  saveThread: (photos: File[], poll?: { question: string; options: string[]; multiple?: boolean } | null) => Promise<void>;
-  setThreadReaction: (threadId: string, kind: ReactionKind | null) => Promise<void>;
-  setCommentReaction: (commentId: number, kind: ReactionKind | null) => Promise<void>;
-  /** Delete one of your own comments (its replies go with it). */
-  deleteComment: (commentId: number) => Promise<void>;
-  /** Add an option to the open idea's poll (admins). */
-  addThreadPollOption: (label: string) => Promise<void>;
-  /** Set the signed-in member's vote on a poll option; re-picking moves the vote. */
-  voteThreadPoll: (optionId: number) => Promise<void>;
-  /** Attach photos to a forum idea (or, with `commentId`, to one of its comments). */
-  addThreadPhotos: (threadId: string, files: File[], commentId?: number | null) => Promise<void>;
-  deleteThreadMedia: (id: number) => Promise<void>;
-  addThreadRefs: (threadId: string, refs: { kind: 'song' | 'event'; id: string }[], commentId?: number | null) => Promise<void>;
-  /** Complete sign-up onboarding (instruments + vocals). */
-  onboard: (instruments: { id: string; lv: Proficiency }[], vocals: VocalFlag[]) => Promise<void>;
-  /** Replace a member's instruments + vocals (admin, or the member editing themselves). */
-  saveMemberInstruments: (profileId: string, instruments: { id: string; lv: Proficiency }[], vocals: VocalFlag[]) => Promise<void>;
-  /** Open the sign-up onboarding modal. */
-  openOnboard: () => void;
-  /** Dismiss onboarding without saving (won't re-open this session). */
-  skipOnboard: () => void;
-  /** Create a custom instrument; resolves to its id. */
-  createInstrument: (name: string) => Promise<string>;
-  setTxFilter: (f: TxFilter) => void;
-  setTxDate: (d: TxDate) => void;
-  openSignIn: () => void;
-  /** Open the Web Push notification preferences modal (desktop). */
-  openNotifications: () => void;
-  /** Open the changelog; with `since`, only entries newer than that version are marked new. */
-  openChangelog: (since?: string) => void;
-  signOut: () => Promise<void>;
-  closeModal: () => void;
-  /** Instagram flow: builds caption and opens the bottom sheet. */
-  openShare: (eventId: string) => void;
-  closeSheet: () => void;
-  copyCaption: () => void;
-  shareNow: () => void;
-  openFlyer: () => void;
-  openCustody: (gearId: string) => void;
-  closeCustody: () => void;
-  transferCustody: (memberId: string) => Promise<void>;
-  openSettle: (eventId: string) => void;
-  closeSettle: () => void;
-  settleEvent: (eventId: string, input: { happened: boolean; fee: number; cost: number }) => Promise<void>;
-  /** Upload a receipt/invoice file; resolves to its public URL, or null on failure. */
-  uploadProof: (file: File) => Promise<string | null>;
-  /** Set the signed-in member's RSVP; choosing the current answer again withdraws it (back to pending). */
-  setRsvp: (eventId: string, status: RsvpStatus) => Promise<void>;
-  /** Toggle an event's pinned state (admin only). */
-  toggleEventPin: (eventId: string) => Promise<void>;
-  /** Cancel an event (it moves to history) or reinstate a cancelled one (admin only). */
-  toggleEventCancelled: (eventId: string) => Promise<void>;
-  /** Replace an event's setlist (ordered song ids). */
-  setEventSetlist: (eventId: string, songIds: string[]) => Promise<void>;
-  /** Add a recording ("take") of a song during a practice event. */
-  addTake: (eventId: string, songId: string, url: string) => Promise<void>;
-  /** Remove a recording ("take"). */
-  deleteTake: (id: string) => Promise<void>;
-  /** Add a video link (Google Drive) to an event. */
-  addEventVideo: (eventId: string, label: string, url: string) => Promise<void>;
-  /** Compress + upload one or more photos to an event. */
-  addEventPhotos: (eventId: string, files: File[]) => Promise<void>;
-  /** Remove a photo or video from an event. */
-  deleteEventMedia: (id: number) => Promise<void>;
-  setCommentDraft: (s: string) => void;
-  /** Post a top-level comment (optionally with photos). */
-  sendComment: (photos?: File[]) => Promise<void>;
-  /** Begin replying to a specific comment id (null clears the reply composer). */
-  setReplyTarget: (target: number | null) => void;
-  setReplyDraft: (s: string) => void;
-  /** Post a one-level reply to the active reply target (optionally with photos). */
-  sendReply: (photos?: File[]) => Promise<void>;
-  convertThread: (id: string) => void;
-  /** Toggle a forum idea's pinned state (admin only). */
-  toggleThreadPin: (id: string) => Promise<void>;
-  /** Toggle a forum idea's archived state (admin only). */
-  toggleThreadArchive: (id: string) => Promise<void>;
-  pickPoll: (i: number) => Promise<void>;
-  setRating: (k: RatingKey, n: number) => void;
-  toggleAnon: () => void;
-  setFbWell: (s: string) => void;
-  setFbImprove: (s: string) => void;
-  submitFb: () => Promise<void>;
-  setForm: <K extends keyof FormState>(k: K, v: FormState[K]) => void;
-  saveEvent: () => Promise<void>;
-  saveTx: () => Promise<void>;
-  deleteTx: (id: string) => Promise<void>;
-  saveSong: () => Promise<void>;
-  saveGear: () => Promise<void>;
-  openPalette: () => void;
-  closePalette: () => void;
-  setPq: (s: string) => void;
-  openSearch: () => void;
-  closeSearch: () => void;
-  setSq: (s: string) => void;
-  tourNext: () => void;
-  tourEnd: () => void;
-  toggleHandoff: () => void;
-  closeHandoff: () => void;
-  toast: (msg: string, tone?: Toast['tone'], opts?: { action?: Toast['action']; ttl?: number }) => void;
-  dismissToast: (id: string) => void;
 }
+
+/** The full view model: `GuatacaView` plus the action slices from `./slices`. */
+export type Guataca = GuatacaView & NavActions & SongActions & EventActions & LedgerActions & ForumActions & MemberActions & UiActions;

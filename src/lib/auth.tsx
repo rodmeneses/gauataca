@@ -54,10 +54,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Load session on mount
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    void supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser({ id: session.user.id, email: session.user.email ?? '' });
-        loadProfile(session.user.id);
+        void loadProfile(session.user.id);
       }
       setLoading(false);
     });
@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setUser({ id: session.user.id, email: session.user.email ?? '' });
-        loadProfile(session.user.id);
+        void loadProfile(session.user.id);
       } else {
         setUser(null);
         setProfile(null);

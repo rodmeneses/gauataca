@@ -1,6 +1,6 @@
 /** Shared row type, snapshot shape and small helpers for the data layer. */
 import type {
-  BandEvent, BandLink, Gear, Instrument, Member, Song, Take, Thread, Transaction,
+  AvailabilityPoll, BandEvent, BandLink, Gear, Instrument, Member, Song, Take, Thread, Transaction,
 } from '../../types';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -18,6 +18,8 @@ export interface DataSnapshot {
   instruments: Instrument[];
   /** Song recordings ("takes") on practice events. */
   takes: Take[];
+  /** "Which date works?" polls, newest first. */
+  availability: AvailabilityPoll[];
   /** event id → poll option index the current user picked. */
   myPollPicks: Record<string, number>;
 }

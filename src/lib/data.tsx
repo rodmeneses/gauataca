@@ -14,9 +14,10 @@ import {
   createSong as apiCreateSong, createThread as apiCreateThread, addThreadPollOption as apiAddThreadPollOption, createThreadPoll as apiCreateThreadPoll, createTransaction as apiCreateTransaction, deleteComment as apiDeleteComment, deleteEventMedia as apiDeleteEventMedia, deleteTake as apiDeleteTake, deleteThreadMedia as apiDeleteThreadMedia, deleteTransaction as apiDeleteTransaction, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
   setEventPinned as apiSetEventPinned, setEventState as apiSetEventState, setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, setSongInstruments as apiSetSongInstruments, setSongLinks as apiSetSongLinks, setEventLinks as apiSetEventLinks,
   addThreadMedia as apiAddThreadMedia, addThreadRefs as apiAddThreadRefs, settleEvent as apiSettleEvent, setCommentReaction as apiSetCommentReaction, setThreadArchived as apiSetThreadArchived, setThreadPinned as apiSetThreadPinned, setThreadReaction as apiSetThreadReaction, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateEvent as apiUpdateEvent, updateMemberInstruments as apiUpdateMemberInstruments, updateSong as apiUpdateSong, updateTransaction as apiUpdateTransaction, voteThreadPoll as apiVoteThreadPoll,
+  createAvailabilityPoll as apiCreateAvailabilityPoll, deleteAvailabilityPoll as apiDeleteAvailabilityPoll, setAvailability as apiSetAvailability, setAvailabilityClosed as apiSetAvailabilityClosed,
   uploadEventPhoto as apiUploadEventPhoto, uploadForumPhoto as apiUploadForumPhoto, uploadProof as apiUploadProof, type DataSnapshot,
 } from './api';
-import type { EventType, LinkCategory, GearCondition, GenreId, LinkKind, Proficiency, ProofKind, ReactionKind, RsvpStatus, TxCategory, TxKind, VocalFlag } from '../types';
+import type { AvailabilityAnswer, EventType, LinkCategory, GearCondition, GenreId, LinkKind, Proficiency, ProofKind, ReactionKind, RsvpStatus, TxCategory, TxKind, VocalFlag } from '../types';
 
 export interface CreateThreadInput { title: string; body: string; }
 export interface CreateEventInput { title: string; venue: string; date: string; time: string; hours: number; fee: number; cost: number; note: string; type: EventType; }
@@ -27,7 +28,7 @@ export interface CreateTxInput { kind: TxKind; amt: number; date: string; desc: 
 export interface CreateGearInput { name: string; cost: number; date: string; custodian: string; cond: GearCondition; note: string; boughtBy: string; proof: string | null; proofKind: ProofKind; }
 export interface FeedbackInput { sound: number; perf: number; log: number; energy: number; well: string; improve: string; anon: boolean; }
 
-interface DataValue extends DataSnapshot {
+export interface DataValue extends DataSnapshot {
   loading: boolean;
   /** Non-null when a live fetch failed (e.g. schema not applied yet). */
   error: string | null;
@@ -91,6 +92,12 @@ interface DataValue extends DataSnapshot {
   addThreadPollOption: (threadId: string, label: string) => Promise<void>;
   /** Set the signed-in member's vote on a poll option. */
   voteThreadPoll: (optionId: number) => Promise<void>;
+  /** Propose candidate dates for a gig (admin); resolves to the new poll id. */
+  createAvailabilityPoll: (input: { title: string; dates: string[] }) => Promise<number | undefined>;
+  /** Set (or clear, with `null`) the signed-in member's answer for one candidate date. */
+  setAvailability: (pollId: number, date: string, answer: AvailabilityAnswer | null) => Promise<void>;
+  setAvailabilityClosed: (id: number, closed: boolean) => Promise<void>;
+  deleteAvailabilityPoll: (id: number) => Promise<void>;
   /** Upload a receipt/invoice file; resolves to its public URL. */
   uploadProof: (file: File) => Promise<string | undefined>;
 }
@@ -107,6 +114,7 @@ const EMPTY: DataSnapshot = {
   members: [],
   instruments: [],
   takes: [],
+  availability: [],
   myPollPicks: {},
 };
 
@@ -158,8 +166,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       if (offlineQueue.size() === 0 || failed > 0) window.dispatchEvent(new CustomEvent('guataca:queue-flushed', { detail: { failed } }));
       await reload({ silent: true });
     };
-    window.addEventListener('online', onOnline);
-    return () => window.removeEventListener('online', onOnline);
+    const handler = () => { void onOnline(); };
+    window.addEventListener('online', handler);
+    return () => window.removeEventListener('online', handler);
   }, [reload]);
 
   const value = useMemo<DataValue>(() => {
@@ -253,6 +262,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
       createThreadPoll: (threadId, question, options, multiple) => run(() => apiCreateThreadPoll(threadId, question, options, multiple, uid)),
       addThreadPollOption: (threadId, label) => run(() => apiAddThreadPollOption(threadId, label)),
       voteThreadPoll: (optionId) => run(() => apiVoteThreadPoll(optionId, uid)),
+      createAvailabilityPoll: (input) => run(() => apiCreateAvailabilityPoll(input, uid)),
+      setAvailability: (pollId, date, answer) => run(() => apiSetAvailability(pollId, date, answer, uid), opt.answerAvailability(pollId, date, answer, uid)),
+      setAvailabilityClosed: (id, closed) => run(() => apiSetAvailabilityClosed(id, closed), opt.closeAvailability(id, closed)),
+      deleteAvailabilityPoll: (id) => run(() => apiDeleteAvailabilityPoll(id)),
       uploadProof: async (file) => {
         return apiUploadProof(file);
       },

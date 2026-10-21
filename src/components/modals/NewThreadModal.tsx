@@ -7,12 +7,13 @@ import { useMemo, useRef, useState } from 'react';
 import { BarChart3, ImagePlus, Plus, X } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { Field, Input, Modal } from '@/components/ui';
-import { FormBody, FormFooter, FormHeader } from './FormFrame';
+import { FormBody, FormFooter, FormHeader, useFormBind } from './FormFrame';
 import { Composer } from './Composer';
 import { RefPicker, type PickedRef } from './RefPicker';
 
 export function NewThreadModal() {
   const { t, form, setForm, closeModal, saveThread, isAdmin } = useGuataca();
+  const bind = useFormBind();
   const [files, setFiles] = useState<File[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
   const previews = useMemo(() => files.map((f) => URL.createObjectURL(f)), [files]);
@@ -42,8 +43,7 @@ export function NewThreadModal() {
       <FormBody>
         <Field label={t.ideaTitle}>
           <Input
-            value={form.threadTitle}
-            onChange={(e) => setForm('threadTitle', e.target.value)}
+            {...bind('threadTitle')}
             placeholder="Tocar en la feria…"
             autoFocus
           />
@@ -54,7 +54,7 @@ export function NewThreadModal() {
             onChange={(v) => setForm('threadBody', v)}
             onSend={() => {
               if (canSave) {
-                saveThread(files, poll);
+                void saveThread(files, poll);
                 setFiles([]);
               }
             }}
@@ -179,7 +179,7 @@ export function NewThreadModal() {
         saveDisabled={!canSave}
         onSave={() => {
           if (canSave) {
-            saveThread(files, poll);
+            void saveThread(files, poll);
             setFiles([]);
           }
         }}

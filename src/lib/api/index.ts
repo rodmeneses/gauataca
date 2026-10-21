@@ -5,6 +5,11 @@
  */
 export type { DataSnapshot } from './shared';
 export * from './fetch';
-export * from './band';
+export * from './events';
+export * from './songs';
+export * from './members';
+export * from './ledger';
+export * from './gear';
+export * from './availability';
 export * from './forum';
 export * from './calendarFeed';

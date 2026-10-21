@@ -49,7 +49,7 @@ vi.mock('../supabase', () => ({
 }));
 vi.mock('../notify', () => ({ notifyCreated: vi.fn() }));
 
-import * as band from './band';
+import * as band from './index';
 import * as forum from './forum';
 import * as feed from './calendarFeed';
 
@@ -90,6 +90,11 @@ const writes: Array<[string, () => Promise<unknown>]> = [
   ['setThreadReaction', () => forum.setThreadReaction('t', 'like', 'u')],
   ['setCommentReaction', () => forum.setCommentReaction(1, 'like', 'u')],
   ['deleteThreadMedia', () => forum.deleteThreadMedia(1)],
+  ['createAvailabilityPoll', () => band.createAvailabilityPoll({ title: 't', dates: ['2026-11-07', '2026-11-14'] }, 'u')],
+  ['setAvailability', () => band.setAvailability(1, '2026-11-07', 'yes', 'u')],
+  ['clearAvailability', () => band.setAvailability(1, '2026-11-07', null, 'u')],
+  ['setAvailabilityClosed', () => band.setAvailabilityClosed(1, true)],
+  ['deleteAvailabilityPoll', () => band.deleteAvailabilityPoll(1)],
   ['rotateCalendarToken', () => feed.rotateCalendarToken('u')],
 ];
 

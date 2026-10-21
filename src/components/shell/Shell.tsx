@@ -4,7 +4,7 @@ import { useAuth } from '../../lib/auth';
 import { clearDeepLink, readDeepLink, takePendingDeepLink } from '../../lib/deepLink';
 import { readSeenVersion, writeSeenVersion } from '../../lib/prefs';
 import { APP_VERSION, entriesSince } from '../../data/changelog';
-import { Skeleton } from '../ui';
+import { LoadingSkeleton } from './LoadingSkeleton';
 import { LoginPage } from '../auth/LoginPage';
 import { DesktopShell } from './DesktopShell';
 import { MobileShell } from '../mobile/MobileShell';
@@ -118,18 +118,7 @@ export function Shell() {
     return <LoginPage />;
   }
   if (bs.loading) {
-    return (
-      <div role="status" aria-busy="true" aria-label="…" className="min-h-screen bg-base flex">
-        <Skeleton className="hidden md:block w-[232px] flex-none rounded-none" />
-        <div className="flex-1 min-w-0 p-5 md:p-8 flex flex-col gap-4 max-w-[1100px]">
-          <Skeleton className="h-8 w-48" />
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-24" />)}
-          </div>
-          {[0, 1, 2].map((i) => <Skeleton key={i} className="h-20" />)}
-        </div>
-      </div>
-    );
+    return <LoadingSkeleton view={bs.view} mobileTab={bs.state.mobileTab} phone={bs.isMobileViewport} />;
   }
   const errorBanner = bs.error ? (
     <div className="flex-none bg-[var(--color-tint-rose)] border-b border-rose/40 px-5 py-3 text-[13px] text-red">

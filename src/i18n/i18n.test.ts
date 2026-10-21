@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, it, expect } from 'vitest';
-import { T } from './i18n';
+import { T, domains } from './index';
 
 describe('T (translation dictionary)', () => {
   it('has an es and en dictionary', () => {
@@ -12,6 +12,11 @@ describe('T (translation dictionary)', () => {
     const esKeys = Object.keys(T.es).sort();
     const enKeys = Object.keys(T.en).sort();
     expect(enKeys).toEqual(esKeys);
+  });
+
+  it('has no key defined in two domains', () => {
+    const all = Object.values(domains).flatMap((d) => Object.keys(d.es));
+    expect(all.filter((k, i) => all.indexOf(k) !== i)).toEqual([]);
   });
 
   it('has no empty string values in either language', () => {
@@ -32,13 +37,13 @@ describe('T (translation dictionary)', () => {
 });
 
 describe('T usage', () => {
-  const root = path.resolve(__dirname);
+  const root = path.resolve(__dirname, '..');
   const files: string[] = [];
   const walk = (dir: string) => {
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
       const p = path.join(dir, e.name);
       if (e.isDirectory()) walk(p);
-      else if (/\.(ts|tsx)$/.test(e.name) && !/\.test\./.test(e.name) && e.name !== 'i18n.ts') files.push(p);
+      else if (/\.(ts|tsx)$/.test(e.name) && !/\.test\./.test(e.name) && !p.includes(`${path.sep}i18n${path.sep}`)) files.push(p);
     }
   };
   walk(root);
