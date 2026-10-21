@@ -26,7 +26,7 @@ export interface CreateTxInput { kind: TxKind; amt: number; date: string; desc: 
 export interface CreateGearInput { name: string; cost: number; date: string; custodian: string; cond: GearCondition; note: string; boughtBy: string; proof: string | null; proofKind: ProofKind; }
 export interface FeedbackInput { sound: number; perf: number; log: number; energy: number; well: string; improve: string; anon: boolean; }
 
-interface DataValue extends DataSnapshot {
+export interface DataValue extends DataSnapshot {
   loading: boolean;
   /** Non-null when a live fetch failed (e.g. schema not applied yet). */
   error: string | null;
