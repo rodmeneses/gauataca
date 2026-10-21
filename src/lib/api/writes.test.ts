@@ -49,7 +49,7 @@ vi.mock('../supabase', () => ({
 }));
 vi.mock('../notify', () => ({ notifyCreated: vi.fn() }));
 
-import * as band from './band';
+import * as band from './index';
 import * as forum from './forum';
 import * as feed from './calendarFeed';
 
