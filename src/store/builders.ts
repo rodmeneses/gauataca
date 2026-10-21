@@ -77,7 +77,7 @@ export function searchResults(ctx: ActionCtx): SearchResult[] {
       categoryLabel: { docs: t.catDocs, music: t.catMusic, social: t.catSocial, logistics: t.catLogistics, other: t.catOther }[l.category],
       by: memberById(data.members, l.createdBy).short,
     })),
-  }).map((h) => ({
+  }, { kind: st.searchKind }).map((h) => ({
     ...h,
     run:
       h.kind === 'event' ? () => set({ search: false, modal: { kind: 'event', id: h.id } })

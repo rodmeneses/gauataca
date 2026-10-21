@@ -7,6 +7,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { BarChart3, Calendar, Lightbulb, Link2, Music, Receipt, Search, X } from 'lucide-react';
 import { useGuataca } from '../../store';
 import type { SearchKind } from '../../lib/search';
+import { clearRecentSearches, readRecentSearches, rememberSearch } from '../../lib/recentSearches';
 import { useDialogChrome } from '../ui';
 
 const KIND_STYLE: Record<SearchKind, { icon: ReactNode; color: string; bg: string }> = {
@@ -33,12 +34,17 @@ function useVisibleHeight(): number | null {
 }
 
 export function SearchOverlay() {
-  const { t, state, setSq, closeSearch, searchResults } = useGuataca();
+  const { t, state, setSq, setSearchKind, closeSearch, searchResults } = useGuataca();
+  const [recent, setRecent] = useState(readRecentSearches);
   const height = useVisibleHeight();
   const dialogRef = useRef<HTMLDivElement>(null);
   useDialogChrome(dialogRef);
   const q = state.sq;
   const kindLabel: Record<SearchKind, string> = { event: t.refEvents, song: t.refSongs, fund: t.fund, idea: t.brainstorm, poll: t.poll, link: t.links };
+  const run = (r: (typeof searchResults)[number]) => {
+    setRecent(rememberSearch(q));
+    r.run();
+  };
   const px = 'pl-[max(16px,env(safe-area-inset-left))] pr-[max(16px,env(safe-area-inset-right))]';
 
   return (
@@ -58,7 +64,7 @@ export function SearchOverlay() {
             value={q}
             onChange={(e) => setSq(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && searchResults[0]) searchResults[0].run();
+              if (e.key === 'Enter' && searchResults[0]) run(searchResults[0]);
             }}
             placeholder={t.searchAllPlaceholder}
             aria-label={t.search}
@@ -90,6 +96,23 @@ export function SearchOverlay() {
         </button>
       </div>
 
+      <div role="group" aria-label={t.search} className={`flex gap-2 py-2 overflow-x-auto flex-none border-b border-line-faint ${px}`}>
+        {(['all', 'event', 'song', 'fund', 'idea', 'poll', 'link'] as const).map((k) => {
+          const active = state.searchKind === k;
+          return (
+            <button
+              key={k}
+              type="button"
+              aria-pressed={active}
+              onClick={() => setSearchKind(k)}
+              className={`flex-none min-h-[36px] px-3.5 rounded-full border font-sans font-semibold text-[12.5px] cursor-pointer ${active ? 'border-violet/40 bg-[var(--color-tint-violet)] text-violet-light' : 'border-line bg-raised text-ink-muted'}`}
+            >
+              {k === 'all' ? t.searchAllKinds : kindLabel[k]}
+            </button>
+          );
+        })}
+      </div>
+
       <div className={`flex-1 overflow-y-auto overscroll-contain py-2 pb-[calc(env(safe-area-inset-bottom)+8px)] ${px}`}>
         {searchResults.map((r) => {
           const k = KIND_STYLE[r.kind];
@@ -97,7 +120,7 @@ export function SearchOverlay() {
             <button
               key={`${r.kind}-${r.id}`}
               type="button"
-              onClick={r.run}
+              onClick={() => run(r)}
               className="flex items-center gap-3 w-full min-h-[60px] py-2.5 px-1 border-none border-b border-line-faint bg-transparent text-left cursor-pointer"
             >
               <span className="grid place-items-center w-10 h-10 rounded-[11px] flex-none" style={{ background: k.bg, color: k.color }}>
@@ -117,6 +140,32 @@ export function SearchOverlay() {
           );
         })}
 
+        {q.trim() === '' && recent.length > 0 && (
+          <div className="pt-3 pb-1">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-display font-semibold text-[10.5px] tracking-[.11em] uppercase text-ink-muted">{t.searchRecent}</span>
+              <button
+                type="button"
+                onClick={() => { clearRecentSearches(); setRecent([]); }}
+                className="min-h-[36px] px-1 border-none bg-transparent font-sans font-semibold text-[12.5px] text-ink-muted cursor-pointer"
+              >
+                {t.searchClearRecent}
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {recent.map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => setSq(r)}
+                  className="min-h-[36px] px-3.5 rounded-full border border-line bg-raised text-ink-body font-sans text-[13px] cursor-pointer"
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         {q.trim() === '' && (
           <div className="flex flex-col items-center gap-2.5 py-12 px-5 text-center">
             <Search size={22} strokeWidth={1.8} color="var(--color-ink-faint)" />

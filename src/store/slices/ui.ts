@@ -2,6 +2,7 @@
 import type { FormState, Toast } from '../../types';
 import { itemUrl } from '../../lib/deepLink';
 import { igCaption } from '../vm';
+import type { State } from '../store';
 import type { ActionCtx } from './ctx';
 
 export interface UiActions {
@@ -29,6 +30,8 @@ export interface UiActions {
   openSearch: () => void;
   closeSearch: () => void;
   setSq: (s: string) => void;
+  /** Filter the search overlay to one result type (or 'all'). */
+  setSearchKind: (k: State['searchKind']) => void;
   tourNext: () => void;
   tourEnd: () => void;
   toggleHandoff: () => void;
@@ -84,6 +87,7 @@ export function uiActions({ st, set, toast, t, copyText, openShare, dismissToast
     openSearch: () => set({ search: true, sq: '' }),
     closeSearch: () => set({ search: false }),
     setSq: (v) => set({ sq: v }),
+    setSearchKind: (k) => set({ searchKind: k }),
     tourNext: () => set((s) => ({ tour: s.tour + 1 })),
     tourEnd: () => set({ tour: -1 }),
     toggleHandoff: () => set((s) => ({ handoff: !s.handoff })),

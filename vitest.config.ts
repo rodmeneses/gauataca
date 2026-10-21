@@ -23,6 +23,8 @@ export default defineConfig({
         'src/lib/markdownLite.ts',
         'src/lib/ics.ts',
         'src/lib/search.ts',
+        'src/lib/recentSearches.ts',
+        'src/lib/recentSearches.ts',
         'src/lib/notify.ts',
         'src/lib/optimistic.ts',
         'src/lib/offlineQueue.ts',

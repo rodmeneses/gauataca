@@ -4,6 +4,7 @@ import type {
   RatingKey, Role, SettleDialog, ShareSheet, SongSort, Toast, TxDate, TxFilter, View,
 } from '../types';
 import { haptic } from '../lib/haptics';
+import type { SearchKind } from '../lib/search';
 import { applyTheme, readThemePref, type ThemePref } from '../lib/prefs';
 
 /**
@@ -35,6 +36,8 @@ export interface State {
   /** Mobile global search overlay (events, songs, fund, ideas) and its query. */
   search: boolean;
   sq: string;
+  /** Type filter in the search overlay ('all' = every type). */
+  searchKind: SearchKind | 'all';
   /** Tour step index, -1 = dismissed. */
   tour: number;
   handoff: boolean;
@@ -116,6 +119,7 @@ export function initialState(props: AppProps): State {
     pq: '',
     search: false,
     sq: '',
+    searchKind: 'all',
     tour: props.showTour === false ? -1 : 0,
     handoff: false,
     anon: false,

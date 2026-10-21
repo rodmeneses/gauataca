@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalize, searchAll, SEARCH_LIMIT_PER_KIND, type SearchSources } from './search';
+import { editDistance, normalize, searchAll, SEARCH_LIMIT_PER_KIND, SEARCH_LIMIT_SINGLE_KIND, type SearchSources } from './search';
 
 const src: SearchSources = {
   events: [
@@ -132,5 +132,73 @@ describe('searchAll', () => {
     expect(hits.filter((h) => h.kind === 'poll')).toHaveLength(SEARCH_LIMIT_PER_KIND);
     expect(hits.filter((h) => h.kind === 'link')).toHaveLength(SEARCH_LIMIT_PER_KIND);
     expect(hits[0].id).toBe(`p${SEARCH_LIMIT_PER_KIND + 1}`);
+  });
+});
+
+describe('editDistance', () => {
+  it('counts insertions, deletions and substitutions', () => {
+    expect(editDistance('llanera', 'llanera', 2)).toBe(0);
+    expect(editDistance('llanera', 'lanera', 2)).toBe(1);
+    expect(editDistance('llanera', 'llanerq', 2)).toBe(1);
+    expect(editDistance('abc', 'xyz', 3)).toBe(3);
+  });
+
+  it('gives up early past the budget', () => {
+    expect(editDistance('abcdef', 'a', 2)).toBe(3);
+    expect(editDistance('abcdefgh', 'zzzzzzzz', 1)).toBe(2);
+  });
+});
+
+describe('typo tolerance', () => {
+  it('finds a word with one typo from 4 letters', () => {
+    expect(searchAll('lanera', src).map((h) => h.id)).toContain('s1');
+    expect(searchAll('jorope', src).map((h) => h.id)).toContain('s1');
+  });
+
+  it('allows two typos in long words and a half-typed word', () => {
+    expect(searchAll('honorarias', src).map((h) => h.id)).toContain('t1');
+    expect(searchAll('festibal', src).map((h) => h.id)).toContain('e1');
+  });
+
+  it('does not guess on short terms', () => {
+    expect(searchAll('alm', src).map((h) => h.kind)).toContain('song'); // substring, not fuzzy
+    expect(searchAll('zzx', src)).toEqual([]);
+    expect(searchAll('lun', src).map((h) => h.id)).not.toContain('e2'); // "luis" is 2 edits away
+  });
+
+  it('still requires every term to match', () => {
+    expect(searchAll('lanera zzzzzz', src)).toEqual([]);
+  });
+
+  it('ranks verbatim matches before typo matches in the same type', () => {
+    const songs = [
+      { id: 'typo', title: 'Alma Lanera', genreLabel: 'Joropo', key: 'Am' },
+      { id: 'exact', title: 'Llanera', genreLabel: 'Joropo', key: 'Am' },
+    ];
+    expect(searchAll('llanera', { ...src, events: [], tx: [], threads: [], polls: [], links: [], songs }).map((h) => h.id)).toEqual(['exact', 'typo']);
+  });
+
+  it('matches an idea through a comment typo', () => {
+    expect(searchAll('bajp', src).map((h) => h.sub)).toContain('Luis: Yo llevo el bajo');
+  });
+});
+
+describe('kind filter', () => {
+  it('returns only the chosen type, with a bigger cap', () => {
+    const many: SearchSources = {
+      ...src,
+      songs: Array.from({ length: 30 }, (_, i) => ({ id: `s${i}`, title: `Tema ${i}`, genreLabel: 'Pop', key: 'C' })),
+      links: [{ id: 1, title: 'Tema link', url: 'x.com', categoryLabel: '', by: '' }],
+    };
+    const hits = searchAll('tema', many, { kind: 'song' });
+    expect(hits).toHaveLength(30);
+    expect(hits.length).toBeLessThanOrEqual(SEARCH_LIMIT_SINGLE_KIND);
+    expect(hits.every((h) => h.kind === 'song')).toBe(true);
+    expect(searchAll('tema', many, { kind: 'all' }).some((h) => h.kind === 'link')).toBe(true);
+  });
+
+  it.each(['event', 'fund', 'idea', 'poll', 'link'] as const)('filters to %s', (kind) => {
+    const hits = searchAll('a', src, { kind });
+    expect(hits.every((h) => h.kind === kind)).toBe(true);
   });
 });
