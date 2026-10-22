@@ -165,7 +165,7 @@ export function MobileFund() {
                 </div>
               </div>
               <span
-                className="font-display font-semibold text-[11px] tracking-[.05em] uppercase whitespace-nowrap py-1 px-2 rounded-md flex-none"
+                className="font-display font-semibold text-[12px] tracking-[.03em] uppercase whitespace-nowrap py-1 px-2 rounded-md flex-none"
                 style={{ color: g.condColor, background: g.condBg }}
               >
                 {g.condLabel}
@@ -175,7 +175,7 @@ export function MobileFund() {
             <div className="flex items-center gap-2.5 border-t border-line-soft pt-3">
               <span className="w-8 h-8 rounded-lg bg-[var(--color-tint-violet)] grid place-items-center font-display font-semibold text-[12px] text-violet-lighter flex-none">{g.holderInitial}</span>
               <span className="min-w-0 flex-1">
-                <span className="block font-display font-semibold text-[11px] tracking-[.08em] uppercase text-ink-muted">{t.custodian}</span>
+                <span className="block font-display font-semibold text-[12px] tracking-[.06em] uppercase text-ink-muted">{t.custodian}</span>
                 <span className="block font-sans font-semibold text-[14px] text-ink-body mt-0.5">{g.holder}</span>
               </span>
               {isAdmin && (

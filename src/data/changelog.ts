@@ -16,6 +16,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.12.2',
+    date: '2026-10-22',
+    title: { es: 'Móvil más cómodo', en: 'Smoother mobile' },
+    changes: [
+      { es: 'Móvil: la búsqueda y los géneros del repertorio quedan fijos al hacer scroll, las acciones de cada canción (editar, compartir, copiar enlace) pasan al detalle, y el botón "Nueva canción" flota abajo.', en: 'Mobile: repertoire search and genres stay pinned while scrolling, per-song actions (edit, share, copy link) moved into the expanded card, and "New song" floats at the bottom.' },
+      { es: 'Móvil: cada pestaña recuerda dónde ibas, cambia con una transición suave, el saldo solo aparece en Agenda y Fondo, y los textos pequeños son más legibles.', en: 'Mobile: each tab remembers your scroll position and fades in, the balance shows only on Agenda and Fund, and small text is more legible.' },
+    ],
+  },
+  {
     version: '0.12.1',
     date: '2026-10-21',
     title: { es: 'Formularios más seguros', en: 'Safer forms' },

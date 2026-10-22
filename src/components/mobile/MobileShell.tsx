@@ -5,7 +5,7 @@
  * the tab bar off-screen. On a larger viewport it renders the same app inside a
  * 392px phone-preview frame with the dev controls.
  */
-import { Suspense, useEffect, useState, type ReactNode } from 'react';
+import { Suspense, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Calendar, Lightbulb, Link2, Monitor, Music, Receipt, RefreshCw, Search, Smartphone, WifiHigh } from 'lucide-react';
 import { useGuataca } from '../../store';
 import { useData } from '../../lib/data';
@@ -38,7 +38,7 @@ function TabButton({ active, onClick, icon, label }: { active: boolean; onClick:
       aria-current={active ? 'page' : undefined}
       aria-label={label}
       onClick={onClick}
-      className="flex flex-col items-center justify-center gap-1 flex-1 min-w-0 min-h-[52px] pt-2 pb-1 border-none bg-transparent font-sans font-semibold text-[11px] tracking-[-.01em] cursor-pointer transition-colors"
+      className="flex flex-col items-center justify-center gap-1 flex-1 min-w-0 min-h-[52px] pt-2 pb-1 border-none bg-transparent font-sans font-semibold text-[12px] tracking-[-.02em] cursor-pointer transition-colors"
       style={{ color: active ? 'var(--color-emerald)' : 'var(--color-ink-meta)' }}
     >
       {icon}
@@ -53,10 +53,27 @@ function useKeyboardOpen(): boolean {
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
-    const onResize = () => setOpen(vv.height < window.innerHeight - 140);
+    let timer: number | undefined;
+    const check = () => {
+      const el = document.activeElement;
+      const typing = el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement || (el instanceof HTMLElement && el.isContentEditable);
+      setOpen(typing && vv.height < window.innerHeight - 140);
+    };
+    // Debounced so a URL-bar resize can't flicker the tab bar.
+    const onResize = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(check, 100);
+    };
     vv.addEventListener('resize', onResize);
-    onResize();
-    return () => vv.removeEventListener('resize', onResize);
+    document.addEventListener('focusin', onResize);
+    document.addEventListener('focusout', onResize);
+    check();
+    return () => {
+      window.clearTimeout(timer);
+      vv.removeEventListener('resize', onResize);
+      document.removeEventListener('focusin', onResize);
+      document.removeEventListener('focusout', onResize);
+    };
   }, []);
   return open;
 }
@@ -68,6 +85,12 @@ function MobileApp({ banner }: { banner?: ReactNode }) {
   const keyboardOpen = useKeyboardOpen();
   const { reload } = useData();
   const { ref, pull, dragging, refreshing, ready } = usePullToRefresh(() => reload({ silent: true }));
+
+  // Remember each tab's scroll offset so switching away and back keeps your place.
+  const scrollPos = useRef<Partial<Record<MobileTab, number>>>({});
+  useLayoutEffect(() => {
+    if (ref.current) ref.current.scrollTop = scrollPos.current[tab] ?? 0;
+  }, [tab, ref]);
 
   const px = 'pl-[max(16px,env(safe-area-inset-left))] pr-[max(16px,env(safe-area-inset-right))]';
 
@@ -82,12 +105,12 @@ function MobileApp({ banner }: { banner?: ReactNode }) {
           <span className="block font-display font-bold text-[16px] leading-tight text-ink">GUATACA</span>
           <span className="block text-[13px] text-ink-muted mt-0.5 truncate-1">{bandName}</span>
         </span>
-        <span
+        {(tab === 'agenda' || tab === 'fund') && <span
           aria-label={`${t.poolBalance}: ${balanceStr}`}
           className={`font-mono font-semibold text-[13px] ${balanceNeg ? 'text-red bg-[var(--color-tint-rose)]' : 'text-emerald bg-[var(--color-tint-emerald)]'} min-h-[36px] inline-flex items-center py-1 px-3 rounded-full flex-none`}
         >
           {balanceStr}
-        </span>
+        </span>}
         <button
           type="button"
           aria-label={t.search}
@@ -109,14 +132,18 @@ function MobileApp({ banner }: { banner?: ReactNode }) {
       </div>
 
       {/* scroll area */}
-      <div ref={ref} className={`flex-1 overflow-y-auto overscroll-contain pt-4 pb-6 ${px}`}>
+      <div
+        ref={ref}
+        onScroll={(e) => { scrollPos.current[tab] = e.currentTarget.scrollTop; }}
+        className={`flex-1 overflow-y-auto overscroll-contain pt-4 pb-[calc(env(safe-area-inset-bottom)+32px)] ${px}`}
+      >
         <div
           className="relative"
           style={{ transform: pull ? `translateY(${pull}px)` : undefined, transition: dragging ? 'none' : 'transform .2s ease-out' }}
         >
           <span
             aria-hidden="true"
-            className="absolute left-1/2 -top-11 -ml-4 grid place-items-center w-8 h-8 rounded-full bg-raised border border-line text-ink-muted pointer-events-none"
+            className="absolute left-1/2 -top-8 -ml-4 grid place-items-center w-8 h-8 rounded-full bg-raised border border-line text-ink-muted pointer-events-none"
             style={{ opacity: Math.min(pull / 48, 1) }}
           >
             <RefreshCw
@@ -126,6 +153,7 @@ function MobileApp({ banner }: { banner?: ReactNode }) {
               style={refreshing ? undefined : { transform: `rotate(${pull * 4}deg)`, color: ready ? 'var(--color-emerald)' : undefined }}
             />
           </span>
+          <div key={tab} className="animate-fade-fast">
           <Suspense fallback={null}>
             {tab === 'agenda' && <MobileAgenda />}
             {tab === 'repertoire' && <MobileRepertoire />}
@@ -134,6 +162,7 @@ function MobileApp({ banner }: { banner?: ReactNode }) {
             {tab === 'links' && <LinksPanel />}
             {tab === 'profile' && <MobileProfile />}
           </Suspense>
+          </div>
         </div>
       </div>
 
