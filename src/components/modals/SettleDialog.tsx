@@ -6,14 +6,17 @@
 import { useState } from 'react';
 import { useGuataca } from '@/store';
 import { Button, Field, Input } from '@/components/ui';
-import { parseNum } from '../../lib/validate';
+import { parseNum, validateSettle } from '../../lib/validate';
 
 export function SettleDialog() {
   const { t, settle, settleEvent, closeSettle } = useGuataca();
   const [happened, setHappened] = useState(true);
   const [fee, setFee] = useState(() => (settle ? String(settle.fee || '') : ''));
   const [cost, setCost] = useState(() => (settle ? String(settle.cost || '') : ''));
+  const [tried, setTried] = useState(false);
   if (!settle) return null;
+  const errors = validateSettle({ fee, cost }, happened);
+  const show = (k: 'fee' | 'cost', v: string) => (errors[k] && (tried || v.trim()) ? t[errors[k]!] : undefined);
 
   const toggle = (on: boolean) => setHappened(on);
 
@@ -47,12 +50,12 @@ export function SettleDialog() {
         </Field>
 
         {happened && (
-          <Field label={`${t.fee} (USD)`}>
-            <Input mono inputMode="decimal" value={fee} onChange={(e) => setFee(e.target.value)} placeholder="600" />
+          <Field label={`${t.fee} (USD)`} error={show('fee', fee)}>
+            <Input mono inputMode="decimal" aria-invalid={!!show('fee', fee) || undefined} value={fee} onChange={(e) => setFee(e.target.value)} placeholder="600" />
           </Field>
         )}
-        <Field label={`${t.costLabel} (USD)`}>
-          <Input mono inputMode="decimal" value={cost} onChange={(e) => setCost(e.target.value)} placeholder="50" />
+        <Field label={`${t.costLabel} (USD)`} error={show('cost', cost)}>
+          <Input mono inputMode="decimal" aria-invalid={!!show('cost', cost) || undefined} value={cost} onChange={(e) => setCost(e.target.value)} placeholder="50" />
         </Field>
 
         <div className="flex gap-[10px] justify-end mt-[18px]">
@@ -63,7 +66,7 @@ export function SettleDialog() {
           >
             {t.cancel}
           </button>
-          <Button variant="primary" className="p-[11px_17px]" onClick={() => settleEvent(settle.id, { happened, fee: parseNum(fee) || 0, cost: parseNum(cost) || 0 })}>
+          <Button variant="primary" className="p-[11px_17px]" onClick={() => { if (Object.keys(errors).length) { setTried(true); return; } void settleEvent(settle.id, { happened, fee: parseNum(fee) || 0, cost: parseNum(cost) || 0 }); }}>
             {t.settle}
           </Button>
         </div>

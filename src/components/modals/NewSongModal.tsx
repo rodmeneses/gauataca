@@ -6,10 +6,10 @@ import { GENRES, GENRE_IDS } from '@/data';
 import { InstrumentPicker } from './InstrumentPicker';
 import type { GenreId, LinkKind } from '@/types';
 import { useFormBind, FormHeader, FormBody, FormFooter, useValidated } from './FormFrame';
-import { validateSong } from '../../lib/validate';
+import { LIMITS, validateSong } from '../../lib/validate';
 
 /* --------------------------------------------------------- song link editor */
-function SongLinksEditor() {
+function SongLinksEditor({ err }: { err: (field: string, value: string | undefined) => string | undefined }) {
   const { t, form, setForm } = useGuataca();
   const links = form.songLinks || [];
   const set = (next: { kind: LinkKind; label: string; url: string }[]) => setForm('songLinks', next);
@@ -36,8 +36,9 @@ function SongLinksEditor() {
                 <X size={13} strokeWidth={2.2} />
               </button>
             </div>
-            <Input value={l.label} onChange={(e) => update(i, { label: e.target.value })} placeholder={t.linkLabel} />
-            <Input mono value={l.url} onChange={(e) => update(i, { url: e.target.value })} placeholder="https://…" className="text-[13px]" />
+            <Input value={l.label} maxLength={LIMITS.label} onChange={(e) => update(i, { label: e.target.value })} placeholder={t.linkLabel} />
+            <Input mono value={l.url} maxLength={LIMITS.url} aria-invalid={!!err(`link${i}`, l.url || l.label) || undefined} onChange={(e) => update(i, { url: e.target.value })} placeholder="https://…" className="text-[13px]" />
+            {err(`link${i}`, l.url || l.label) && <p role="alert" className="m-0 text-[12px] leading-[1.4] text-red">{err(`link${i}`, l.url || l.label)}</p>}
           </div>
         ))}
       </div>
@@ -64,7 +65,7 @@ export function NewSongModal() {
       <FormHeader title={editing ? t.editSong : t.newSong} onClose={closeModal} />
       <FormBody>
         <Field label={t.titleL} error={err('title', form.title)}>
-          <Input aria-invalid={!!err('title', form.title) || undefined} {...bind('title')} placeholder="Fiesta en Elorza" />
+          <Input maxLength={LIMITS.title} aria-invalid={!!err('title', form.title) || undefined} {...bind('title')} placeholder="Fiesta en Elorza" />
         </Field>
         <Field label={t.genreL}>
           <Select value={form.genre} onChange={(e) => setForm('genre', e.target.value as GenreId)}>
@@ -76,8 +77,8 @@ export function NewSongModal() {
           </Select>
         </Field>
         <div className="grid grid-cols-3 gap-3">
-          <Field label={t.key}>
-            <Input mono {...bind('key')} placeholder="Am" />
+          <Field label={t.key} error={err('key', form.key)}>
+            <Input mono maxLength={10} {...bind('key')} placeholder="Am" />
           </Field>
           <Field label={t.bpm} error={err('bpm', form.bpm)}>
             <Input mono inputMode="numeric" aria-invalid={!!err('bpm', form.bpm) || undefined} {...bind('bpm')} placeholder="196" />
@@ -86,7 +87,7 @@ export function NewSongModal() {
             <Input mono aria-invalid={!!err('dur', form.dur) || undefined} {...bind('dur')} placeholder="3:45" />
           </Field>
         </div>
-        <SongLinksEditor />
+        <SongLinksEditor err={err} />
         <Field as="div" label={t.requiredInstruments}>
           <InstrumentPicker
             selected={(form.songInstruments || []).map((id) => ({ id }))}

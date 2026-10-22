@@ -1,6 +1,6 @@
 /** Events: RSVPs, setlists, takes, media, post-gig feedback and the event form. */
 import type { RatingKey, RsvpStatus } from '../../types';
-import { parseNum } from '../../lib/validate';
+import { normalizeUrl, parseNum } from '../../lib/validate';
 import { uploadPhotoBatch, type ActionCtx } from './ctx';
 
 export interface EventActions {
@@ -63,10 +63,10 @@ export function eventActions(ctx: ActionCtx): EventActions {
       const songIds = f.setlist || [];
       const eventLinks = (f.eventLinks || []).map((l) => ({ label: l.label.trim(), url: l.url.trim() }))
         .filter((l) => l.url)
-        .map((l) => ({ ...l, url: /^https?:\/\//i.test(l.url) ? l.url : `https://${l.url}` }));
+        .map((l) => ({ ...l, url: normalizeUrl(l.url) ?? l.url }));
       set({ modal: null, form: {} });
       const input = {
-        title: f.title || 'Evento nuevo', venue: f.venue || 'Bay Area, CA', date: dte, time: f.time || '19:00', hours: parseNum(f.hours) || 0,
+        title: (f.title || '').trim() || 'Evento nuevo', venue: f.venue || 'Bay Area, CA', date: dte, time: f.time || '19:00', hours: parseNum(f.hours) || 0,
         fee: parseNum(f.fee) || 0, cost: parseNum(f.cost) || 0, note: f.note || '', type: f.type || 'gig',
       };
       if (editingId) {

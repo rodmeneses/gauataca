@@ -49,7 +49,7 @@ export function ledgerActions({ st, set, toast, t, Lx, data, d, me }: ActionCtx)
       const editingId = st.modal?.kind === 'newTx' ? st.modal.id : undefined;
       set({ modal: null, form: {} });
       const input = {
-        kind: f.kind || 'in', amt: parseNum(f.amt) || 0, date: f.date || '2026-08-25', desc: f.desc || 'Movimiento', proof: f.proof || null,
+        kind: f.kind || 'in', amt: parseNum(f.amt) || 0, date: f.date || '2026-08-25', desc: (f.desc || '').trim() || 'Movimiento', proof: f.proof || null,
         proofKind: f.proofKind || 'receipt', event: f.event || undefined, gear: f.gear || undefined,
         category: (f.kind || 'in') === 'in' ? (f.category || undefined) : undefined,
         // DTV income is the org's — never attribute it to a member.
@@ -69,7 +69,7 @@ export function ledgerActions({ st, set, toast, t, Lx, data, d, me }: ActionCtx)
     saveGear: async () => {
       set({ modal: null, form: {} });
       await data.createGear({
-        name: f.name || 'Equipo nuevo', cost: +(f.cost || 0), date: f.date || '2026-08-25', custodian: f.custodian || me.id,
+        name: (f.name || '').trim() || 'Equipo nuevo', cost: parseNum(f.cost) || 0, date: f.date || '2026-08-25', custodian: f.custodian || me.id,
         cond: f.cond || 'good', note: f.note || '', boughtBy: f.boughtBy || me.id, proof: f.proof || null, proofKind: f.proofKind || 'receipt',
       });
       toast(t.gearCreated);

@@ -9,10 +9,11 @@ import { useGuataca } from '@/store';
 import { Field, Input, Modal } from '@/components/ui';
 import { FormBody, FormFooter, FormHeader, useFormBind } from './FormFrame';
 import { Composer } from './Composer';
+import { isValidUpload, MAX_IMAGE_BYTES } from '../../lib/validate';
 import { RefPicker, type PickedRef } from './RefPicker';
 
 export function NewThreadModal() {
-  const { t, form, setForm, closeModal, saveThread, isAdmin } = useGuataca();
+  const { t, form, setForm, closeModal, saveThread, isAdmin, toast } = useGuataca();
   const bind = useFormBind();
   const [files, setFiles] = useState<File[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -27,8 +28,10 @@ export function NewThreadModal() {
   const pollComplete = pollQ.trim() !== '' && pollOpts.filter((o) => o.trim()).length >= 2;
 
   const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const picked = Array.from(e.target.files ?? []);
+    const all = Array.from(e.target.files ?? []);
     e.target.value = '';
+    const picked = all.filter((f) => isValidUpload(f, MAX_IMAGE_BYTES));
+    if (picked.length < all.length) toast(t.uploadFailed, 'err');
     if (!picked.length) return;
     setFiles((cur) => [...cur, ...picked]);
   };

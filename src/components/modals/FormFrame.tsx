@@ -5,7 +5,7 @@ import { useGuataca } from '@/store';
 import { Button, Field, Input } from '@/components/ui';
 import type { FormVm } from '@/store';
 import { haptic } from '../../lib/haptics';
-import type { FormErrors } from '../../lib/validate';
+import { isValidUpload, MAX_PROOF_BYTES, type FormErrors } from '../../lib/validate';
 
 /**
  * Inline validation for a form modal. A field's error shows once it holds a bad
@@ -48,7 +48,7 @@ export function ProofField() {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
+    if (!isValidUpload(file, MAX_PROOF_BYTES, true)) {
       toast(t.uploadFailed, 'err');
       return;
     }

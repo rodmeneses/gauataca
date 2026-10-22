@@ -5,10 +5,10 @@ import { useGuataca } from '@/store';
 import { DatePicker, Field, Input, Modal, Select, Textarea } from '@/components/ui';
 import type { EventType } from '@/types';
 import { useFormBind, FormHeader, FormBody, FormFooter, useValidated } from './FormFrame';
-import { validateEvent } from '../../lib/validate';
+import { LIMITS, validateEvent } from '../../lib/validate';
 
 /* --------------------------------------------------------- event link editor */
-function EventLinksEditor() {
+function EventLinksEditor({ err }: { err: (field: string, value: string | undefined) => string | undefined }) {
   const { t, form, setForm } = useGuataca();
   const links = form.eventLinks || [];
   const set = (next: { label: string; url: string }[]) => setForm('eventLinks', next);
@@ -23,12 +23,13 @@ function EventLinksEditor() {
         {links.map((l, i) => (
           <div key={i} className="flex flex-col gap-[6px] p-[10px] rounded-[10px] border border-line-soft bg-surface">
             <div className="flex gap-2 items-center">
-              <Input value={l.label} onChange={(e) => update(i, { label: e.target.value })} placeholder={t.linkLabel} className="flex-1" />
+              <Input value={l.label} maxLength={LIMITS.label} onChange={(e) => update(i, { label: e.target.value })} placeholder={t.linkLabel} className="flex-1" />
               <button type="button" onClick={() => remove(i)} title={t.removeLink} aria-label={t.removeLink} className="grid place-items-center w-[28px] h-[28px] rounded-[8px] border border-line bg-raised text-ink-muted hover:text-ink-body hover:border-rose/40 cursor-pointer flex-none">
                 <X size={13} strokeWidth={2.2} />
               </button>
             </div>
-            <Input mono inputMode="url" autoCapitalize="none" autoCorrect="off" value={l.url} onChange={(e) => update(i, { url: e.target.value })} placeholder="https://…" className="text-[13px]" />
+            <Input mono inputMode="url" autoCapitalize="none" autoCorrect="off" maxLength={LIMITS.url} aria-invalid={!!err(`link${i}`, l.url || l.label) || undefined} value={l.url} onChange={(e) => update(i, { url: e.target.value })} placeholder="https://…" className="text-[13px]" />
+            {err(`link${i}`, l.url || l.label) && <p role="alert" className="m-0 text-[12px] leading-[1.4] text-red">{err(`link${i}`, l.url || l.label)}</p>}
           </div>
         ))}
       </div>
@@ -67,7 +68,7 @@ export function NewEventModal() {
       <FormHeader title={editing ? t.editEvent : t.newEvent} onClose={closeModal} />
       <FormBody>
         <Field label={t.titleL} error={err('title', form.title)}>
-          <Input aria-invalid={!!err('title', form.title) || undefined} {...bind('title')} placeholder="Festival Latino de Fruitvale" />
+          <Input maxLength={LIMITS.title} aria-invalid={!!err('title', form.title) || undefined} {...bind('title')} placeholder="Festival Latino de Fruitvale" />
         </Field>
         <Field label={t.type}>
           <Select value={form.type} onChange={(e) => setForm('type', e.target.value as EventType)}>
@@ -80,16 +81,16 @@ export function NewEventModal() {
           <Field label={t.date} className="col-span-2 md:col-span-1">
             <DatePicker value={form.date} onChange={(v) => setForm('date', v)} lang={lang} placeholder={t.pickDate} />
           </Field>
-          <Field label={t.hourL}>
-            <Input mono type="time" {...bind('time')} />
+          <Field label={t.hourL} error={err('time', form.time)}>
+            <Input mono type="time" aria-invalid={!!err('time', form.time) || undefined} {...bind('time')} />
           </Field>
           <Field label={t.hoursL} error={err('hours', form.hours)}>
             <Input mono type="number" inputMode="decimal" min="0.5" step="0.5" aria-invalid={!!err('hours', form.hours) || undefined} {...bind('hours')} placeholder="2.5" />
           </Field>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-[1.4fr_1fr_1fr] gap-3">
-          <Field label={t.venueL}>
-            <Input {...bind('venue')} placeholder="Oakland, CA" />
+          <Field label={t.venueL} error={err('venue', form.venue)}>
+            <Input maxLength={LIMITS.title} {...bind('venue')} placeholder="Oakland, CA" />
           </Field>
           <Field label={`${t.fee} (USD)`} error={err('fee', form.fee)}>
             <Input mono inputMode="decimal" aria-invalid={!!err('fee', form.fee) || undefined} {...bind('fee')} placeholder="600" />
@@ -98,8 +99,9 @@ export function NewEventModal() {
             <Input mono inputMode="decimal" aria-invalid={!!err('cost', form.cost) || undefined} {...bind('cost')} placeholder="50" />
           </Field>
         </div>
-        <Field label={t.notesL}>
+        <Field label={t.notesL} error={err('note', form.note)}>
           <Textarea
+            maxLength={LIMITS.note}
             {...bind('note')}
             rows={3}
             placeholder="Set de 45 min. Llegar 17:30 para prueba de sonido."
@@ -107,7 +109,7 @@ export function NewEventModal() {
           />
         </Field>
 
-        <EventLinksEditor />
+        <EventLinksEditor err={err} />
 
         {/* setlist picker */}
         <div>
