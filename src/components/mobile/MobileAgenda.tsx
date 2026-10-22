@@ -31,14 +31,14 @@ export function MobileAgenda() {
         <article key={e.id} className={`bg-surface border border-line rounded-2xl p-4 flex flex-col gap-3 ${e.state === 'cancelled' ? 'opacity-60' : ''}`}>
           <div className="flex items-center gap-1.5 flex-wrap">
             <span
-              className="font-display font-semibold text-[11px] tracking-[.05em] uppercase whitespace-nowrap py-1 px-2 rounded-md"
+              className="font-display font-semibold text-[12px] tracking-[.03em] uppercase whitespace-nowrap py-1 px-2 rounded-md"
               style={{ color: e.typeColor, background: e.typeBg }}
             >
               {e.typeLabel}
             </span>
             {e.showState && (
               <span
-                className="font-display font-semibold text-[11px] tracking-[.05em] uppercase whitespace-nowrap py-1 px-2 rounded-md"
+                className="font-display font-semibold text-[12px] tracking-[.03em] uppercase whitespace-nowrap py-1 px-2 rounded-md"
                 style={{ color: e.stateColor, background: e.stateBg }}
               >
                 {e.stateLabel}
@@ -46,15 +46,15 @@ export function MobileAgenda() {
             )}
             {e.canRsvp && e.rsvpLabel && (
               <span
-                className="font-display font-semibold text-[11px] tracking-[.05em] uppercase whitespace-nowrap py-1 px-2 rounded-md"
+                className="font-display font-semibold text-[12px] tracking-[.03em] uppercase whitespace-nowrap py-1 px-2 rounded-md"
                 style={{ color: e.rsvpColor, background: e.rsvpBg }}
               >
                 ✓ {e.rsvpLabel}
               </span>
             )}
             {e.pinned && (
-              <span className="flex items-center gap-1 font-display font-semibold text-[11px] tracking-[.05em] uppercase whitespace-nowrap py-1 px-2 rounded-md" style={{ color: 'var(--color-amber)' }}>
-                <Pin size={11} strokeWidth={2.2} fill="currentColor" />
+              <span className="flex items-center gap-1 font-display font-semibold text-[12px] tracking-[.03em] uppercase whitespace-nowrap py-1 px-2 rounded-md" style={{ color: 'var(--color-amber)' }}>
+                <Pin size={12} strokeWidth={2.2} fill="currentColor" />
                 {t.pinned}
               </span>
             )}

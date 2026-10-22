@@ -85,7 +85,7 @@ export function MobileProfile() {
                 <span className="block text-[13px] text-ink-muted mt-0.5 truncate">{m.title}</span>
               </span>
               <span
-                className="font-display font-semibold text-[11px] tracking-[.05em] uppercase whitespace-nowrap py-1 px-2 rounded-md flex-none"
+                className="font-display font-semibold text-[12px] tracking-[.03em] uppercase whitespace-nowrap py-1 px-2 rounded-md flex-none"
                 style={{ color: m.roleColor, background: m.roleBg }}
               >
                 {m.roleLabel}
