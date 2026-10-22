@@ -3,6 +3,7 @@ import { T } from '../../i18n';
 import { useAuth } from '../../lib/auth';
 import { useStore } from '../../store';
 import { Button, Field, Input } from '../ui';
+import { LIMITS, validateAuth } from '../../lib/validate';
 
 /** Official multicolor Google "G". Brand colors are fixed by Google's guidelines, so they don't follow the theme tokens. */
 function GoogleLogo() {
@@ -28,13 +29,21 @@ export function SignInForm({ onSuccess }: { onSuccess?: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const [tried, setTried] = useState(false);
+  const errors = validateAuth({ email, password, name }, mode === 'signup');
+  const fieldErr = (k: string) => (tried && errors[k] ? t[errors[k]!] : undefined);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (Object.keys(errors).length) {
+      setTried(true);
+      return;
+    }
     setLoading(true);
     const result = mode === 'signin'
-      ? await signInWithEmail(email, password)
-      : await signUpWithEmail(email, password, name);
+      ? await signInWithEmail(email.trim(), password)
+      : await signUpWithEmail(email.trim(), password, name.trim());
     setLoading(false);
     if (result.error) setError(result.error);
     else onSuccess?.();
@@ -51,16 +60,16 @@ export function SignInForm({ onSuccess }: { onSuccess?: () => void }) {
       <h2 className="font-display font-semibold text-[20px] text-ink mb-4">
         {mode === 'signin' ? t.signIn : t.signUp}
       </h2>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         {mode === 'signup' && (
-          <Field label={t.name}>
-            <Input autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} placeholder={t.name} required />
+          <Field label={t.name} error={fieldErr('name')}>
+            <Input maxLength={LIMITS.short} autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} placeholder={t.name} required />
           </Field>
         )}
-        <Field label={t.email}>
+        <Field label={t.email} error={fieldErr('email')}>
           <Input type="email" inputMode="email" autoComplete="email" autoCapitalize="none" autoCorrect="off" enterKeyHint="go" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
         </Field>
-        <Field label={t.password}>
+        <Field label={t.password} error={fieldErr('password')}>
           <Input type="password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
         </Field>
 

@@ -3,7 +3,7 @@ import { useGuataca } from '@/store';
 import { DatePicker, Field, Input, Modal, Select } from '@/components/ui';
 import type { ProofKind, TxCategory, TxKind } from '@/types';
 import { useFormBind, FormHeader, FormBody, FormFooter, ProofField, useValidated } from './FormFrame';
-import { validateTx } from '../../lib/validate';
+import { LIMITS, validateTx } from '../../lib/validate';
 
 /* ---------------------------------------------------------- new movement */
 export function NewTxModal() {
@@ -73,8 +73,8 @@ export function NewTxModal() {
             <DatePicker value={form.date} onChange={(v) => setForm('date', v)} lang={lang} placeholder={t.pickDate} />
           </Field>
         </div>
-        <Field label={t.desc}>
-          <Input {...bind('desc')} placeholder="Honorarios — Festival Latino de Fruitvale" />
+        <Field label={t.desc} error={err('desc', form.desc)}>
+          <Input maxLength={LIMITS.title} {...bind('desc')} placeholder="Honorarios — Festival Latino de Fruitvale" />
         </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label={t.linkEvent}>

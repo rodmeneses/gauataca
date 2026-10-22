@@ -6,6 +6,7 @@ import { useData } from '@/lib/data';
 import { AddButton, Badge, Button, Card, Field, Input, Select, useCopyFallback } from '@/components/ui';
 import type { BandLink, LinkCategory } from '@/types';
 import { UNDO_WINDOW_MS } from '@/lib/optimistic';
+import { LIMITS, normalizeUrl } from '@/lib/validate';
 
 const CATEGORIES: LinkCategory[] = ['docs', 'music', 'social', 'logistics', 'other'];
 const CAT_COLOR: Record<LinkCategory, string> = {
@@ -15,18 +16,6 @@ const CAT_COLOR: Record<LinkCategory, string> = {
   logistics: 'var(--color-ink-meta)',
   other: 'var(--color-ink-muted)',
 };
-
-/** Accepts only http(s) URLs; adds https:// when the scheme is missing. Returns null if invalid. */
-function normalizeUrl(raw: string): string | null {
-  const v = raw.trim();
-  if (!v) return null;
-  try {
-    const u = new URL(/^https?:\/\//i.test(v) ? v : `https://${v}`);
-    return (u.protocol === 'http:' || u.protocol === 'https:') && u.hostname.includes('.') ? u.toString() : null;
-  } catch {
-    return null;
-  }
-}
 
 export function LinksPanel() {
   const { t, signedIn, isAdmin, me, toast } = useGuataca();
@@ -69,7 +58,7 @@ export function LinksPanel() {
             <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={80} autoFocus />
           </Field>
           <Field label={t.linkUrl}>
-            <Input value={url} onChange={(e) => setUrl(e.target.value)} inputMode="url" autoCapitalize="none" autoCorrect="off" placeholder="https://" mono />
+            <Input maxLength={LIMITS.url} value={url} onChange={(e) => setUrl(e.target.value)} inputMode="url" autoCapitalize="none" autoCorrect="off" placeholder="https://" mono />
           </Field>
           <Field label={t.linkCategory}>
             <Select value={category} onChange={(e) => setCategory(e.target.value as LinkCategory)}>

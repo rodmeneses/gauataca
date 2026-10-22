@@ -5,9 +5,10 @@ import { useGuataca, type EventVm } from '@/store';
 import { Button, Input, useConfirm } from '@/components/ui';
 import { Thumb } from '@/components/ui/Thumb';
 import { PhotoViewer } from './PhotoViewer';
+import { isValidUpload, MAX_IMAGE_BYTES } from '../../lib/validate';
 
 export function EventMediaSection({ ev }: { ev: EventVm }) {
-  const { addEventVideo, addEventPhotos, t, isAdmin, deleteEventMedia } = useGuataca();
+  const { addEventVideo, addEventPhotos, t, isAdmin, deleteEventMedia, toast } = useGuataca();
   const [videoLabel, setVideoLabel] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -25,8 +26,10 @@ export function EventMediaSection({ ev }: { ev: EventVm }) {
   };
 
   const onPickPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? []);
+    const picked = Array.from(e.target.files ?? []);
     e.target.value = '';
+    const files = picked.filter((f) => isValidUpload(f, MAX_IMAGE_BYTES));
+    if (files.length < picked.length) toast(t.uploadFailed, 'err');
     if (!files.length) return;
     setUploading(true);
     await addEventPhotos(ev.id, files);

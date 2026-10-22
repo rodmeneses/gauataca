@@ -1,6 +1,6 @@
 /** Repertoire: filters, the song form and saving songs. */
 import type { GenreId, SongSort } from '../../types';
-import { parseNum } from '../../lib/validate';
+import { normalizeUrl, parseNum } from '../../lib/validate';
 import type { ActionCtx } from './ctx';
 
 export interface SongActions {
@@ -38,9 +38,11 @@ export function songActions({ st, set, toast, t, Lx, data }: ActionCtx): SongAct
     saveSong: async () => {
       const editingId = st.modal?.kind === 'newSong' ? st.modal.id : undefined;
       const songInstruments = f.songInstruments || [];
-      const songLinks = f.songLinks || [];
+      const songLinks = (f.songLinks || [])
+        .filter((l) => l.url.trim())
+        .map((l) => ({ ...l, label: l.label.trim(), url: normalizeUrl(l.url) ?? l.url.trim() }));
       set({ modal: null, form: {} });
-      const input = { title: f.title || 'Canción nueva', genre: f.genre || 'joropo', key: f.key || 'Am', bpm: parseNum(f.bpm) || 120, dur: f.dur || '3:30' };
+      const input = { title: (f.title || '').trim() || 'Canción nueva', genre: f.genre || 'joropo', key: f.key || 'Am', bpm: parseNum(f.bpm) || 120, dur: f.dur || '3:30' };
       if (editingId) {
         await data.updateSong(editingId, input);
         await data.setSongLinks(editingId, songLinks);

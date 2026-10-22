@@ -16,6 +16,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.12.1',
+    date: '2026-10-21',
+    title: { es: 'Formularios más seguros', en: 'Safer forms' },
+    changes: [
+      { es: 'Los formularios ahora validan mejor: equipo, cierre de evento, enlaces (solo http/https), horas, límites de texto, correo y contraseña (mínimo 8 caracteres), y rechazan archivos demasiado grandes o de tipo incorrecto en vez de guardar datos por defecto.', en: 'Forms now validate more: gear, settling events, links (http/https only), times, text lengths, email and password (8+ characters), and reject oversized or wrong-type files instead of silently saving default values.' },
+    ],
+  },
+  {
     version: '0.12.0',
     date: '2026-10-21',
     title: { es: 'Disponibilidad, mejor búsqueda y carga más fluida', en: 'Availability, better search and smoother loading' },

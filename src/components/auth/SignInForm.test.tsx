@@ -50,7 +50,11 @@ describe('SignInForm', () => {
     fill(t.email, 'ana@b.co');
     fill(t.password, 'secret');
     fireEvent.click(screen.getAllByRole('button', { name: t.signUp })[0]);
-    await waitFor(() => expect(auth.signUpWithEmail).toHaveBeenCalledWith('ana@b.co', 'secret', 'Ana Pérez'));
+    expect(await screen.findByText(t.errPassword)).toBeTruthy();
+    expect(auth.signUpWithEmail).not.toHaveBeenCalled();
+    fireEvent.change(screen.getByPlaceholderText('••••••••'), { target: { value: 'secret-123' } });
+    fireEvent.click(screen.getAllByRole('button', { name: t.signUp })[0]);
+    await waitFor(() => expect(auth.signUpWithEmail).toHaveBeenCalledWith('ana@b.co', 'secret-123', 'Ana Pérez'));
     fireEvent.click(screen.getByRole('button', { name: t.signIn }));
     expect(screen.queryByLabelText(t.name)).toBeNull();
   });
