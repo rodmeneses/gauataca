@@ -105,12 +105,12 @@ function MobileApp({ banner }: { banner?: ReactNode }) {
           <span className="block font-display font-bold text-[16px] leading-tight text-ink">GUATACA</span>
           <span className="block text-[13px] text-ink-muted mt-0.5 truncate-1">{bandName}</span>
         </span>
-        {(tab === 'agenda' || tab === 'fund') && <span
+        <span
           aria-label={`${t.poolBalance}: ${balanceStr}`}
           className={`font-mono font-semibold text-[13px] ${balanceNeg ? 'text-red bg-[var(--color-tint-rose)]' : 'text-emerald bg-[var(--color-tint-emerald)]'} min-h-[36px] inline-flex items-center py-1 px-3 rounded-full flex-none`}
         >
           {balanceStr}
-        </span>}
+        </span>
         <button
           type="button"
           aria-label={t.search}
