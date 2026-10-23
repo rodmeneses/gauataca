@@ -66,7 +66,7 @@ export function MobileRepertoire() {
         </div>
       </div>
 
-      {isAdmin && <AddButton block onClick={openNewSong}>{t.newSong}</AddButton>}
+      {isAdmin && <AddButton block onClick={openNewSong} className="mt-2">{t.newSong}</AddButton>}
 
       {/* sort */}
       <div className="flex flex-col gap-1.5">

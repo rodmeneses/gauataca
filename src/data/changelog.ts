@@ -22,6 +22,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     changes: [
       { es: 'Móvil: la búsqueda y los géneros del repertorio quedan fijos al hacer scroll, las acciones de cada canción (editar, compartir, copiar enlace) pasan al detalle (el conteo va dentro de la búsqueda).', en: 'Mobile: repertoire search and genres stay pinned while scrolling, per-song actions (edit, share, copy link) moved into the expanded card (the count now sits in the search field).' },
       { es: 'Móvil: cada pestaña recuerda dónde ibas, cambia con una transición suave y los textos pequeños son más legibles.', en: 'Mobile: each tab remembers your scroll position and fades in, and small text is more legible.' },
+      { es: 'Móvil: el botón «Nueva canción» y el saldo del fondo se muestran igual en todas las pestañas, con más espacio bajo los filtros de género.', en: 'Mobile: the New song button and fund balance look the same on every tab, with more room below the genre filters.' },
     ],
   },
   {
