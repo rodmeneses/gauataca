@@ -3,6 +3,7 @@ import { defineStrings } from './define';
 
 export const common = defineStrings(
   {
+    loadingApp: 'Cargando…',
     today: 'Hoy',
     tomorrow: 'Mañana',
     inDays: 'En %d días',
@@ -83,6 +84,7 @@ export const common = defineStrings(
     noArchivedIdeas: 'No hay ideas archivadas',
   },
   {
+    loadingApp: 'Loading…',
     today: 'Today',
     tomorrow: 'Tomorrow',
     inDays: 'In %d days',

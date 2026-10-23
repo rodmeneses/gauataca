@@ -16,6 +16,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.12.3',
+    date: '2026-10-23',
+    title: { es: 'Pantalla de carga', en: 'Loading screen' },
+    changes: [
+      { es: 'Al abrir la app ahora se ve el logo con un indicador de carga en vez de rectángulos vacíos.', en: 'Opening the app now shows the logo with a loading spinner instead of empty placeholder boxes.' },
+    ],
+  },
+  {
     version: '0.12.2',
     date: '2026-10-22',
     title: { es: 'Móvil más cómodo', en: 'Smoother mobile' },
