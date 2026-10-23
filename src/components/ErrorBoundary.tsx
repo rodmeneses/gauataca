@@ -6,6 +6,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { T } from '../i18n';
 import { readLangPref } from '../lib/prefs';
+import { logError } from '../lib/log';
 
 export class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -15,7 +16,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { failed: 
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('Unhandled render error:', error, info.componentStack);
+    logError('Unhandled render error:', error, info.componentStack);
   }
 
   render() {

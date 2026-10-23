@@ -83,9 +83,9 @@ export function EventMediaSection({ ev }: { ev: EventVm }) {
                   rel="noreferrer"
                   className="flex items-center gap-3 flex-1 min-w-0 text-ink-body hover:text-ink-body no-underline font-sans font-medium text-[13px] leading-[normal]"
                 >
-                  <Film size={16} strokeWidth={1.9} className="flex-none" style={{ color: 'var(--color-emerald-light)' }} />
+                  <Film size={16} strokeWidth={1.9} className="flex-none text-emerald-light" />
                   <span className="flex-1 truncate">{m.label}</span>
-                  <ExternalLink size={14} strokeWidth={2.1} style={{ color: 'var(--color-ink-dim)' }} />
+                  <ExternalLink size={14} strokeWidth={2.1} className="text-ink-dim" />
                 </a>
                 {isAdmin && (
                   <button

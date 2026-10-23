@@ -74,7 +74,7 @@ export function InstrumentPicker({ selected, onChange, withLevel }: {
               onClick={() => add(i.id)}
               className="inline-flex items-center gap-[6px] py-[6px] px-[11px] rounded-[9px] border border-line bg-raised text-ink-body font-sans font-medium text-[12.5px] cursor-pointer hover:border-emerald/40"
             >
-              <Plus size={13} strokeWidth={2.2} style={{ color: 'var(--color-emerald)' }} />
+              <Plus size={13} strokeWidth={2.2} className="text-emerald" />
               {nameOf(i.id)}
             </button>
           ))}

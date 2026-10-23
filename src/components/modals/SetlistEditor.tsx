@@ -174,7 +174,7 @@ export function SetlistEditor({ currentIds, songs, setlistLabel, isAdmin, onSave
           <div className="mb-4">
             <div className="font-display font-semibold text-[10.5px] leading-[normal] tracking-[.11em] uppercase text-ink-muted mb-[9px]">{t.addSongs}</div>
             <div className="relative mb-[9px]">
-              <Search size={15} strokeWidth={1.9} className="absolute left-[12px] top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--color-ink-dim)' }} />
+              <Search size={15} strokeWidth={1.9} className="absolute left-[12px] top-1/2 -translate-y-1/2 pointer-events-none text-ink-dim" />
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -193,7 +193,7 @@ export function SetlistEditor({ currentIds, songs, setlistLabel, isAdmin, onSave
                   <span className="w-[3px] h-[18px] rounded-[2px] flex-none" style={{ background: s.genreColor }} />
                   <span className="flex-1 min-w-0 font-sans font-medium text-[13px] leading-[normal] text-ink-body">{s.title}</span>
                   <span className="font-mono font-medium text-[11px] leading-[normal] text-ink-muted flex-none">{s.key} · {s.dur}</span>
-                  <Plus size={15} strokeWidth={2.2} className="flex-none" style={{ color: 'var(--color-emerald)' }} />
+                  <Plus size={15} strokeWidth={2.2} className="flex-none text-emerald" />
                 </button>
               ))}
               {available.length === 0 && (

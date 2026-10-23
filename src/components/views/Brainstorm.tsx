@@ -18,7 +18,7 @@ export function Brainstorm() {
     <div className="flex flex-col gap-[14px] max-w-[900px] animate-fade">
       <div className="flex items-center justify-between gap-3">
         <h2 className="m-0 font-display font-semibold text-[16px] leading-[normal] text-ink-bright flex items-center gap-[8px]">
-          <Lightbulb size={17} strokeWidth={2} style={{ color: 'var(--color-violet-light)' }} />
+          <Lightbulb size={17} strokeWidth={2} className="text-violet-light" />
           {t.brainstorm}
         </h2>
         <div className="flex items-center gap-3 ml-auto">

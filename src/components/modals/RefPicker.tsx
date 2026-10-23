@@ -87,7 +87,7 @@ export function RefPicker({
       )}
 
       <div className="relative mb-[9px]">
-        <Search size={14} strokeWidth={1.9} className="absolute left-[11px] top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--color-ink-dim)' }} />
+        <Search size={14} strokeWidth={1.9} className="absolute left-[11px] top-1/2 -translate-y-1/2 pointer-events-none text-ink-dim" />
         <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t.searchRefs} className="pl-[34px]" />
       </div>
 

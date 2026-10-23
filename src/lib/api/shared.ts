@@ -3,6 +3,7 @@ import type {
   AvailabilityPoll, BandEvent, BandLink, Gear, Instrument, Member, Song, Take, Thread, Transaction,
 } from '../../types';
 
+// PostgREST rows are untyped (no generated DB types); the map/ layer narrows them into domain types.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Row = Record<string, any>;
 

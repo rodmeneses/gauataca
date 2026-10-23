@@ -107,12 +107,12 @@ export function CalendarView() {
                   </span>
                 )}
                 {e.feeStr && (
-                  <span className="font-mono font-semibold text-[11px] bg-raised border border-line-soft py-[6px] px-[9px] rounded-[8px]" style={{ color: 'var(--color-emerald)' }}>
+                  <span className="font-mono font-semibold text-[11px] bg-raised border border-line-soft py-[6px] px-[9px] rounded-[8px] text-emerald">
                     {t.fee} {e.feeStr}
                   </span>
                 )}
                 {e.costStr && (
-                  <span className="font-mono font-semibold text-[11px] bg-raised border border-line-soft py-[6px] px-[9px] rounded-[8px]" style={{ color: 'var(--color-red)' }}>
+                  <span className="font-mono font-semibold text-[11px] bg-raised border border-line-soft py-[6px] px-[9px] rounded-[8px] text-red">
                     {t.costLabel} {e.costStr}
                   </span>
                 )}
@@ -130,7 +130,7 @@ export function CalendarView() {
                       rel="noreferrer"
                       className="flex items-center gap-[7px] font-sans font-medium text-[12px] text-ink-body no-underline hover:text-ink-bright"
                     >
-                      <Mic size={12} strokeWidth={2} className="flex-none" style={{ color: 'var(--color-emerald-light)' }} />
+                      <Mic size={12} strokeWidth={2} className="flex-none text-emerald-light" />
                       <span className="truncate">{tk.label} · {tk.songTitle}</span>
                     </a>
                   ))}

@@ -15,34 +15,24 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
+      // Everything under these globs counts by default, so a new module can't silently
+      // skip the threshold. Add to `exclude` only for code that needs a browser/real backend.
       include: [
-        'src/lib/format.ts',
-        'src/lib/deepLink.ts',
-        'src/lib/prefs.ts',
-        'src/lib/mentions.ts',
-        'src/lib/markdownLite.ts',
-        'src/lib/ics.ts',
-        'src/lib/search.ts',
-        'src/lib/recentSearches.ts',
-        'src/lib/availability.ts',
-        'src/lib/recentSearches.ts',
-        'src/lib/availability.ts',
-        'src/lib/notify.ts',
-        'src/lib/optimistic.ts',
-        'src/lib/offlineQueue.ts',
-        'src/lib/image.ts',
-        'src/lib/errors.ts',
-        'src/lib/haptics.ts',
-        'src/lib/reorder.ts',
-        'src/lib/validate.ts',
-        'api/notify.ts',
-        'api/calendar.ts',
-        'api/_rateLimit.ts',
-        'src/lib/icsFeed.ts',
+        'src/lib/**/*.{ts,tsx}',
+        'api/*.ts',
         'src/store/vm/*.ts',
         'src/store/derive.ts',
         'src/data/changelog.ts',
         'src/i18n/*.ts',
+        'src/i18n.ts',
+      ],
+      exclude: [
+        '**/*.test.{ts,tsx}',
+        // Thin wrappers over browser/third-party runtimes (Supabase auth client, Web Push, env-based
+        // client construction); they have no logic worth unit-testing without the real service.
+        'src/lib/auth.tsx',
+        'src/lib/push.tsx',
+        'src/lib/supabase.ts',
       ],
       thresholds: {
         lines: 95,

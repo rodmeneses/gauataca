@@ -18,6 +18,7 @@ import {
   uploadEventPhoto as apiUploadEventPhoto, uploadForumPhoto as apiUploadForumPhoto, uploadProof as apiUploadProof, type DataSnapshot,
 } from './api';
 import type { AvailabilityAnswer, EventType, LinkCategory, GearCondition, GenreId, LinkKind, Proficiency, ProofKind, ReactionKind, RsvpStatus, TxCategory, TxKind, VocalFlag } from '../types';
+import { logError } from './log';
 
 export interface CreateThreadInput { title: string; body: string; }
 export interface CreateEventInput { title: string; venue: string; date: string; time: string; hours: number; fee: number; cost: number; note: string; type: EventType; }
@@ -139,7 +140,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     try {
       setSnap(await fetchAll(user?.id ?? null));
     } catch (err) {
-      console.error('Failed to load data:', err);
+      logError('Failed to load data:', err);
       if (opts?.silent) {
         // Don't tear down the screen for a failed background refetch — the
         // write itself likely succeeded; just surface it like any mutation error.
@@ -192,7 +193,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         await reload({ silent: true });
         return result;
       } catch (err) {
-        console.error('Mutation failed:', err);
+        logError('Mutation failed:', err);
         window.dispatchEvent(new CustomEvent('guataca:mutation-error', { detail: { reason: classifySaveError(err), retry: () => { void run(fn, patch); } } }));
         return undefined;
       } finally {

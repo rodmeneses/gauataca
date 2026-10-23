@@ -65,7 +65,7 @@ export function EventFeedbackSection({ fb }: { fb: FeedbackVm }) {
         {/* poll */}
         <div className="bg-raised border border-line-soft rounded-[12px] p-4 mb-5">
           <div className="flex items-center gap-[10px] mb-[13px]">
-            <ChartColumn size={15} strokeWidth={1.9} style={{ color: 'var(--color-violet-light)' }} />
+            <ChartColumn size={15} strokeWidth={1.9} className="text-violet-light" />
             <span className="font-sans font-semibold text-[12.5px] leading-[normal] text-ink-base">{fb.pollQ}</span>
             <span className="ml-auto font-mono font-medium text-[11px] leading-[normal] text-ink-dim">{fb.pollTotal} {t.votes}</span>
           </div>

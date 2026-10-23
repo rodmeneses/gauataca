@@ -110,7 +110,7 @@ export function Composer({
                 <span className="font-mono font-medium text-[11px] leading-[normal] text-ink-muted flex-none">
                   {partial.kind === 'song' ? `${(m as SongVm).key} · ${(m as SongVm).dur}` : (m as EventVm).dateStr}
                 </span>
-                <AtSign size={13} strokeWidth={2} className="flex-none" style={{ color: 'var(--color-ink-dim)' }} />
+                <AtSign size={13} strokeWidth={2} className="flex-none text-ink-dim" />
               </button>
             ))}
           </div>

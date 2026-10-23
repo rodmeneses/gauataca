@@ -69,9 +69,9 @@ export function EventModal() {
         </div>
         <div className={tile}>
           <div className={tileLabel}>{t.money}</div>
-          <div className="font-mono font-semibold text-[13px] leading-[normal] mt-[7px]" style={{ color: 'var(--color-emerald)' }}>{ev.feeStr ?? '—'}</div>
+          <div className="font-mono font-semibold text-[13px] leading-[normal] mt-[7px] text-emerald">{ev.feeStr ?? '—'}</div>
           <div className="font-mono font-medium text-[11.5px] leading-[normal] text-ink-muted mt-1">{t.fee}</div>
-          <div className="font-mono font-semibold text-[13px] leading-[normal] mt-[7px]" style={{ color: 'var(--color-red)' }}>{ev.costStr ?? '—'}</div>
+          <div className="font-mono font-semibold text-[13px] leading-[normal] mt-[7px] text-red">{ev.costStr ?? '—'}</div>
           <div className="font-mono font-medium text-[11.5px] leading-[normal] text-ink-muted mt-1">{t.costLabel}</div>
         </div>
         <div className={tile}>
@@ -131,7 +131,7 @@ export function EventModal() {
               >
                 <Link2 size={16} strokeWidth={1.9} className="flex-none" style={{ color: 'var(--color-emerald-light)' }} />
                 <span className="flex-1 truncate">{l.label || l.url.replace(/^https?:\/\//, '')}</span>
-                <ExternalLink size={14} strokeWidth={2.1} style={{ color: 'var(--color-ink-dim)' }} />
+                <ExternalLink size={14} strokeWidth={2.1} className="text-ink-dim" />
               </a>
             ))}
           </div>
