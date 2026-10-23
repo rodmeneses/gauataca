@@ -66,6 +66,8 @@ export function MobileRepertoire() {
         </div>
       </div>
 
+      {isAdmin && <AddButton block onClick={openNewSong}>{t.newSong}</AddButton>}
+
       {/* sort */}
       <div className="flex flex-col gap-1.5">
         <Segment className="w-full">
@@ -209,11 +211,6 @@ export function MobileRepertoire() {
           )}
         </div>
       ))}
-      {isAdmin && (
-        <div className="sticky bottom-0 flex justify-end pointer-events-none">
-          <AddButton onClick={openNewSong} className="pointer-events-auto rounded-full shadow-lg min-h-[48px] px-5">{t.newSong}</AddButton>
-        </div>
-      )}
     </div>
   );
 }
