@@ -53,7 +53,7 @@ export function MobileAgenda() {
               </span>
             )}
             {e.pinned && (
-              <span className="flex items-center gap-1 font-display font-semibold text-[12px] tracking-[.03em] uppercase whitespace-nowrap py-1 px-2 rounded-md" style={{ color: 'var(--color-amber)' }}>
+              <span className="flex items-center gap-1 font-display font-semibold text-[12px] tracking-[.03em] uppercase whitespace-nowrap py-1 px-2 rounded-md text-amber">
                 <Pin size={12} strokeWidth={2.2} fill="currentColor" />
                 {t.pinned}
               </span>

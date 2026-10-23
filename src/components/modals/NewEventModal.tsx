@@ -130,7 +130,7 @@ export function NewEventModal() {
             </div>
           )}
           <div className="relative mb-[9px]">
-            <Search size={15} strokeWidth={1.9} className="absolute left-[12px] top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--color-ink-dim)' }} />
+            <Search size={15} strokeWidth={1.9} className="absolute left-[12px] top-1/2 -translate-y-1/2 pointer-events-none text-ink-dim" />
             <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t.searchSongs} className="pl-[36px]" />
           </div>
           <div className="max-h-[160px] overflow-y-auto flex flex-col gap-[4px]">
@@ -144,7 +144,7 @@ export function NewEventModal() {
                 <span className="w-[3px] h-[18px] rounded-[2px] flex-none" style={{ background: s.genreColor }} />
                 <span className="flex-1 min-w-0 font-sans font-medium text-[13px] leading-[normal] text-ink-body">{s.title}</span>
                 <span className="font-mono font-medium text-[11px] leading-[normal] text-ink-muted flex-none">{s.key} · {s.dur}</span>
-                <Plus size={15} strokeWidth={2.2} className="flex-none" style={{ color: 'var(--color-emerald)' }} />
+                <Plus size={15} strokeWidth={2.2} className="flex-none text-emerald" />
               </button>
             ))}
             {available.length === 0 && (

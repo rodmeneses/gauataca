@@ -9,6 +9,7 @@ import type { useAuth } from '../../lib/auth';
 import { preparePhoto } from '../../lib/image';
 import type { State, StoreApi } from '../store';
 import type { useDerived } from '../useDerived';
+import { logError } from '../../lib/log';
 
 export type Derived = ReturnType<typeof useDerived>;
 
@@ -59,7 +60,7 @@ export async function uploadPhotoBatch(
       const url = await upload(full, thumb);
       if (url) urls.push(url); else failed.push(file.name);
     } catch (err) {
-      console.error('Photo upload failed:', file.name, err);
+      logError('Photo upload failed:', file.name, err);
       failed.push(file.name);
     }
   }

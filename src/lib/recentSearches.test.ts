@@ -44,9 +44,9 @@ describe('recent searches', () => {
 
   it('never throws when storage is unavailable', () => {
     const boom = () => { throw new Error('denied'); };
-    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(boom);
-    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(boom);
-    vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(boom);
+    vi.spyOn(window.localStorage, 'getItem').mockImplementation(boom);
+    vi.spyOn(window.localStorage, 'setItem').mockImplementation(boom);
+    vi.spyOn(window.localStorage, 'removeItem').mockImplementation(boom);
     expect(readRecentSearches()).toEqual([]);
     expect(rememberSearch('x')).toEqual(['x']);
     expect(() => clearRecentSearches()).not.toThrow();

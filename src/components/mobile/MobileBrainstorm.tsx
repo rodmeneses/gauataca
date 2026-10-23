@@ -14,7 +14,7 @@ export function MobileBrainstorm() {
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3 px-1">
         <h2 className="m-0 font-display font-semibold text-[17px] leading-normal text-ink-bright flex items-center gap-2">
-          <Lightbulb size={17} strokeWidth={2} style={{ color: 'var(--color-violet)' }} />
+          <Lightbulb size={17} strokeWidth={2} className="text-violet" />
           {t.brainstorm}
         </h2>
         {isAdmin && (
@@ -56,7 +56,7 @@ export function MobileBrainstorm() {
               </span>
               <span className="text-[13px] text-ink-dim">{b.dateStr}</span>
               {b.pinned && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--color-tint-amber)] font-sans font-semibold text-[12px]" style={{ color: 'var(--color-amber)' }}>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--color-tint-amber)] font-sans font-semibold text-[12px] text-amber">
                   <Pin size={12} strokeWidth={2.2} fill="currentColor" />
                   {t.pinned}
                 </span>

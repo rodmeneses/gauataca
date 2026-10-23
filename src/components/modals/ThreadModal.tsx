@@ -109,7 +109,7 @@ export function ThreadModal() {
               className="flex-none"
             />
             {th.pinned && (
-              <span className="inline-flex items-center gap-[5px] py-[4px] px-[9px] rounded-[7px] bg-[var(--color-tint-amber)] font-sans font-semibold text-[11px] leading-[normal]" style={{ color: 'var(--color-amber)' }}>
+              <span className="inline-flex items-center gap-[5px] py-[4px] px-[9px] rounded-[7px] bg-[var(--color-tint-amber)] font-sans font-semibold text-[11px] leading-[normal] text-amber">
                 <Pin size={11} strokeWidth={2.2} fill="currentColor" />
                 {t.pinned}
               </span>
@@ -190,7 +190,7 @@ export function ThreadModal() {
         {th.poll && (
           <div className="mt-[14px] bg-raised border border-line-soft rounded-[12px] p-4">
             <div className="flex items-center gap-[10px] mb-[13px]">
-              <ChartColumn size={15} strokeWidth={1.9} style={{ color: 'var(--color-violet-light)' }} />
+              <ChartColumn size={15} strokeWidth={1.9} className="text-violet-light" />
               <span className="font-sans font-semibold text-[12.5px] leading-[normal] text-ink-base">{th.poll.question}</span>
               <span className="ml-auto font-mono font-medium text-[11px] leading-[normal] text-ink-dim">{th.poll.total} {t.votes}</span>
             </div>

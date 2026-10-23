@@ -7,6 +7,7 @@
  * See `src/lib/push.tsx` for the subscription + opt-in model.
  */
 import { supabase } from './supabase';
+import { logWarn } from './log';
 
 export type NotifyKind = 'event' | 'thread' | 'comment' | 'reaction';
 
@@ -33,9 +34,9 @@ export async function notifyCreated(payload: NotifyPayload): Promise<void> {
       },
       body: JSON.stringify(payload),
     });
-    if (!res.ok) console.warn('Push notify failed:', res.status);
+    if (!res.ok) logWarn('Push notify failed:', res.status);
   } catch (err) {
     // Push is best-effort — never surface to the user, but leave a trace for debugging.
-    console.warn('Push notify failed:', err);
+    logWarn('Push notify failed:', err);
   }
 }

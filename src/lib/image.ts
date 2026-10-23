@@ -2,6 +2,7 @@
  * Client-side image downscaling for event photos. Loads the file, scales the
  * longest side down to `maxDim`, and re-encodes as JPEG so uploads stay small.
  */
+import { logWarn } from './log';
 export async function compressImage(file: File, maxDim = 1600, quality = 0.82): Promise<Blob> {
   const bitmap = await loadBitmap(file);
   // HTMLImageElement.width/height reflect the (absent) width/height attributes and
@@ -66,7 +67,7 @@ export async function preparePhoto(file: File): Promise<PreparedPhoto> {
     full = await compressImage(file);
   } catch (err) {
     // Compression can fail (unsupported format, oversized image, etc.).
-    console.warn('Photo compression failed, uploading original:', file.name, err);
+    logWarn('Photo compression failed, uploading original:', file.name, err);
     return { full: file, thumb: null };
   }
   const thumb = await compressImage(file, THUMB_DIM, 0.72).catch(() => null);

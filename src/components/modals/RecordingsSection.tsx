@@ -41,7 +41,7 @@ export function RecordingsSection({ setlist, takes, isAdmin, t, onAdd, onDelete 
         <div className="flex flex-col gap-[6px] mb-[13px]">
           {takes.map((tk) => (
             <div key={tk.id} className="flex items-center gap-3 py-[9px] px-[12px] rounded-[10px] border border-line bg-surface">
-              <Mic size={14} strokeWidth={1.9} className="flex-none" style={{ color: 'var(--color-emerald-light)' }} />
+              <Mic size={14} strokeWidth={1.9} className="flex-none text-emerald-light" />
               <a
                 href={tk.url}
                 target="_blank"
@@ -50,7 +50,7 @@ export function RecordingsSection({ setlist, takes, isAdmin, t, onAdd, onDelete 
               >
                 {tk.label} · {tk.songTitle}
               </a>
-              <ExternalLink size={14} strokeWidth={2.1} className="flex-none" style={{ color: 'var(--color-ink-dim)' }} />
+              <ExternalLink size={14} strokeWidth={2.1} className="flex-none text-ink-dim" />
               {isAdmin && (
                 <button
                   type="button"
