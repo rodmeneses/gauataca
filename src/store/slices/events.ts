@@ -1,6 +1,7 @@
 /** Events: RSVPs, setlists, takes, media, post-gig feedback and the event form. */
 import type { RatingKey, RsvpStatus } from '../../types';
 import { normalizeUrl, parseNum } from '../../lib/validate';
+import { splitHours } from '../../lib/format';
 import { uploadPhotoBatch, type ActionCtx } from './ctx';
 
 export interface EventActions {
@@ -46,11 +47,12 @@ export function eventActions(ctx: ActionCtx): EventActions {
     openEditEvent: (id) => {
       const e = d.allEvents.find((x) => x.id === id);
       if (!e) return;
+      const dur = e.hours != null ? splitHours(e.hours) : null;
       set({
         modal: { kind: 'newEvent', id },
         form: {
           title: Lx(e.title), venue: e.venue, date: e.date, time: e.time,
-          hours: e.hours != null ? String(e.hours) : '',
+          hours: dur ? String(dur.h) : '', mins: dur?.m ? String(dur.m) : '',
           fee: e.fee ? String(e.fee) : '', cost: e.cost ? String(e.cost) : '',
           note: Lx(e.note), type: e.type, setlist: e.setlist,
           eventLinks: (e.links || []).map((l) => ({ ...l })),
@@ -66,7 +68,7 @@ export function eventActions(ctx: ActionCtx): EventActions {
         .map((l) => ({ ...l, url: normalizeUrl(l.url) ?? l.url }));
       set({ modal: null, form: {} });
       const input = {
-        title: (f.title || '').trim() || 'Evento nuevo', venue: f.venue || 'Bay Area, CA', date: dte, time: f.time || '19:00', hours: parseNum(f.hours) || 0,
+        title: (f.title || '').trim() || 'Evento nuevo', venue: f.venue || 'Bay Area, CA', date: dte, time: f.time || '19:00', hours: (parseNum(f.hours) || 0) + (parseNum(f.mins) || 0) / 60,
         fee: parseNum(f.fee) || 0, cost: parseNum(f.cost) || 0, note: f.note || '', type: f.type || 'gig',
       };
       if (editingId) {

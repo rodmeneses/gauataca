@@ -35,6 +35,16 @@ describe('validateEvent', () => {
     expect(validateEvent({ title: 'x', hours: '0', fee: '-1', cost: 'abc' })).toEqual({ hours: 'errHours', fee: 'errNumber', cost: 'errNumber' });
     expect(validateEvent({ title: 'x', hours: '2.5', fee: '600', cost: '0' })).toEqual({});
   });
+  it('accepts minutes alongside or instead of hours', () => {
+    expect(validateEvent({ title: 'x', mins: '15' })).toEqual({});
+    expect(validateEvent({ title: 'x', hours: '1', mins: '30' })).toEqual({});
+    expect(validateEvent({ title: 'x', hours: '0', mins: '0' })).toEqual({ hours: 'errHours' });
+    expect(validateEvent({ title: 'x', hours: '-1', mins: '30' })).toEqual({ hours: 'errHours' });
+    expect(validateEvent({ title: 'x', mins: 'abc' })).toEqual({ hours: 'errHours' });
+    expect(validateEvent({ title: 'x', mins: '60' })).toEqual({ hours: 'errMinutes' });
+    expect(validateEvent({ title: 'x', mins: '7.5' })).toEqual({ hours: 'errMinutes' });
+    expect(validateEvent({ title: 'x', hours: '48', mins: '1' })).toEqual({ hours: 'errTooBig' });
+  });
 });
 
 describe('validateSong', () => {

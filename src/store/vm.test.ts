@@ -182,7 +182,7 @@ describe('eventVm', () => {
       hours: 2.5,
     });
     const vm = eventVm(e, songs, baseCtx());
-    expect(vm.hoursStr).toBe('2.5h');
+    expect(vm.hoursStr).toBe('2h 30min');
     expect(vm.past).toBe(true);
     expect(vm.hasAttendance).toBe(false);
     expect(vm.canRsvp).toBe(false);

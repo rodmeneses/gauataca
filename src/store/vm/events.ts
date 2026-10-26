@@ -1,7 +1,7 @@
 /** Event, RSVP, feedback and share-caption view-models. */
 import type { Dict } from '../../i18n';
 import { GENRES } from '../../data';
-import { d, days, durationSeconds, fmt, money0, monthShort, rel } from '../../lib/format';
+import { d, days, durationSeconds, fmt, fmtHours, money0, monthShort, rel } from '../../lib/format';
 import type { BandEvent, EventFeedback, Lang, RatingKey, RsvpStatus, Song } from '../../types';
 import { L, RSVP_COLOR, RSVP_PENDING_COLOR, STATE_COLOR, TYPE_COLOR, tint } from './common';
 import type { Ctx } from './common';
@@ -166,7 +166,7 @@ export function eventVm(e: BandEvent, allSongs: Song[], ctx: Ctx): EventVm {
     hours: e.hours,
     dateStr: fmt(e.date, lang, true),
     timeStr: e.time,
-    hoursStr: e.hours != null ? String(e.hours) + 'h' : null,
+    hoursStr: e.hours != null ? fmtHours(e.hours) : null,
     rel: rel(e.date, lang),
     past,
     dayNum: String(d(e.date).getDate()).padStart(2, '0'),

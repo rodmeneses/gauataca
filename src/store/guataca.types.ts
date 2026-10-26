@@ -55,6 +55,7 @@ export interface FormVm {
   date: string;
   time: string;
   hours: string;
+  mins: string;
   fee: string;
   cost: string;
   note: string;

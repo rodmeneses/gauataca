@@ -76,6 +76,19 @@ export function slug(s: string): string {
 }
 
 /** "3:52" → seconds. */
+/** Split a duration in hours into whole hours + minutes (2.25 → { h: 2, m: 15 }). */
+export function splitHours(hours: number): { h: number; m: number } {
+  const total = Math.round(hours * 60);
+  return { h: Math.floor(total / 60), m: total % 60 };
+}
+
+/** Compact event duration: "2h", "45min", "1h 15min". */
+export function fmtHours(hours: number): string {
+  const { h, m } = splitHours(hours);
+  if (!m) return `${h}h`;
+  return h ? `${h}h ${m}min` : `${m}min`;
+}
+
 export function durationSeconds(dur: string): number {
   const [m, s] = dur.split(':');
   return (+m || 0) * 60 + (+s || 0);

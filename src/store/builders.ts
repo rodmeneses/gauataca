@@ -112,7 +112,7 @@ export function toastVms(toasts: Toast[]): ToastVm[] {
 /** Form drafts with every field defaulted, so inputs are always controlled. */
 export function formVm(f: ActionCtx['st']['form']): FormVm {
   return {
-    title: f.title || '', venue: f.venue || '', date: f.date || '', time: f.time || '', hours: f.hours || '', fee: f.fee || '', cost: f.cost || '', note: f.note || '',
+    title: f.title || '', venue: f.venue || '', date: f.date || '', time: f.time || '', hours: f.hours || '', mins: f.mins || '', fee: f.fee || '', cost: f.cost || '', note: f.note || '',
     type: f.type || 'gig', desc: f.desc || '', amt: f.amt || '', proof: f.proof || '', proofKind: f.proofKind || 'receipt', kind: f.kind || 'in',
     event: f.event || '', gear: f.gear || '', category: f.category || 'fee', contributor: f.contributor || '',
     key: f.key || '', bpm: f.bpm || '', dur: f.dur || '', genre: f.genre || 'joropo', songLinks: f.songLinks || [],
