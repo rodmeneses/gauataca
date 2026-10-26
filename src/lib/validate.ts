@@ -3,7 +3,7 @@
  * field → i18n error key; an empty map means the form can be saved.
  */
 export type FormErrorKey =
-  | 'errAmount' | 'errTitle' | 'errNumber' | 'errHours' | 'errBpm' | 'errDuration'
+  | 'errAmount' | 'errTitle' | 'errNumber' | 'errHours' | 'errMinutes' | 'errBpm' | 'errDuration'
   | 'errUrl' | 'errTooLong' | 'errTooBig' | 'errName' | 'errEmail' | 'errPassword' | 'errTime';
 export type FormErrors = Partial<Record<string, FormErrorKey>>;
 
@@ -71,7 +71,7 @@ export function validateTx(f: { amt?: string; desc?: string }): FormErrors {
 }
 
 export function validateEvent(f: {
-  title?: string; venue?: string; note?: string; time?: string; hours?: string; fee?: string; cost?: string;
+  title?: string; venue?: string; note?: string; time?: string; hours?: string; mins?: string; fee?: string; cost?: string;
   eventLinks?: { label: string; url: string }[];
 }): FormErrors {
   const e: FormErrors = {};
@@ -80,10 +80,12 @@ export function validateEvent(f: {
   if (tooLong(f.venue, LIMITS.title)) e.venue = 'errTooLong';
   if (tooLong(f.note, LIMITS.note)) e.note = 'errTooLong';
   if (!blank(f.time) && !/^([01]\d|2[0-3]):[0-5]\d$/.test(f.time!.trim())) e.time = 'errTime';
-  if (!blank(f.hours)) {
-    const h = parseNum(f.hours);
-    if (!(h > 0)) e.hours = 'errHours';
-    else if (h > 48) e.hours = 'errTooBig';
+  if (!blank(f.hours) || !blank(f.mins)) {
+    const h = blank(f.hours) ? 0 : parseNum(f.hours);
+    const m = blank(f.mins) ? 0 : parseNum(f.mins);
+    if (!(h >= 0) || !(m >= 0) || !(h + m > 0)) e.hours = 'errHours';
+    else if (m >= 60 || !Number.isInteger(m)) e.hours = 'errMinutes';
+    else if (h + m / 60 > 48) e.hours = 'errTooBig';
   }
   if (!blank(f.fee)) { const m = badMoney(f.fee, false); if (m) e.fee = m; }
   if (!blank(f.cost)) { const m = badMoney(f.cost, false); if (m) e.cost = m; }

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { d, days, sameMonth, fmt, monthShort, rel, money, money0, slug, durationSeconds } from './format';
+import { d, days, sameMonth, fmt, monthShort, rel, money, money0, slug, durationSeconds, splitHours, fmtHours } from './format';
 
 describe('d', () => {
   it('parses an ISO date at noon local time', () => {
@@ -136,5 +136,18 @@ describe('durationSeconds', () => {
   it('falls back to 0 for missing/invalid parts', () => {
     expect(durationSeconds('')).toBe(0);
     expect(durationSeconds(':')).toBe(0);
+  });
+});
+
+describe('splitHours / fmtHours', () => {
+  it('splits fractional hours into hours and minutes', () => {
+    expect(splitHours(2.25)).toEqual({ h: 2, m: 15 });
+    expect(splitHours(1 / 3)).toEqual({ h: 0, m: 20 });
+    expect(splitHours(3)).toEqual({ h: 3, m: 0 });
+  });
+  it('formats compactly', () => {
+    expect(fmtHours(2)).toBe('2h');
+    expect(fmtHours(0.25)).toBe('15min');
+    expect(fmtHours(1.5)).toBe('1h 30min');
   });
 });

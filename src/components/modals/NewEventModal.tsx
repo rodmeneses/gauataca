@@ -84,8 +84,13 @@ export function NewEventModal() {
           <Field label={t.hourL} error={err('time', form.time)}>
             <Input mono type="time" aria-invalid={!!err('time', form.time) || undefined} {...bind('time')} />
           </Field>
-          <Field label={t.hoursL} error={err('hours', form.hours)}>
-            <Input mono type="number" inputMode="decimal" min="0.5" step="0.5" aria-invalid={!!err('hours', form.hours) || undefined} {...bind('hours')} placeholder="2.5" />
+          <Field label={t.hoursL} error={err('hours', form.hours || form.mins)}>
+            <div className="flex items-center gap-[6px]">
+              <Input mono type="number" inputMode="numeric" min="0" step="1" aria-label={t.hoursUnit} aria-invalid={!!err('hours', form.hours || form.mins) || undefined} {...bind('hours')} placeholder="2" className="min-w-0" />
+              <span className="font-mono text-[12px] text-ink-muted">h</span>
+              <Input mono type="number" inputMode="numeric" min="0" max="59" step="5" aria-label={t.minsUnit} aria-invalid={!!err('hours', form.hours || form.mins) || undefined} {...bind('mins')} placeholder="30" className="min-w-0" />
+              <span className="font-mono text-[12px] text-ink-muted">min</span>
+            </div>
           </Field>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-[1.4fr_1fr_1fr] gap-3">

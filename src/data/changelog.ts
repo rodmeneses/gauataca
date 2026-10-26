@@ -16,6 +16,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.12.4',
+    date: '2026-10-25',
+    title: { es: 'Duración en minutos', en: 'Duration in minutes' },
+    changes: [
+      { es: 'La duración de un evento ahora se puede indicar en horas y minutos (p. ej. 15 min o 1h 30min).', en: 'Event duration can now be set in hours and minutes (e.g. 15 min or 1h 30min).' },
+    ],
+  },
+  {
     version: '0.12.3',
     date: '2026-10-23',
     title: { es: 'Pantalla de carga', en: 'Loading screen' },
