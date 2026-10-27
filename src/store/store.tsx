@@ -25,6 +25,8 @@ export interface State {
   scrollToSong: string | null;
   /** Ledger movement id to scroll into view after a deep link (set by goToTx, cleared after scroll). */
   scrollToTx: string | null;
+  /** Availability poll id to scroll into view after a deep link or search (set by goToAvailability, cleared after scroll). */
+  scrollToPoll: number | null;
   q: string;
   genre: GenreId | 'all';
   staleOnly: boolean;
@@ -109,6 +111,7 @@ export function initialState(props: AppProps): State {
     openSong: null,
     scrollToSong: null,
     scrollToTx: null,
+    scrollToPoll: null,
     q: '',
     genre: 'all',
     staleOnly: false,

@@ -62,15 +62,15 @@ describe('hideDeleted', () => {
     expect(out.threads[0].comments[0].replies.map((r) => r.id)).toEqual([12]);
   });
   it('sets, replaces and clears an availability answer', () => {
-    const poll = (id: number) => ({ id, closed: false, votes: [{ date: 'd1', profileId: 'u1', answer: 'yes' }, { date: 'd1', profileId: 'u2', answer: 'no' }] });
+    const poll = (id: number) => ({ id, closed: false, votes: [{ slotId: 1, profileId: 'u1', answer: 'yes' }, { slotId: 1, profileId: 'u2', answer: 'no' }] });
     const s = { availability: [poll(1), poll(2)] } as unknown as DataSnapshot;
-    expect(answerAvailability(1, 'd1', 'maybe', 'u1')(s).availability[0].votes).toEqual([
-      { date: 'd1', profileId: 'u2', answer: 'no' },
-      { date: 'd1', profileId: 'u1', answer: 'maybe' },
+    expect(answerAvailability(1, 1, 'maybe', 'u1')(s).availability[0].votes).toEqual([
+      { slotId: 1, profileId: 'u2', answer: 'no' },
+      { slotId: 1, profileId: 'u1', answer: 'maybe' },
     ]);
-    expect(answerAvailability(1, 'd2', 'yes', 'u1')(s).availability[0].votes).toHaveLength(3);
-    expect(answerAvailability(1, 'd1', null, 'u1')(s).availability[0].votes).toEqual([{ date: 'd1', profileId: 'u2', answer: 'no' }]);
-    expect(answerAvailability(1, 'd1', null, 'u1')(s).availability[1]).toBe(s.availability[1]);
+    expect(answerAvailability(1, 2, 'yes', 'u1')(s).availability[0].votes).toHaveLength(3);
+    expect(answerAvailability(1, 1, null, 'u1')(s).availability[0].votes).toEqual([{ slotId: 1, profileId: 'u2', answer: 'no' }]);
+    expect(answerAvailability(1, 1, null, 'u1')(s).availability[1]).toBe(s.availability[1]);
   });
   it('closes and reopens an availability poll', () => {
     const s = { availability: [{ id: 1, closed: false }, { id: 2, closed: false }] } as unknown as DataSnapshot;

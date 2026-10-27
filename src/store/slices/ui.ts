@@ -1,17 +1,17 @@
 /** Cross-cutting UI: share sheet, deep links, modals, palette/search/tour/handoff overlays, toasts and form fields. */
 import type { FormState, Toast } from '../../types';
-import { itemUrl } from '../../lib/deepLink';
+import { itemUrl, type DeepLinkKind } from '../../lib/deepLink';
 import { igCaption } from '../vm';
 import type { State } from '../store';
 import type { ActionCtx } from './ctx';
 
 export interface UiActions {
   /** Copy a shareable deep link for an item (event / song / movement) to the clipboard. */
-  copyLink: (kind: 'event' | 'song' | 'tx' | 'thread', id: string, commentId?: number) => void;
+  copyLink: (kind: DeepLinkKind, id: string, commentId?: number) => void;
   /** True when the browser has the native share sheet (navigator.share). */
   canShare: boolean;
   /** Open the native share sheet for an item's deep link (no-op without navigator.share). */
-  shareLink: (kind: 'event' | 'song', id: string, title: string) => void;
+  shareLink: (kind: DeepLinkKind, id: string, title: string) => void;
   openSignIn: () => void;
   /** Open the Web Push notification preferences modal (desktop). */
   openNotifications: () => void;

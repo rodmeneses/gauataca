@@ -8,7 +8,8 @@ import { gzipSync } from 'node:zlib';
 import { join } from 'node:path';
 
 const ENTRY_BUDGET_KB = 175;
-const TOTAL_BUDGET_KB = 240;
+// 245: raised from 240 for availability-poll slots, editing, links and search (PR #93).
+const TOTAL_BUDGET_KB = 245;
 const dir = 'dist/assets';
 
 const gz = (file) => gzipSync(readFileSync(join(dir, file))).length / 1024;

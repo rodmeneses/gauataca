@@ -2,6 +2,8 @@
 import type { Dict } from '../i18n';
 import { TOUR_STEPS } from '../data';
 import { searchAll } from '../lib/search';
+import { slotHours } from '../lib/availability';
+import { fmt } from '../lib/format';
 import type { Toast } from '../types';
 import { filterPalette } from './derive';
 import { memberById, threadVm, txVm } from './vm';
@@ -40,9 +42,9 @@ export function paletteResults(ctx: ActionCtx, go: NavActions['go']): PaletteIte
   return filterPalette(base, st.pq);
 }
 
-/** Global search (mobile): events, songs, fund movements, ideas, polls and links, each with a navigate action. */
+/** Global search (mobile): events, songs, fund movements, ideas, polls, availability polls and links, each with a navigate action. */
 export function searchResults(ctx: ActionCtx): SearchResult[] {
-  const { st, set, t, Lx, d, data } = ctx;
+  const { st, set, t, Lx, d, data, lang } = ctx;
   if (!st.search) return [];
   const { allEvents, allTx, songs, evm } = d;
   return searchAll(st.sq, {
@@ -70,6 +72,13 @@ export function searchResults(ctx: ActionCtx): SearchResult[] {
           }]
         : [],
     ),
+    availability: data.availability.map((p) => ({
+      id: p.id,
+      date: p.slots[0]?.date ?? '',
+      title: p.title,
+      slots: p.slots.map((s) => [fmt(s.date, lang), slotHours(s, t.availFrom)].filter(Boolean).join(' ')),
+      status: p.closed ? t.availClosed : '',
+    })),
     links: data.links.map((l) => ({
       id: l.id,
       title: l.title,
@@ -82,6 +91,7 @@ export function searchResults(ctx: ActionCtx): SearchResult[] {
     run:
       h.kind === 'event' ? () => set({ search: false, modal: { kind: 'event', id: h.id } })
       : h.kind === 'idea' || h.kind === 'poll' ? () => set({ search: false, mobileTab: 'brainstorm', view: 'brainstorm', modal: { kind: 'thread', id: h.id } })
+      : h.kind === 'availability' ? () => set({ search: false, modal: null, view: 'calendar', mobileTab: 'agenda', calTab: 'availability', scrollToPoll: Number(h.id) })
       : h.kind === 'link' ? () => set({ search: false, modal: null, view: 'links', mobileTab: 'links' })
       : h.kind === 'song' ? () => set({ search: false, modal: null, view: 'repertoire', mobileTab: 'repertoire', openSong: h.id, scrollToSong: h.id, q: '', genre: 'all', staleOnly: false })
       : () => set({ search: false, modal: null, view: 'ledger', mobileTab: 'fund', scrollToTx: h.id, txFilter: 'all', txDate: 'all' }),

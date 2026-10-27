@@ -322,13 +322,23 @@ describe('ledger', () => {
 
 describe('availability / calendar feed', () => {
   it('returns undefined when the poll insert yields no id', async () => {
-    expect(await band.createAvailabilityPoll({ title: 't', dates: ['d'] }, 'u')).toBeUndefined();
+    expect(await band.createAvailabilityPoll({ title: 't', slots: [{ date: 'd', start: null, end: null }] }, 'u')).toBeUndefined();
     expect(by('availability_dates', 'insert')).toHaveLength(0);
   });
   it('dedupes candidate dates', async () => {
     reply = (t) => (t === 'availability_polls' ? { id: 4 } : null);
-    expect(await band.createAvailabilityPoll({ title: 't', dates: ['a', 'a', 'b'] }, 'u')).toBe(4);
+    const slot = (date: string, start: string | null = null) => ({ date, start, end: null });
+    expect(await band.createAvailabilityPoll({ title: 't', slots: [slot('a'), slot('a'), slot('a', '19:00'), slot('')] }, 'u')).toBe(4);
     expect(by('availability_dates', 'insert')[0].args.insert[0]).toHaveLength(2);
+  });
+  it('edits a poll: keeps unchanged slots and only deletes or inserts what changed', async () => {
+    const cur = [{ id: 1, date: 'a', start: null, end: null }, { id: 2, date: 'b', start: '19:00', end: null }];
+    await band.updateAvailabilityPoll(9, { title: 't', slots: [{ date: 'a', start: null, end: null }] }, cur);
+    expect(by('availability_dates', 'delete')[0].args.in).toEqual(['id', [2]]);
+    expect(by('availability_dates', 'insert')).toHaveLength(0);
+    await band.updateAvailabilityPoll(9, { title: 't', slots: [...cur, { date: 'c', start: '10:00', end: '12:00' }] }, cur);
+    expect(by('availability_dates', 'delete')).toHaveLength(1);
+    expect(by('availability_dates', 'insert')[0].args.insert[0]).toEqual([{ poll_id: 9, date: 'c', start_time: '10:00', end_time: '12:00' }]);
   });
   it('returns an existing calendar token without creating one', async () => {
     reply = () => ({ token: 'abc' });

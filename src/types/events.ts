@@ -62,17 +62,28 @@ export interface Take {
   n: number;
 }
 
-/** A member's answer for one candidate date — absent = hasn't answered yet. */
+/** A member's answer for one candidate slot — absent = hasn't answered yet. */
 export type AvailabilityAnswer = 'yes' | 'maybe' | 'no';
 
-/** "Which date works?" poll: candidate dates plus every member's answers. */
+/** A candidate slot: a date plus optional start/end hours ("HH:MM"). The same date can appear with different hours. */
+export interface AvailabilitySlotInput {
+  date: string;
+  start: string | null;
+  end: string | null;
+}
+
+export interface AvailabilitySlot extends AvailabilitySlotInput {
+  id: number;
+}
+
+/** "Which date works?" poll: candidate slots plus every member's answers. */
 export interface AvailabilityPoll {
   id: number;
   title: string;
   closed: boolean;
   createdBy: string;
-  /** Candidate dates, ISO (YYYY-MM-DD), ascending. */
-  dates: string[];
-  votes: { date: string; profileId: string; answer: AvailabilityAnswer }[];
+  /** Candidate slots, by date then start hour (all-day first). */
+  slots: AvailabilitySlot[];
+  votes: { slotId: number; profileId: string; answer: AvailabilityAnswer }[];
 }
 

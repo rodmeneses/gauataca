@@ -1,15 +1,16 @@
 /** Events: RSVPs, setlists, takes, media, post-gig feedback and the event form. */
-import type { RatingKey, RsvpStatus } from '../../types';
+import type { AvailabilitySlotInput, RatingKey, RsvpStatus } from '../../types';
 import { normalizeUrl, parseNum } from '../../lib/validate';
 import { splitHours } from '../../lib/format';
+import { slotDuration } from '../../lib/availability';
 import { uploadPhotoBatch, type ActionCtx } from './ctx';
 
 export interface EventActions {
   openEvent: (id: string) => void;
   openNewEvent: () => void;
   openEditEvent: (id: string) => void;
-  /** Open the new-event form pre-filled with a title and date (e.g. the winning date of an availability poll). */
-  startEventOn: (date: string, title: string) => void;
+  /** Open the new-event form pre-filled from the winning slot of an availability poll (date, start hour, duration). */
+  startEventOn: (slot: AvailabilitySlotInput, title: string) => void;
   saveEvent: () => Promise<void>;
   /** Set the signed-in member's RSVP; choosing the current answer again withdraws it (back to pending). */
   setRsvp: (eventId: string, status: RsvpStatus) => Promise<void>;
@@ -43,7 +44,14 @@ export function eventActions(ctx: ActionCtx): EventActions {
   return {
     openEvent: (id) => set({ modal: { kind: 'event', id } }),
     openNewEvent: () => set({ modal: { kind: 'newEvent' }, form: {} }),
-    startEventOn: (date, title) => set({ modal: { kind: 'newEvent' }, view: 'calendar', form: { title, date, type: 'gig' } }),
+    startEventOn: (slot, title) => {
+      const dur = slotDuration(slot);
+      set({
+        modal: { kind: 'newEvent' },
+        view: 'calendar',
+        form: { title, date: slot.date, type: 'gig', ...(slot.start ? { time: slot.start } : {}), ...(dur ? { hours: String(dur.h), mins: String(dur.m) } : {}) },
+      });
+    },
     openEditEvent: (id) => {
       const e = d.allEvents.find((x) => x.id === id);
       if (!e) return;
