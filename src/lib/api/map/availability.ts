@@ -1,11 +1,15 @@
 /** Read side: map PostgREST rows into availability polls. */
 import { groupBy, type Row } from '../shared';
-import type { AvailabilityAnswer, AvailabilityPoll } from '../../../types';
+import { compareSlots } from '../../availability';
+import type { AvailabilityAnswer, AvailabilityPoll, AvailabilitySlot } from '../../../types';
 
 const ANSWERS: AvailabilityAnswer[] = ['yes', 'maybe', 'no'];
 
-export function mapAvailability(polls: Row[], dates: Row[], votes: Row[]): AvailabilityPoll[] {
-  const datesByPoll = groupBy(dates, 'poll_id');
+/** Postgres `time` comes back as "HH:MM:SS"; the app works in "HH:MM". */
+const hhmm = (t: unknown): string | null => (t ? String(t).slice(0, 5) : null);
+
+export function mapAvailability(polls: Row[], slots: Row[], votes: Row[]): AvailabilityPoll[] {
+  const slotsByPoll = groupBy(slots, 'poll_id');
   const votesByPoll = groupBy(votes, 'poll_id');
   return polls
     .map((p): AvailabilityPoll => ({
@@ -13,10 +17,12 @@ export function mapAvailability(polls: Row[], dates: Row[], votes: Row[]): Avail
       title: p.title,
       closed: !!p.closed,
       createdBy: p.created_by,
-      dates: (datesByPoll.get(p.id) ?? []).map((d) => String(d.date)).sort(),
+      slots: (slotsByPoll.get(p.id) ?? [])
+        .map((s): AvailabilitySlot => ({ id: s.id, date: String(s.date), start: hhmm(s.start_time), end: hhmm(s.end_time) }))
+        .sort(compareSlots),
       votes: (votesByPoll.get(p.id) ?? [])
         .filter((v) => ANSWERS.includes(v.answer))
-        .map((v) => ({ date: String(v.date), profileId: v.profile_id, answer: v.answer as AvailabilityAnswer })),
+        .map((v) => ({ slotId: v.slot_id, profileId: v.profile_id, answer: v.answer as AvailabilityAnswer })),
     }))
     .sort((a, b) => b.id - a.id);
 }

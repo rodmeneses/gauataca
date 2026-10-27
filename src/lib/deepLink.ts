@@ -1,11 +1,11 @@
 /**
- * Shareable deep links: `?event=<id>`, `?song=<id>`, `?tx=<id>`, `?thread=<id>`
+ * Shareable deep links: `?event=<id>`, `?song=<id>`, `?tx=<id>`, `?thread=<id>`, `?availability=<id>`
  * (a thread link may add `&comment=<id>` to point at one comment or reply).
  * Parsed once after data loads (see Shell's useDeepLink effect) and then
  * stripped from the URL so a refresh doesn't re-open the item.
  */
 
-export type DeepLinkKind = 'event' | 'song' | 'tx' | 'thread';
+export type DeepLinkKind = 'event' | 'song' | 'tx' | 'thread' | 'availability';
 
 export interface DeepLink {
   kind: DeepLinkKind;
@@ -14,7 +14,7 @@ export interface DeepLink {
   commentId?: number;
 }
 
-const KINDS: DeepLinkKind[] = ['event', 'song', 'tx', 'thread'];
+const KINDS: DeepLinkKind[] = ['event', 'song', 'tx', 'thread', 'availability'];
 
 /** Read the first shareable-item param present in the current URL, if any. */
 export function readDeepLink(): DeepLink | null {

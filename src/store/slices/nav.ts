@@ -30,6 +30,10 @@ export interface NavActions {
   goToTx: (id: string) => void;
   /** Clear the pending scroll-to-movement request (called by the ledger views after scrolling). */
   clearScrollToTx: () => void;
+  /** Navigate to the calendar's availability tab and scroll to a specific poll (from a link or search). */
+  goToAvailability: (id: number) => void;
+  /** Clear the pending scroll-to-poll request (called by the availability panel after scrolling). */
+  clearScrollToPoll: () => void;
   signOut: () => Promise<void>;
 }
 
@@ -66,6 +70,8 @@ export function navActions({ st, set, toast, t, isAdmin, isMobileViewport, auth 
     clearScrollToSong: () => set({ scrollToSong: null }),
     goToTx: (id) => set({ backTo: backFrom('ledger', 'fund'), view: 'ledger', mobileTab: 'fund', scrollToTx: id, modal: null, palette: false }),
     clearScrollToTx: () => set({ scrollToTx: null }),
+    goToAvailability: (id) => set({ backTo: backFrom('calendar', 'agenda'), view: 'calendar', mobileTab: 'agenda', calTab: 'availability', scrollToPoll: id, modal: null, palette: false, search: false }),
+    clearScrollToPoll: () => set({ scrollToPoll: null }),
     signOut: auth.signOut,
   };
 }

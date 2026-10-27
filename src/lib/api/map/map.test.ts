@@ -7,18 +7,26 @@ import { mapInstruments, mapMembers } from './members';
 import { mapSongs, mapTakes } from './songs';
 
 describe('mapAvailability', () => {
-  it('sorts dates, drops unknown answers and orders polls newest first', () => {
+  it('sorts slots, trims times, drops unknown answers and orders polls newest first', () => {
     const out = mapAvailability(
       [{ id: 1, title: 'a', closed: null, created_by: 'm1' }, { id: 2, title: 'b', closed: true, created_by: 'm2' }],
-      [{ poll_id: 1, date: '2026-02-02' }, { poll_id: 1, date: '2026-01-01' }],
-      [{ poll_id: 1, date: '2026-01-01', profile_id: 'm1', answer: 'yes' }, { poll_id: 1, date: '2026-01-01', profile_id: 'm2', answer: 'bogus' }],
+      [
+        { id: 10, poll_id: 1, date: '2026-02-02', start_time: null, end_time: null },
+        { id: 11, poll_id: 1, date: '2026-01-01', start_time: '19:00:00', end_time: '22:30:00' },
+        { id: 12, poll_id: 1, date: '2026-01-01', start_time: null, end_time: null },
+      ],
+      [{ poll_id: 1, slot_id: 11, profile_id: 'm1', answer: 'yes' }, { poll_id: 1, slot_id: 11, profile_id: 'm2', answer: 'bogus' }],
     );
     expect(out.map((p) => p.id)).toEqual([2, 1]);
-    expect(out[1].dates).toEqual(['2026-01-01', '2026-02-02']);
-    expect(out[1].votes).toEqual([{ date: '2026-01-01', profileId: 'm1', answer: 'yes' }]);
+    expect(out[1].slots).toEqual([
+      { id: 12, date: '2026-01-01', start: null, end: null },
+      { id: 11, date: '2026-01-01', start: '19:00', end: '22:30' },
+      { id: 10, date: '2026-02-02', start: null, end: null },
+    ]);
+    expect(out[1].votes).toEqual([{ slotId: 11, profileId: 'm1', answer: 'yes' }]);
     expect(out[1].closed).toBe(false);
     expect(out[0].closed).toBe(true);
-    expect(out[0].dates).toEqual([]);
+    expect(out[0].slots).toEqual([]);
   });
 });
 

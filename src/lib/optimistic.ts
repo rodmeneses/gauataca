@@ -35,13 +35,13 @@ export const rsvp = (eventId: string, status: RsvpStatus | null, userId: string)
   }),
 });
 
-/** Set (or, with `null`, clear) `userId`'s answer for one date of an availability poll. */
-export const answerAvailability = (pollId: number, date: string, answer: AvailabilityAnswer | null, userId: string): Patch => (s) => ({
+/** Set (or, with `null`, clear) `userId`'s answer for one slot of an availability poll. */
+export const answerAvailability = (pollId: number, slotId: number, answer: AvailabilityAnswer | null, userId: string): Patch => (s) => ({
   ...s,
   availability: s.availability.map((p) => {
     if (p.id !== pollId) return p;
-    const others = p.votes.filter((v) => !(v.date === date && v.profileId === userId));
-    return { ...p, votes: answer === null ? others : [...others, { date, profileId: userId, answer }] };
+    const others = p.votes.filter((v) => !(v.slotId === slotId && v.profileId === userId));
+    return { ...p, votes: answer === null ? others : [...others, { slotId, profileId: userId, answer }] };
   }),
 });
 

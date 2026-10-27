@@ -1,10 +1,10 @@
 /**
  * Mobile global search: full-screen overlay that searches events, songs, fund
- * movements, brainstorm ideas, polls and links. Each hit shows its type; tapping it jumps to
+ * movements, brainstorm ideas, polls, availability polls and links. Each hit shows its type; tapping it jumps to
  * the resource (see `searchResults` in useGuataca).
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { BarChart3, Calendar, Lightbulb, Link2, Music, Receipt, Search, X } from 'lucide-react';
+import { BarChart3, Calendar, CalendarCheck, Lightbulb, Link2, Music, Receipt, Search, X } from 'lucide-react';
 import { useGuataca } from '../../store';
 import type { SearchKind } from '../../lib/search';
 import { clearRecentSearches, readRecentSearches, rememberSearch } from '../../lib/recentSearches';
@@ -16,6 +16,7 @@ const KIND_STYLE: Record<SearchKind, { icon: ReactNode; color: string; bg: strin
   fund: { icon: <Receipt size={18} strokeWidth={1.9} />, color: 'var(--color-amber)', bg: 'var(--color-tint-amber)' },
   idea: { icon: <Lightbulb size={18} strokeWidth={1.9} />, color: 'var(--color-sky)', bg: 'var(--color-tint-sky)' },
   poll: { icon: <BarChart3 size={18} strokeWidth={1.9} />, color: 'var(--color-sky)', bg: 'var(--color-tint-sky)' },
+  availability: { icon: <CalendarCheck size={18} strokeWidth={1.9} />, color: 'var(--color-emerald)', bg: 'var(--color-tint-emerald)' },
   link: { icon: <Link2 size={18} strokeWidth={1.9} />, color: 'var(--color-violet-light)', bg: 'var(--color-tint-violet)' },
 };
 
@@ -40,7 +41,7 @@ export function SearchOverlay() {
   const dialogRef = useRef<HTMLDivElement>(null);
   useDialogChrome(dialogRef);
   const q = state.sq;
-  const kindLabel: Record<SearchKind, string> = { event: t.refEvents, song: t.refSongs, fund: t.fund, idea: t.brainstorm, poll: t.poll, link: t.links };
+  const kindLabel: Record<SearchKind, string> = { event: t.refEvents, song: t.refSongs, fund: t.fund, idea: t.brainstorm, poll: t.poll, availability: t.availability, link: t.links };
   const run = (r: (typeof searchResults)[number]) => {
     setRecent(rememberSearch(q));
     r.run();
@@ -97,7 +98,7 @@ export function SearchOverlay() {
       </div>
 
       <div role="group" aria-label={t.search} className={`flex gap-2 py-2 overflow-x-auto flex-none border-b border-line-faint ${px}`}>
-        {(['all', 'event', 'song', 'fund', 'idea', 'poll', 'link'] as const).map((k) => {
+        {(['all', 'event', 'song', 'fund', 'idea', 'poll', 'availability', 'link'] as const).map((k) => {
           const active = state.searchKind === k;
           return (
             <button

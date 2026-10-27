@@ -16,6 +16,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.13.0',
+    date: '2026-10-26',
+    title: { es: 'Encuestas de fechas con horario', en: 'Date polls with hours' },
+    changes: [
+      { es: 'Las encuestas de disponibilidad ahora aceptan hora de inicio y de fin, y la misma fecha puede aparecer con distintos horarios.', en: 'Availability polls now take a start and end hour, and the same date can appear with different hours.' },
+      { es: 'Los admins pueden editar una encuesta de disponibilidad (título, fechas y horas).', en: 'Admins can edit an availability poll (title, dates and hours).' },
+      { es: 'Cada encuesta de disponibilidad tiene su enlace para copiar o compartir, y aparece en la búsqueda.', en: 'Each availability poll has a link to copy or share, and shows up in search.' },
+    ],
+  },
+  {
     version: '0.12.4',
     date: '2026-10-25',
     title: { es: 'Duración en minutos', en: 'Duration in minutes' },

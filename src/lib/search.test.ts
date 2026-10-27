@@ -16,6 +16,7 @@ const src: SearchSources = {
   ],
   threads: [{ id: 'b1', date: '2026-08-01', comments: [{ text: 'Yo llevo el bajo', author: 'Luis', date: '2026-08-05' }], title: 'Tocar gaitas en diciembre', body: 'Podríamos armar un set navideño', author: 'Ana', dateStr: '1 ago 2026' }],
   polls: [{ id: 'b1', date: '2026-08-01', question: '¿Qué día ensayamos?', options: ['Martes', 'Jueves'], threadTitle: 'Tocar gaitas en diciembre', author: 'Ana' }],
+  availability: [{ id: 3, date: '2026-12-05', title: 'Parranda de Reyes', slots: ['sáb 5 dic 19:00–22:00', 'dom 6 dic'], status: '' }],
   links: [{ id: 7, title: 'Carpeta de partituras', url: 'https://drive.google.com/abc', categoryLabel: 'Documentos', by: 'Luis' }],
 };
 
@@ -94,7 +95,7 @@ describe('searchAll', () => {
       { id: 'e1', date: '2026-08-01', title: 'Joropo uno', venue: '', note: '', typeLabel: '', dateStr: '' },
       { id: 'e2', date: '2026-08-01', title: 'Joropo dos', venue: '', note: '', typeLabel: '', dateStr: '' },
     ];
-    const hits = searchAll('joropo', { ...src, events, songs: [], tx: [], threads: [], polls: [], links: [] });
+    const hits = searchAll('joropo', { ...src, events, songs: [], tx: [], threads: [], polls: [], availability: [], links: [] });
     expect(hits.map((h) => h.id)).toEqual(['e1', 'e2']);
   });
 
@@ -123,6 +124,20 @@ describe('searchAll', () => {
     ]);
     expect(searchAll('drive', src)).toEqual([{ kind: 'link', id: '7', title: 'Carpeta de partituras', sub: 'Documentos · drive.google.com/abc' }]);
     expect(searchAll('documentos', src).map((h) => h.kind)).toEqual(['link']);
+  });
+
+  it('finds availability polls by title or candidate slot, newest first', () => {
+    expect(searchAll('parranda', src)).toEqual([
+      { kind: 'availability', id: '3', title: 'Parranda de Reyes', sub: 'sáb 5 dic 19:00–22:00 · dom 6 dic' },
+    ]);
+    const availability = [
+      { id: 1, date: '2026-01-01', title: 'Toque', slots: [], status: 'Cerrada' },
+      { id: 2, date: '2026-05-01', title: 'Toque', slots: ['19:00'], status: '' },
+    ];
+    const hits = searchAll('toque', { ...src, availability });
+    expect(hits.map((h) => h.id)).toEqual(['2', '1']);
+    expect(hits[1].sub).toBe('Cerrada');
+    expect(searchAll('dic', src).some((h) => h.kind === 'availability')).toBe(true);
   });
 
   it('caps polls and links per type', () => {
@@ -175,7 +190,7 @@ describe('typo tolerance', () => {
       { id: 'typo', title: 'Alma Lanera', genreLabel: 'Joropo', key: 'Am' },
       { id: 'exact', title: 'Llanera', genreLabel: 'Joropo', key: 'Am' },
     ];
-    expect(searchAll('llanera', { ...src, events: [], tx: [], threads: [], polls: [], links: [], songs }).map((h) => h.id)).toEqual(['exact', 'typo']);
+    expect(searchAll('llanera', { ...src, events: [], tx: [], threads: [], polls: [], availability: [], links: [], songs }).map((h) => h.id)).toEqual(['exact', 'typo']);
   });
 
   it('matches an idea through a comment typo', () => {
@@ -197,7 +212,7 @@ describe('kind filter', () => {
     expect(searchAll('tema', many, { kind: 'all' }).some((h) => h.kind === 'link')).toBe(true);
   });
 
-  it.each(['event', 'fund', 'idea', 'poll', 'link'] as const)('filters to %s', (kind) => {
+  it.each(['event', 'fund', 'idea', 'poll', 'availability', 'link'] as const)('filters to %s', (kind) => {
     const hits = searchAll('a', src, { kind });
     expect(hits.every((h) => h.kind === kind)).toBe(true);
   });

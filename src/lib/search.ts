@@ -1,9 +1,10 @@
 /**
- * Global search across events, songs, fund movements, brainstorm ideas, idea polls and band links.
+ * Global search across events, songs, fund movements, brainstorm ideas, idea polls, availability polls
+ * and band links.
  * Pure: takes the already-built view-models and returns a flat, typed list.
  */
 
-export type SearchKind = 'event' | 'song' | 'fund' | 'idea' | 'poll' | 'link';
+export type SearchKind = 'event' | 'song' | 'fund' | 'idea' | 'poll' | 'availability' | 'link';
 
 export interface SearchHit {
   kind: SearchKind;
@@ -39,6 +40,8 @@ export interface SearchSources {
   }[];
   /** Polls attached to forum ideas; `id` is the idea's id (a poll hit opens its idea). */
   polls: { id: string; date: string; question: string; options: string[]; threadTitle: string; author: string }[];
+  /** Availability ("which date works?") polls; `date` is the first candidate's, `slots` the formatted candidates. */
+  availability: { id: number; date: string; title: string; slots: string[]; status: string }[];
   /** Shared band links. */
   links: { id: number; title: string; url: string; categoryLabel: string; by: string }[];
 }
@@ -113,7 +116,7 @@ export interface SearchOptions {
 export const SEARCH_LIMIT_SINGLE_KIND = 50;
 
 /**
- * Ordered by type (events, songs, fund, ideas, polls, links). Within a type, verbatim matches come
+ * Ordered by type (events, songs, fund, ideas, polls, availability, links). Within a type, verbatim matches come
  * before typo-tolerant ones, then newest first. Empty query → no results.
  */
 export function searchAll(query: string, src: SearchSources, opts: SearchOptions = {}): SearchHit[] {
@@ -161,9 +164,13 @@ export function searchAll(query: string, src: SearchSources, opts: SearchOptions
     .slice(0, limit)
     .map((p): SearchHit => ({ kind: 'poll', id: p.id, title: p.question, sub: [p.threadTitle, p.options.join(' / ')].filter(Boolean).join(' · ') }));
 
+  const availability = !want('availability') ? [] : rank(scored(src.availability.slice().sort(newestFirst), (a) => [a.title, a.status, ...a.slots]))
+    .slice(0, limit)
+    .map((a): SearchHit => ({ kind: 'availability', id: String(a.id), title: a.title, sub: [a.status, ...a.slots].filter(Boolean).join(' · ') }));
+
   const links = !want('link') ? [] : rank(scored(src.links, (l) => [l.title, l.url, l.categoryLabel, l.by]))
     .slice(0, limit)
     .map((l): SearchHit => ({ kind: 'link', id: String(l.id), title: l.title, sub: [l.categoryLabel, l.url.replace(/^https?:\/\//, '')].filter(Boolean).join(' · ') }));
 
-  return [...events, ...songs, ...fund, ...ideas, ...polls, ...links];
+  return [...events, ...songs, ...fund, ...ideas, ...polls, ...availability, ...links];
 }

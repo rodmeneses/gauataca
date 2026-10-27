@@ -84,7 +84,7 @@ export function Shell() {
     if (entriesSince(seen).length > 0) bsRef.current.openChangelog(seen ?? undefined);
   }, [user, loading, modal]);
 
-  // Shareable deep link (?event= / ?song= / ?tx= / ?thread=[&comment=]): apply once data is loaded,
+  // Shareable deep link (?event= / ?song= / ?tx= / ?thread=[&comment=] / ?availability=): apply once data is loaded,
   // then strip the params so a refresh doesn't re-open the item. Falls back to a
   // link stashed in sessionStorage (see savePendingDeepLink) for round trips that
   // drop the URL, e.g. the Google OAuth redirect in src/lib/auth.tsx.
@@ -101,6 +101,7 @@ export function Shell() {
     if (kind === 'event') vm.openEvent(id);
     else if (kind === 'song') vm.goToSong(id);
     else if (kind === 'tx') vm.goToTx(id);
+    else if (kind === 'availability') vm.goToAvailability(Number(id));
     else vm.openThread(id, commentId);
   }, [loading]);
 
