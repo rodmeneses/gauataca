@@ -50,6 +50,11 @@ export const closeAvailability = (id: number, closed: boolean): Patch => (s) => 
   availability: s.availability.map((p) => (p.id === id ? { ...p, closed } : p)),
 });
 
+export const archiveAvailability = (id: number, archived: boolean): Patch => (s) => ({
+  ...s,
+  availability: s.availability.map((p) => (p.id === id ? { ...p, archived } : p)),
+});
+
 /** Move `userId` from their previous reaction (if any) to `next` in a tally. */
 export function retally(r: ReactionTally, prev: ReactionKind | null, next: ReactionKind | null, userId: string): ReactionTally {
   const likedBy = r.likedBy.filter((u) => u !== userId);

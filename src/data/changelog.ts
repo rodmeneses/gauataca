@@ -16,6 +16,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.13.1',
+    date: '2026-10-28',
+    title: { es: 'Archivar encuestas de fechas', en: 'Archive date polls' },
+    changes: [
+      { es: 'Los admins pueden archivar encuestas de disponibilidad viejas; quedan en la lista de Archivadas y se pueden restaurar.', en: 'Admins can archive old availability polls; they move to an Archived list and can be restored.' },
+      { es: 'Ahora se puede crear un evento desde cualquier opción de una encuesta de disponibilidad, no solo la mejor fecha.', en: 'You can now create an event from any option of an availability poll, not just the best date.' },
+    ],
+  },
+  {
     version: '0.13.0',
     date: '2026-10-26',
     title: { es: 'Encuestas de fechas con horario', en: 'Date polls with hours' },

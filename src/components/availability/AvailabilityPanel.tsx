@@ -1,9 +1,9 @@
 /** "Which date works?" polls — used by the desktop Calendar view and the mobile Agenda tab. */
 import { Suspense, useEffect, useState } from 'react';
-import { CalendarCheck, Check, HelpCircle, Link2, Lock, Pencil, Share2, Trash2, Unlock, X } from 'lucide-react';
+import { Archive, ArchiveRestore, CalendarCheck, Check, HelpCircle, Link2, Lock, Pencil, Share2, Trash2, Unlock, X } from 'lucide-react';
 import { useGuataca } from '@/store';
 import { useData } from '@/lib/data';
-import { AddButton, Badge, Button, Card, useConfirm } from '@/components/ui';
+import { AddButton, Badge, Button, Card, Pill, Segment, useConfirm } from '@/components/ui';
 import { fmt } from '@/lib/format';
 import { lazyNamed } from '@/lib/lazyNamed';
 import { slotHours, tallyPoll, unansweredCount } from '@/lib/availability';
@@ -22,22 +22,23 @@ const ANSWER_ICON: Record<AvailabilityAnswer, typeof Check> = { yes: Check, mayb
 
 function PollCard({ poll, highlight }: { poll: AvailabilityPoll; highlight: boolean }) {
   const { t, lang, isAdmin, me, members, startEventOn, toast, copyLink, canShare, shareLink } = useGuataca();
-  const { setAvailability, setAvailabilityClosed, deleteAvailabilityPoll } = useData();
+  const { setAvailability, setAvailabilityClosed, setAvailabilityArchived, deleteAvailabilityPoll } = useData();
   const { confirm, dialog } = useConfirm();
   const [editing, setEditing] = useState(false);
   const tallies = tallyPoll(poll, members.map((m) => m.id), me.id);
   const nameOf = (id: string) => members.find((m) => m.id === id)?.short ?? '?';
   const unanswered = unansweredCount(poll, me.id);
-  const canAnswer = !poll.closed;
+  const canAnswer = !poll.closed && !poll.archived;
 
   if (editing) return <Suspense fallback={null}><PollForm poll={poll} onDone={() => setEditing(false)} /></Suspense>;
 
   return (
-    <Card as="article" className={`p-4 flex flex-col gap-3 transition-shadow ${poll.closed ? 'opacity-80' : ''} ${highlight ? 'ring-2 ring-emerald/60' : ''}`}>
+    <Card as="article" className={`p-4 flex flex-col gap-3 transition-shadow ${poll.closed || poll.archived ? 'opacity-80' : ''} ${highlight ? 'ring-2 ring-emerald/60' : ''}`}>
       <div className="flex items-start gap-2 flex-wrap">
         <div className="min-w-[160px] flex-1">
           <h3 className="m-0 font-display font-semibold text-[15.5px] leading-[1.3] text-ink">{poll.title}</h3>
           <div className="flex gap-[6px] flex-wrap mt-2">
+            {poll.archived && <Badge color="var(--color-ink-muted)">{t.archived}</Badge>}
             {poll.closed && <Badge color="var(--color-ink-muted)">{t.availClosed}</Badge>}
             {canAnswer && unanswered > 0 && <Badge color="var(--color-amber)">{t.availUnanswered.replace('%d', String(unanswered))}</Badge>}
           </div>
@@ -63,6 +64,15 @@ function PollCard({ poll, highlight }: { poll: AvailabilityPoll; highlight: bool
               className={ICON_BTN}
             >
               {poll.closed ? <Unlock size={15} strokeWidth={2} /> : <Lock size={15} strokeWidth={2} />}
+            </button>
+            <button
+              type="button"
+              title={poll.archived ? t.unarchive : t.archive}
+              aria-label={poll.archived ? t.unarchive : t.archive}
+              onClick={async () => { await setAvailabilityArchived(poll.id, !poll.archived); toast(poll.archived ? t.unarchived : t.archived); }}
+              className={ICON_BTN}
+            >
+              {poll.archived ? <ArchiveRestore size={15} strokeWidth={2} /> : <Archive size={15} strokeWidth={2} />}
             </button>
             <button
               type="button"
@@ -125,7 +135,7 @@ function PollCard({ poll, highlight }: { poll: AvailabilityPoll; highlight: bool
               )}
               {d.pending.length > 0 && <span className="block text-ink-dim">{t.availPending}: {d.pending.map(nameOf).join(', ')}</span>}
             </div>
-            {isAdmin && d.best && (
+            {isAdmin && (
               <Button variant="surface" className="self-start inline-flex items-center gap-[6px]" onClick={() => startEventOn(d.slot, poll.title)}>
                 <CalendarCheck size={14} strokeWidth={2} />
                 {t.availCreateEvent}
@@ -143,10 +153,16 @@ export function AvailabilityPanel() {
   const { t, isAdmin, state, clearScrollToPoll } = useGuataca();
   const { availability } = useData();
   const [adding, setAdding] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
+  const polls = availability.filter((p) => p.archived === showArchived);
+  const hasArchived = availability.some((p) => p.archived);
   // After a link or search hit (goToAvailability), scroll the target poll into view and flash it.
   const [hlPoll, setHlPoll] = useState<number | null>(null);
   useEffect(() => {
     if (!state.scrollToPoll) return;
+    // A link to an archived poll opens the Archived list first; the effect re-runs once it renders.
+    const target = availability.find((p) => p.id === state.scrollToPoll);
+    if (target && target.archived !== showArchived) { setShowArchived(target.archived); return; }
     const el = document.getElementById(`avail-${state.scrollToPoll}`);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -154,7 +170,7 @@ export function AvailabilityPanel() {
       window.setTimeout(() => setHlPoll(null), 2200);
     }
     clearScrollToPoll();
-  }, [state.scrollToPoll, clearScrollToPoll]);
+  }, [state.scrollToPoll, clearScrollToPoll, availability, showArchived]);
 
   return (
     <div className="flex flex-col gap-[14px] max-w-[900px] animate-fade">
@@ -162,16 +178,22 @@ export function AvailabilityPanel() {
         <p className="m-0 text-[13px] text-ink-muted leading-[1.5]">{t.availabilityHint}</p>
         {isAdmin && !adding && <AddButton className="flex-none" onClick={() => setAdding(true)}>{t.newAvailability}</AddButton>}
       </div>
-      {adding && <Suspense fallback={null}><PollForm onDone={() => setAdding(false)} /></Suspense>}
-      {availability.map((p) => (
+      {(hasArchived || showArchived) && (
+        <Segment className="self-start">
+          <Pill active={!showArchived} color="var(--color-emerald)" onClick={() => setShowArchived(false)}>{t.active}</Pill>
+          <Pill active={showArchived} color="var(--color-emerald)" onClick={() => setShowArchived(true)}>{t.forumArchived}</Pill>
+        </Segment>
+      )}
+      {adding && <Suspense fallback={null}><PollForm onDone={() => { setAdding(false); setShowArchived(false); }} /></Suspense>}
+      {polls.map((p) => (
         <div key={p.id} id={`avail-${p.id}`} className="scroll-mt-4">
           <PollCard poll={p} highlight={hlPoll === p.id} />
         </div>
       ))}
-      {availability.length === 0 && !adding && (
+      {polls.length === 0 && !adding && (
         <div className="flex flex-col items-center gap-2 py-12 px-5 text-center">
-          <span className="font-sans font-semibold text-[13.5px] text-ink-muted">{t.noAvailability}</span>
-          <span className="text-[12.5px] text-ink-dim">{t.noAvailabilityHint}</span>
+          <span className="font-sans font-semibold text-[13.5px] text-ink-muted">{showArchived ? t.noArchivedAvailability : t.noAvailability}</span>
+          {!showArchived && <span className="text-[12.5px] text-ink-dim">{t.noAvailabilityHint}</span>}
         </div>
       )}
     </div>

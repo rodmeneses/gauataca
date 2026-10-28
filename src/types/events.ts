@@ -81,6 +81,8 @@ export interface AvailabilityPoll {
   id: number;
   title: string;
   closed: boolean;
+  /** Admin-archived polls move out of the active list into Archived (and take no answers). */
+  archived: boolean;
   createdBy: string;
   /** Candidate slots, by date then start hour (all-day first). */
   slots: AvailabilitySlot[];

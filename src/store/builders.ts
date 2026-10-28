@@ -77,7 +77,7 @@ export function searchResults(ctx: ActionCtx): SearchResult[] {
       date: p.slots[0]?.date ?? '',
       title: p.title,
       slots: p.slots.map((s) => [fmt(s.date, lang), slotHours(s, t.availFrom)].filter(Boolean).join(' ')),
-      status: p.closed ? t.availClosed : '',
+      status: [p.archived ? t.archived : '', p.closed ? t.availClosed : ''].filter(Boolean).join(' · '),
     })),
     links: data.links.map((l) => ({
       id: l.id,

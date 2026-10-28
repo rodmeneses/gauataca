@@ -95,6 +95,7 @@ const writes: Array<[string, () => Promise<unknown>]> = [
   ['setAvailability', () => band.setAvailability(1, 3, 'yes', 'u')],
   ['clearAvailability', () => band.setAvailability(1, 3, null, 'u')],
   ['setAvailabilityClosed', () => band.setAvailabilityClosed(1, true)],
+  ['setAvailabilityArchived', () => band.setAvailabilityArchived(1, true)],
   ['deleteAvailabilityPoll', () => band.deleteAvailabilityPoll(1)],
   ['rotateCalendarToken', () => feed.rotateCalendarToken('u')],
 ];

@@ -9,7 +9,7 @@ export interface EventActions {
   openEvent: (id: string) => void;
   openNewEvent: () => void;
   openEditEvent: (id: string) => void;
-  /** Open the new-event form pre-filled from the winning slot of an availability poll (date, start hour, duration). */
+  /** Open the new-event form pre-filled from the chosen slot of an availability poll (date, start hour, duration). */
   startEventOn: (slot: AvailabilitySlotInput, title: string) => void;
   saveEvent: () => Promise<void>;
   /** Set the signed-in member's RSVP; choosing the current answer again withdraws it (back to pending). */
