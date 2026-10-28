@@ -9,7 +9,7 @@ import { mapSongs, mapTakes } from './songs';
 describe('mapAvailability', () => {
   it('sorts slots, trims times, drops unknown answers and orders polls newest first', () => {
     const out = mapAvailability(
-      [{ id: 1, title: 'a', closed: null, created_by: 'm1' }, { id: 2, title: 'b', closed: true, created_by: 'm2' }],
+      [{ id: 1, title: 'a', closed: null, created_by: 'm1' }, { id: 2, title: 'b', closed: true, archived: true, created_by: 'm2' }],
       [
         { id: 10, poll_id: 1, date: '2026-02-02', start_time: null, end_time: null },
         { id: 11, poll_id: 1, date: '2026-01-01', start_time: '19:00:00', end_time: '22:30:00' },
@@ -26,6 +26,8 @@ describe('mapAvailability', () => {
     expect(out[1].votes).toEqual([{ slotId: 11, profileId: 'm1', answer: 'yes' }]);
     expect(out[1].closed).toBe(false);
     expect(out[0].closed).toBe(true);
+    expect(out[1].archived).toBe(false);
+    expect(out[0].archived).toBe(true);
     expect(out[0].slots).toEqual([]);
   });
 });

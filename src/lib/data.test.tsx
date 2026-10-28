@@ -174,6 +174,7 @@ describe('DataProvider', () => {
       ['updateAvailabilityPoll', 'updateAvailabilityPoll', () => l.updateAvailabilityPoll(1, { title: 't', slots: [] }, [])],
       ['setAvailability', 'setAvailability', () => l.setAvailability(1, 2, 'yes')],
       ['setAvailabilityClosed', 'setAvailabilityClosed', () => l.setAvailabilityClosed(1, true)],
+      ['setAvailabilityArchived', 'setAvailabilityArchived', () => l.setAvailabilityArchived(1, true)],
       ['deleteAvailabilityPoll', 'deleteAvailabilityPoll', () => l.deleteAvailabilityPoll(1)],
       ['uploadEventPhoto', 'uploadEventPhoto', () => l.uploadEventPhoto(blob, null)],
       ['uploadForumPhoto', 'uploadForumPhoto', () => l.uploadForumPhoto(blob, null)],

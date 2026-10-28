@@ -16,6 +16,7 @@ export function mapAvailability(polls: Row[], slots: Row[], votes: Row[]): Avail
       id: p.id,
       title: p.title,
       closed: !!p.closed,
+      archived: !!p.archived,
       createdBy: p.created_by,
       slots: (slotsByPoll.get(p.id) ?? [])
         .map((s): AvailabilitySlot => ({ id: s.id, date: String(s.date), start: hhmm(s.start_time), end: hhmm(s.end_time) }))

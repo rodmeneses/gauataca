@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { DataSnapshot } from './api';
 import type { BandEvent, Thread } from '../types';
-import { answerAvailability, archiveThread, closeAvailability, hideDeleted, NO_PENDING_DELETES, pinEvent, pinThread, reactToThread, retally, rsvp } from './optimistic';
+import { answerAvailability, archiveAvailability, archiveThread, closeAvailability, hideDeleted, NO_PENDING_DELETES, pinEvent, pinThread, reactToThread, retally, rsvp } from './optimistic';
 
 const ev = (id: string, extra: Partial<BandEvent> = {}) => ({ id, pinned: false, ...extra }) as BandEvent;
 const th = (id: string, extra: Partial<Thread> = {}) =>
@@ -75,5 +75,9 @@ describe('hideDeleted', () => {
   it('closes and reopens an availability poll', () => {
     const s = { availability: [{ id: 1, closed: false }, { id: 2, closed: false }] } as unknown as DataSnapshot;
     expect(closeAvailability(2, true)(s).availability.map((p) => p.closed)).toEqual([false, true]);
+  });
+  it('archives and restores an availability poll', () => {
+    const s = { availability: [{ id: 1, archived: false }, { id: 2, archived: false }] } as unknown as DataSnapshot;
+    expect(archiveAvailability(2, true)(s).availability.map((p) => p.archived)).toEqual([false, true]);
   });
 });

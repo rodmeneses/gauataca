@@ -14,7 +14,7 @@ import {
   createSong as apiCreateSong, createThread as apiCreateThread, addThreadPollOption as apiAddThreadPollOption, createThreadPoll as apiCreateThreadPoll, createTransaction as apiCreateTransaction, deleteComment as apiDeleteComment, deleteEventMedia as apiDeleteEventMedia, deleteTake as apiDeleteTake, deleteThreadMedia as apiDeleteThreadMedia, deleteTransaction as apiDeleteTransaction, fetchAll, onboard as apiOnboard, pickPoll as apiPickPoll,
   setEventPinned as apiSetEventPinned, setEventState as apiSetEventState, setEventSetlist as apiSetEventSetlist, setRsvp as apiSetRsvp, setSongInstruments as apiSetSongInstruments, setSongLinks as apiSetSongLinks, setEventLinks as apiSetEventLinks,
   addThreadMedia as apiAddThreadMedia, addThreadRefs as apiAddThreadRefs, settleEvent as apiSettleEvent, setCommentReaction as apiSetCommentReaction, setThreadArchived as apiSetThreadArchived, setThreadPinned as apiSetThreadPinned, setThreadReaction as apiSetThreadReaction, submitFeedback as apiSubmitFeedback, transferCustody as apiTransferCustody, updateEvent as apiUpdateEvent, updateMemberInstruments as apiUpdateMemberInstruments, updateSong as apiUpdateSong, updateTransaction as apiUpdateTransaction, voteThreadPoll as apiVoteThreadPoll,
-  createAvailabilityPoll as apiCreateAvailabilityPoll, deleteAvailabilityPoll as apiDeleteAvailabilityPoll, setAvailability as apiSetAvailability, setAvailabilityClosed as apiSetAvailabilityClosed, updateAvailabilityPoll as apiUpdateAvailabilityPoll,
+  createAvailabilityPoll as apiCreateAvailabilityPoll, deleteAvailabilityPoll as apiDeleteAvailabilityPoll, setAvailability as apiSetAvailability, setAvailabilityArchived as apiSetAvailabilityArchived, setAvailabilityClosed as apiSetAvailabilityClosed, updateAvailabilityPoll as apiUpdateAvailabilityPoll,
   uploadEventPhoto as apiUploadEventPhoto, uploadForumPhoto as apiUploadForumPhoto, uploadProof as apiUploadProof, type DataSnapshot,
 } from './api';
 import type { AvailabilityAnswer, AvailabilitySlot, AvailabilitySlotInput, EventType, LinkCategory, GearCondition, GenreId, LinkKind, Proficiency, ProofKind, ReactionKind, RsvpStatus, TxCategory, TxKind, VocalFlag } from '../types';
@@ -100,6 +100,7 @@ export interface DataValue extends DataSnapshot {
   /** Set (or clear, with `null`) the signed-in member's answer for one candidate slot. */
   setAvailability: (pollId: number, slotId: number, answer: AvailabilityAnswer | null) => Promise<void>;
   setAvailabilityClosed: (id: number, closed: boolean) => Promise<void>;
+  setAvailabilityArchived: (id: number, archived: boolean) => Promise<void>;
   deleteAvailabilityPoll: (id: number) => Promise<void>;
   /** Upload a receipt/invoice file; resolves to its public URL. */
   uploadProof: (file: File) => Promise<string | undefined>;
@@ -269,6 +270,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       updateAvailabilityPoll: (id, input, current) => run(() => apiUpdateAvailabilityPoll(id, input, current)),
       setAvailability: (pollId, slotId, answer) => run(() => apiSetAvailability(pollId, slotId, answer, uid), opt.answerAvailability(pollId, slotId, answer, uid)),
       setAvailabilityClosed: (id, closed) => run(() => apiSetAvailabilityClosed(id, closed), opt.closeAvailability(id, closed)),
+      setAvailabilityArchived: (id, archived) => run(() => apiSetAvailabilityArchived(id, archived), opt.archiveAvailability(id, archived)),
       deleteAvailabilityPoll: (id) => run(() => apiDeleteAvailabilityPoll(id)),
       uploadProof: async (file) => {
         return apiUploadProof(file);

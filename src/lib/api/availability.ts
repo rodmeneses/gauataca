@@ -48,6 +48,11 @@ export async function setAvailabilityClosed(id: number, closed: boolean): Promis
   await supabase.from('availability_polls').update({ closed }).eq('id', id).throwOnError();
 }
 
+/** Archive a poll (it moves to the Archived list) or restore it. */
+export async function setAvailabilityArchived(id: number, archived: boolean): Promise<void> {
+  await supabase.from('availability_polls').update({ archived }).eq('id', id).throwOnError();
+}
+
 /** Delete a poll with its slots and answers. */
 export async function deleteAvailabilityPoll(id: number): Promise<void> {
   await supabase.from('availability_polls').delete().eq('id', id).throwOnError();

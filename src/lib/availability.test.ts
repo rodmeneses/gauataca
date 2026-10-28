@@ -5,7 +5,7 @@ import type { AvailabilityPoll, AvailabilitySlot } from '../types';
 const slot = (id: number, date: string, start: string | null = null, end: string | null = null): AvailabilitySlot => ({ id, date, start, end });
 const SLOTS = [slot(1, '2026-11-07'), slot(2, '2026-11-14')];
 const poll = (votes: AvailabilityPoll['votes'], slots = SLOTS): AvailabilityPoll => ({
-  id: 1, title: 'Fiesta', closed: false, createdBy: 'a', slots, votes,
+  id: 1, title: 'Fiesta', closed: false, archived: false, createdBy: 'a', slots, votes,
 });
 const members = ['a', 'b', 'c'];
 
